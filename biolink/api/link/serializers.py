@@ -22,6 +22,11 @@ bbop_graph = api.model('Graph', {
 })
 
 
+named_object = api.model('NamedObject', {
+    'id': fields.String(readOnly=True, description='ID'),
+    'label': fields.String(readOnly=True, description='RDFS Label'),
+    'category': fields.String(readOnly=True, description='Type of object')
+})
 
 
 # todo: inherits
@@ -30,18 +35,22 @@ taxon = api.model('Taxon', {
     'label': fields.String(readOnly=True, description='RDFS Label')
 })
 
-named_object = api.model('NamedObject', {
-    'id': fields.String(readOnly=True, description='ID'),
-    'label': fields.String(readOnly=True, description='RDFS Label'),
-    'taxon': fields.Nested(taxon),
-    'category': fields.String(readOnly=True, description='Type of object')
+bio_object = api.inherit('BioObject', named_object, {
+    'taxon': fields.Nested(taxon)
 })
-    
+
+# Assoc
+
 association = api.model('Association', {
     'id': fields.Integer(readOnly=True, description='Association ID'),
-    'subject': fields.Nested(named_object),
-    'object': fields.Nested(named_object),
+    'subject': fields.Nested(bio_object),
+    'object': fields.Nested(bio_object),
     'evidence_graph': fields.Nested(bbop_graph),
+})
+
+association_results = api.model('AssociationResults', {
+    'associations': fields.List(fields.Nested(association)),
+    'facets': fields.List(fields.String()),
 })
 
 
