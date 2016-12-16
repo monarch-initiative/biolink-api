@@ -2,7 +2,7 @@ import logging.config
 
 from flask import Flask, Blueprint
 from biolink import settings
-from biolink.api.search.endpoints.associations import ns as search_associations_namespace
+from biolink.api.link.endpoints.search import ns as link_search_namespace
 
 from biolink.api.graph.endpoints.posts import ns as graph_posts_namespace
 from biolink.api.graph.endpoints.categories import ns as graph_categories_namespace
@@ -32,7 +32,7 @@ def initialize_app(flask_app):
 
     blueprint = Blueprint('api', __name__, url_prefix='/api')
     api.init_app(blueprint)
-    api.add_namespace(search_associations_namespace)
+    api.add_namespace(link_search_namespace)
     api.add_namespace(graph_posts_namespace)
     api.add_namespace(graph_categories_namespace)
     flask_app.register_blueprint(blueprint)
