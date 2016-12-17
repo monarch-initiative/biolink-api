@@ -3,6 +3,7 @@ import logging.config
 from flask import Flask, Blueprint
 from biolink import settings
 from biolink.api.link.endpoints.search import ns as link_search_namespace
+from biolink.api.bio.endpoints.objects import ns as bio_objects_namespace
 
 from biolink.api.restplus import api
 
