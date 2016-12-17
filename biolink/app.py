@@ -6,6 +6,11 @@ from biolink.api.link.endpoints.links import ns as link_search_namespace
 from biolink.api.bio.endpoints.objects import ns as bio_objects_namespace
 from biolink.api.entity.endpoints.search import ns as bio_objects_namespace
 from biolink.api.nlp.endpoints.annotate import ns as nlp_annotate_namespace
+from biolink.api.ontol.endpoints.slimmer import ns as ontol_slimmer_namespace
+from biolink.api.ontol.endpoints.enrichment import ns as ontol_enrichment_namespace
+from biolink.api.lego.endpoints.model import ns as lego_model_namespace
+from biolink.api.owl.endpoints.ontology import ns as owl_ontology_namespace
+from biolink.api.patient.endpoints.individual import ns as patient_individual_namespace
 
 from biolink.api.restplus import api
 

@@ -1,6 +1,6 @@
 # Biolink API
 
-## Getting Started
+## Setting up
 
 ```
 $ pyvenv venv
@@ -33,6 +33,12 @@ searches but injecting results with fast in-memory traversal of
 ontology graphs.
 
 This is a proof of concept implementation. May be implemented using a JVM language, e.g. scala in future.
+
+## Overview
+
+The API is intended to be as self-explanatory as possible, via
+swagger/openapi annotations. Please consult these (you will need to
+start your own server)
 
 ## Notes
 

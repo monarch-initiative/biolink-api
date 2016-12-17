@@ -9,7 +9,7 @@ import pysolr
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('entity/search', description='Find links')
+ns = api.namespace('entity/search', description='Search for entities')
 
 parser = api.parser()
 parser.add_argument('subject_taxon', help='SUBJECT TAXON id, e.g. NCBITaxon:9606. Includes inferred by default')

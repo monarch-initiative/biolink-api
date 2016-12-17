@@ -208,3 +208,15 @@ class VariantObject(Resource):
         return { 'foo' : 'bar' }
 
 
+@ns.route('/patient/<id>')
+class ParentObject(Resource):
+
+    @api.expect(parser)
+    #@api.marshal_list_with(association)
+    def get(self, id):
+        """
+        Returns list of objects
+        """
+        return { 'foo' : 'bar' }
+
+

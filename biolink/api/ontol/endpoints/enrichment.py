@@ -8,12 +8,12 @@ import pysolr
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('ontol/slimmer', description='foo bar')
+ns = api.namespace('ontol/enrichment', description='foo bar')
 
 parser = api.parser()
-#parser.add_argument('subject_taxon', help='SUBJECT TAXON id, e.g. NCBITaxon:9606. Includes inferred by default')
+parser.add_argument('bioentity_ids', help='List of ids')
 
-@ns.route('/<subset>')
+@ns.route('/')
 class Foo(Resource):
 
     @api.expect(parser)
@@ -21,7 +21,7 @@ class Foo(Resource):
 
     @api.expect(parser)
     @api.marshal_list_with(association)
-    def get(self, subset):
+    def get(self):
         """
         Maps to slim
         """
