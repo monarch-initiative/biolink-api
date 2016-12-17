@@ -54,3 +54,36 @@ association_results = api.model('AssociationResults', {
 })
 
 
+# Bio Objects
+
+sequence_feature = api.inherit('SequenceFeature', bio_object, {
+})
+
+gene = api.inherit('Gene', sequence_feature, {
+})
+
+gene_product = api.inherit('GeneProduct', sequence_feature, {
+    'genes': fields.List(fields.Nested(gene))
+})
+
+transcript = api.inherit('Transcript', sequence_feature, {
+    'genes': fields.List(fields.Nested(gene))
+})
+
+genotype = api.inherit('Genotype', sequence_feature, {
+    'genes': fields.List(fields.Nested(gene))
+})
+
+allele = api.inherit('Allele', sequence_feature, {
+    'genes': fields.List(fields.Nested(gene))
+})
+
+# molecular entities
+molecular_complex = api.inherit('MolecularComplex', bio_object, {
+    'genes': fields.List(fields.Nested(gene))
+})
+
+drug = api.inherit('Drug', bio_object, {
+    'target_associations': fields.List(fields.Nested(association))
+})
+

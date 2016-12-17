@@ -2,7 +2,8 @@ import logging
 
 from flask import request
 from flask_restplus import Resource
-from biolink.datamodel.serializers import association
+from biolink.datamodel.serializers import association, gene, drug, genotype, allele
+#import biolink.datamodel.serializers
 from biolink.api.restplus import api
 from biolink.util.golr_associations import get_associations
 import pysolr
@@ -18,13 +19,14 @@ parser = api.parser()
 
 
 @ns.route('/gene/<id>')
+@api.doc(params={'id': 'id, e.g. NCBIGene:84570'})
 class GeneObject(Resource):
 
     @api.expect(parser)
-    #@api.marshal_list_with(association)
+    @api.marshal_list_with(gene)
     def get(self, id):
         """
-        Returns list of associations
+        Returns gene
         """
         return { 'foo' : 'bar' }
 
@@ -50,7 +52,7 @@ class GeneproductObject(Resource):
     #@api.marshal_list_with(association)
     def get(self, id):
         """
-        Returns list of associations
+        Returns list of objects
         """
         return { 'foo' : 'bar' }
     
@@ -61,7 +63,7 @@ class DiseaseObject(Resource):
     #@api.marshal_list_with(association)
     def get(self, id):
         """
-        Returns list of associations
+        Returns list of objects
         """
         return { 'foo' : 'bar' }
 
@@ -72,7 +74,7 @@ class PhenotypeObject(Resource):
     #@api.marshal_list_with(association)
     def get(self, id):
         """
-        Returns list of associations
+        Returns list of objects
         """
         return { 'foo' : 'bar' }
     
@@ -84,7 +86,7 @@ class GotermObject(Resource):
     #@api.marshal_list_with(association)
     def get(self, id):
         """
-        Returns list of associations
+        Returns list of objects
         """
         return { 'foo' : 'bar' }
     
@@ -96,7 +98,7 @@ class AnatomyObject(Resource):
     #@api.marshal_list_with(association)
     def get(self, id):
         """
-        Returns list of associations
+        Returns list of objects
         """
         return { 'foo' : 'bar' }
 
@@ -104,7 +106,7 @@ class AnatomyObject(Resource):
 class AnatomyGeneAssociations(Resource):
 
     @api.expect(parser)
-    #@api.marshal_list_with(association)
+    @api.marshal_list_with(association)
     def get(self, id):
         """
         Returns list of associations
@@ -119,7 +121,7 @@ class EnvironmentObject(Resource):
     #@api.marshal_list_with(association)
     def get(self, id):
         """
-        Returns list of associations
+        Returns list of objects
         """
         return { 'foo' : 'bar' }
     
@@ -128,7 +130,18 @@ class EnvironmentObject(Resource):
 class DrugObject(Resource):
 
     @api.expect(parser)
-    #@api.marshal_list_with(association)
+    @api.marshal_list_with(drug)
+    def get(self, id):
+        """
+        Returns list of associations
+        """
+        return { 'foo' : 'bar' }
+
+@ns.route('/drug/<id>/targets/')
+class DrugTargetAssociations(Resource):
+
+    @api.expect(parser)
+    @api.marshal_list_with(association)
     def get(self, id):
         """
         Returns list of associations
@@ -143,7 +156,7 @@ class ChemicalObject(Resource):
     #@api.marshal_list_with(association)
     def get(self, id):
         """
-        Returns list of associations
+        Returns list of objects
         """
         return { 'foo' : 'bar' }
     
@@ -152,10 +165,10 @@ class ChemicalObject(Resource):
 class GenotypeObject(Resource):
 
     @api.expect(parser)
-    #@api.marshal_list_with(association)
+    @api.marshal_list_with(genotype)
     def get(self, id):
         """
-        Returns list of associations
+        Returns list of objects
         """
         return { 'foo' : 'bar' }
     
@@ -164,10 +177,10 @@ class GenotypeObject(Resource):
 class AlleleObject(Resource):
 
     @api.expect(parser)
-    #@api.marshal_list_with(association)
+    @api.marshal_list_with(allele)
     def get(self, id):
         """
-        Returns list of associations
+        Returns list of alleles
         """
         return { 'foo' : 'bar' }
     
@@ -179,8 +192,19 @@ class VariantObject(Resource):
     #@api.marshal_list_with(association)
     def get(self, id):
         """
-        Returns list of associations
+        Returns list of objects
         """
         return { 'foo' : 'bar' }
-    
+
+@ns.route('/sequence_feature/<id>')
+class VariantObject(Resource):
+
+    @api.expect(parser)
+    #@api.marshal_list_with(association)
+    def get(self, id):
+        """
+        Returns list of objects
+        """
+        return { 'foo' : 'bar' }
+
 
