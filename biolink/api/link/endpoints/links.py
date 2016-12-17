@@ -15,6 +15,7 @@ parser = api.parser()
 parser.add_argument('subject', help='SUBJECT id, e.g. NCBIGene:84570. Includes inferred by default')
 parser.add_argument('subject_taxon', help='SUBJECT TAXON id, e.g. NCBITaxon:9606. Includes inferred by default')
 parser.add_argument('object', help='OBJECT id, e.g. HP:0011927. Includes inferred by default')
+parser.add_argument('graphize', type=bool, help='If set, includes graph object in response')
 
 
 @ns.route('/')

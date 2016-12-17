@@ -99,6 +99,17 @@ class AnatomyObject(Resource):
         Returns list of associations
         """
         return { 'foo' : 'bar' }
+
+@ns.route('/anatomy/<id>/genes/')
+class AnatomyGeneAssociations(Resource):
+
+    @api.expect(parser)
+    #@api.marshal_list_with(association)
+    def get(self, id):
+        """
+        Returns list of associations
+        """
+        return { 'foo' : 'bar' }
     
 
 @ns.route('/environment/<id>')

@@ -56,6 +56,10 @@ SUBJECT_GENE_CLOSURE_LABEL_SEARCHABLE='subject_gene_closure_label_searchable'
 golr_url = "https://solr.monarchinitiative.org/solr/golr/"
 solr = pysolr.Solr(golr_url, timeout=5)
 
+# TODO: move
+search_url = "https://solr.monarchinitiative.org/solr/search/"
+#solr = pysolr.Solr(golr_url, timeout=5)
+
 def translate_obj(d,name):
     lf = name + "_label"
     
