@@ -5,6 +5,7 @@ from biolink import settings
 from biolink.api.link.endpoints.links import ns as link_search_namespace
 from biolink.api.bio.endpoints.objects import ns as bio_objects_namespace
 from biolink.api.entity.endpoints.search import ns as bio_objects_namespace
+from biolink.api.nlp.endpoints.annotate import ns as nlp_annotate_namespace
 
 from biolink.api.restplus import api
 

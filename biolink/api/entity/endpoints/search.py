@@ -14,22 +14,38 @@ ns = api.namespace('entity/search', description='Find links')
 parser = api.parser()
 parser.add_argument('subject_taxon', help='SUBJECT TAXON id, e.g. NCBITaxon:9606. Includes inferred by default')
 
-
-@ns.route('/autocomplete/')
-class AssociationCollection(Resource):
-
-    @api.expect(parser)
-    @api.marshal_list_with(association)
+@ns.route('/<term>')
+class SearchEntities(Resource):
 
     @api.expect(parser)
     @api.marshal_list_with(association)
-    def get(self, subject_category='gene', object_category='gene'):
+
+    @api.expect(parser)
+    @api.marshal_list_with(association)
+    def get(self, term):
         """
-        Returns list of associations
+        Returns list of matches
         """
         args = parser.parse_args()
 
-        return get_associations(subject_category, object_category, args)
+        return []
+
+@ns.route('/autocomplete/<term>')
+class Authocomplete(Resource):
+
+    @api.expect(parser)
+    @api.marshal_list_with(association)
+
+    @api.expect(parser)
+    @api.marshal_list_with(association)
+    def get(self, search_term):
+        """
+        Returns list of matches
+        """
+        args = parser.parse_args()
+
+        return []
+
     
     
 
