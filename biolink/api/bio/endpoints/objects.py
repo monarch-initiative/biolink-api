@@ -18,7 +18,7 @@ parser = api.parser()
 
 
 @ns.route('/gene/<id>')
-class AssociationCollection(Resource):
+class GeneObject(Resource):
 
     @api.expect(parser)
     #@api.marshal_list_with(association)
@@ -30,7 +30,7 @@ class AssociationCollection(Resource):
 
 @ns.route('/gene/<id>/phenotypes/')
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:4750. Equivalent IDs can be used with same results'})
-class AssociationCollection(Resource):
+class GenePhenotypeAssociations(Resource):
 
     @api.expect(parser)
     #@api.marshal_list_with(association)
@@ -44,7 +44,7 @@ class AssociationCollection(Resource):
         return get_associations('gene', 'phenotype', args, args.get('id'))
     
 @ns.route('/geneproduct/<id>')
-class AssociationCollection(Resource):
+class GeneproductObject(Resource):
 
     @api.expect(parser)
     #@api.marshal_list_with(association)
@@ -55,7 +55,7 @@ class AssociationCollection(Resource):
         return { 'foo' : 'bar' }
     
 @ns.route('/disease/<id>')
-class AssociationCollection(Resource):
+class DiseaseObject(Resource):
 
     @api.expect(parser)
     #@api.marshal_list_with(association)
@@ -66,7 +66,7 @@ class AssociationCollection(Resource):
         return { 'foo' : 'bar' }
 
 @ns.route('/phenotype/<id>')
-class AssociationCollection(Resource):
+class PhenotypeObject(Resource):
 
     @api.expect(parser)
     #@api.marshal_list_with(association)
@@ -78,7 +78,7 @@ class AssociationCollection(Resource):
     
 
 @ns.route('/goterm/<id>')
-class AssociationCollection(Resource):
+class GotermObject(Resource):
 
     @api.expect(parser)
     #@api.marshal_list_with(association)
@@ -90,7 +90,7 @@ class AssociationCollection(Resource):
     
 
 @ns.route('/anatomy/<id>')
-class AssociationCollection(Resource):
+class AnatomyObject(Resource):
 
     @api.expect(parser)
     #@api.marshal_list_with(association)
@@ -102,7 +102,7 @@ class AssociationCollection(Resource):
     
 
 @ns.route('/environment/<id>')
-class AssociationCollection(Resource):
+class EnvironmentObject(Resource):
 
     @api.expect(parser)
     #@api.marshal_list_with(association)
@@ -114,7 +114,7 @@ class AssociationCollection(Resource):
     
 
 @ns.route('/drug/<id>')
-class AssociationCollection(Resource):
+class DrugObject(Resource):
 
     @api.expect(parser)
     #@api.marshal_list_with(association)
@@ -126,7 +126,7 @@ class AssociationCollection(Resource):
     
 
 @ns.route('/chemical/<id>')
-class AssociationCollection(Resource):
+class ChemicalObject(Resource):
 
     @api.expect(parser)
     #@api.marshal_list_with(association)
@@ -138,7 +138,7 @@ class AssociationCollection(Resource):
     
 
 @ns.route('/genotype/<id>')
-class AssociationCollection(Resource):
+class GenotypeObject(Resource):
 
     @api.expect(parser)
     #@api.marshal_list_with(association)
@@ -150,7 +150,7 @@ class AssociationCollection(Resource):
     
 
 @ns.route('/allele/<id>')
-class AssociationCollection(Resource):
+class AlleleObject(Resource):
 
     @api.expect(parser)
     #@api.marshal_list_with(association)
@@ -162,7 +162,7 @@ class AssociationCollection(Resource):
     
 
 @ns.route('/variant/<id>')
-class AssociationCollection(Resource):
+class VariantObject(Resource):
 
     @api.expect(parser)
     #@api.marshal_list_with(association)
