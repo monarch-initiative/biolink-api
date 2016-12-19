@@ -3,7 +3,7 @@ import logging
 from flask import request, send_file
 from flask_restplus import Resource
 from biolink.datamodel.serializers import association, bbop_graph
-from biolink.util.golr_associations import get_associations
+from biolink.util.golr_associations import get_association
 from biolink.api.restplus import api
 from biolink.core.ontology.obograph_util import convert_json_object
 import tempfile
@@ -32,8 +32,8 @@ class AssociationObject(Resource):
         """
         args = parser.parse_args()
 
-        assocs = get_associations(None, None, args, id)
-        eg = assocs['associations'][0].get('evidence_graph')
+        assoc = get_association(id)
+        eg = assoc.get('evidence_graph')
         return [eg]
 
 @ns.route('/<id>/image')
@@ -46,8 +46,8 @@ class AssociationObject(Resource):
         """
         args = parser.parse_args()
 
-        assocs = get_associations(None, None, args, id)
-        eg = {'graphs':[assocs['associations'][0].get('evidence_graph')]}
+        assoc = get_association(id)
+        eg = {'graphs':[assoc.get('evidence_graph')]}
         digraph = convert_json_object(eg)
         #fp = tempfile.TemporaryFile()
         nx.draw(digraph)
