@@ -12,17 +12,14 @@ log = logging.getLogger(__name__)
 
 ns = api.namespace('bio', description='Retrieval of domain objects plus associations')
 
-parser = api.parser()
-#parser.add_argument('subject', help='SUBJECT id, e.g. NCBIGene:84570. Includes inferred by default')
-#parser.add_argument('subject_taxon', help='SUBJECT TAXON id, e.g. NCBITaxon:9606. Includes inferred by default')
-#parser.add_argument('object', help='OBJECT id, e.g. HP:0011927. Includes inferred by default')
-
+core_parser = api.parser()
+core_parser.add_argument('exclude_evidence', type=bool, help='If set, excludes evidence objects in response')
 
 @ns.route('/gene/<id>')
 @api.doc(params={'id': 'id, e.g. NCBIGene:84570'})
 class GeneObject(Resource):
 
-    @api.expect(parser)
+    @api.expect(core_parser)
     @api.marshal_list_with(gene)
     def get(self, id):
         """
@@ -30,49 +27,87 @@ class GeneObject(Resource):
         """
         return { 'foo' : 'bar' }
 
-@ns.route('/gene/<id>/interactions/')
-@api.doc(params={'id': 'id, e.g. NCBIGene:3630'})
-class GeneInteractions(Resource):
+@api.doc(params={'id': 'id, e.g. NCBIGene:3630. Equivalent IDs can be used with same results'})
+class AbstractGeneAssociationResource(Resource):
 
-    @api.expect(parser)
+    @api.expect(core_parser)
+    @api.marshal_list_with(association_results)
+    def get(self, id):
+        pass
+    
+@ns.route('/gene/<id>/interactions/')
+class GeneInteractions(AbstractGeneAssociationResource):
+
+    @api.expect(core_parser)
     @api.marshal_list_with(association_results)
     def get(self, id):
         """
         Returns interactions for a gene
         """
-        return search_associations('gene', 'gene', 'RO:0002434', id, **parser.parse_args())
+        return search_associations('gene', 'gene', 'RO:0002434', id, **core_parser.parse_args())
+
+homolog_parser = api.parser()
+homolog_parser.add_argument('homolog_taxon', help='Taxon CURIE of homolog, e.g. NCBITaxon:9606. Can be intermediate note, includes inferred by default')
+homolog_parser.add_argument('type', help='P, O or LDO (paralog, ortholog or least-diverged), or corresponding RO ID')
+
+@ns.route('/gene/<id>/homologs/')
+class GeneHomologAssociations(AbstractGeneAssociationResource):
+
+    @api.expect(homolog_parser)
+    @api.marshal_list_with(association_results)
+    def get(self, id):
+        """
+        Returns homologs for a gene
+        """
+        rel = 'RO:0002434'  # TODO
+        return search_associations('gene', 'gene', rel, id, **core_parser.parse_args())
     
 @ns.route('/gene/<id>/phenotypes/')
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:4750. Equivalent IDs can be used with same results'})
 class GenePhenotypeAssociations(Resource):
 
-    @api.expect(parser)
+    @api.expect(core_parser)
     def get(self, id):
         """
         Returns phenotypes associated with gene
         """
-        args = parser.parse_args()
+        args = core_parser.parse_args()
         print(args)
 
-        return search_associations('gene', 'phenotype', None, id, **parser.parse_args())
+        return search_associations('gene', 'phenotype', None, id, **core_parser.parse_args())
 
 @ns.route('/gene/<id>/expressed/')
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:4750. Equivalent IDs can be used with same results'})
 class GeneExpressionAssociations(Resource):
 
-    @api.expect(parser)
+    @api.expect(core_parser)
     @api.marshal_list_with(association_results)
     def get(self, id):
         """
         TODO Returns expression events for a gene
         """
 
-        return search_associations('gene', 'anatomy', None, id, **parser.parse_args())
+        return search_associations('gene', 'anatomy', None, id, **core_parser.parse_args())
+
+@ns.route('/gene/<id>/pubs/')
+@api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:4750. Equivalent IDs can be used with same results'})
+class GenePublicationList(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_list_with(association_results)
+    def get(self, id):
+        """
+        TODO Returns expression events for a gene
+        """
+
+        # TODO: we don't store this directly
+        # could be retrieved by getting all associations and then extracting pubs
+        return search_associations('gene', 'publication', None, id, **core_parser.parse_args())
     
 @ns.route('/geneproduct/<id>')
 class GeneproductObject(Resource):
 
-    @api.expect(parser)
+    @api.expect(core_parser)
     #@api.marshal_list_with(association)
     def get(self, id):
         """
@@ -83,7 +118,7 @@ class GeneproductObject(Resource):
 @ns.route('/disease/<id>')
 class DiseaseObject(Resource):
 
-    @api.expect(parser)
+    @api.expect(core_parser)
     #@api.marshal_list_with(association)
     def get(self, id):
         """
@@ -95,34 +130,34 @@ class DiseaseObject(Resource):
 @api.doc(params={'id': 'CURIE identifier of disease, e.g. OMIM:605543, DOID:678. Equivalent IDs can be used with same results'})
 class DiseasePhenotypeAssociations(Resource):
 
-    @api.expect(parser)
+    @api.expect(core_parser)
     @api.marshal_list_with(association_results)
     def get(self, id):
         """
         Returns phenotypes associated with disease
         """
 
-        return search_associations('disease', 'phenotype', None, id, **parser.parse_args())
+        return search_associations('disease', 'phenotype', None, id, **core_parser.parse_args())
 
 @ns.route('/disease/<id>/genes/')
 @api.doc(params={'id': 'CURIE identifier of disease, e.g. OMIM:605543, DOID:678. Equivalent IDs can be used with same results'})
 class DiseaseGeneAssociations(Resource):
 
-    @api.expect(parser)
+    @api.expect(core_parser)
     @api.marshal_list_with(association_results)
     def get(self, id):
         """
         Returns genes associated with a disease
         """
-        args = parser.parse_args()
+        args = core_parser.parse_args()
         print(args)
 
-        return search_associations('disease', 'gene', None, id, **parser.parse_args())
+        return search_associations('disease', 'gene', None, id, **core_parser.parse_args())
 
 @ns.route('/disease/<id>/anatomy/')
 class DiseaseAnatomyAssociations(Resource):
 
-    @api.expect(parser)
+    @api.expect(core_parser)
     @api.marshal_list_with(association)
     def get(self, id):
         """
@@ -134,7 +169,7 @@ class DiseaseAnatomyAssociations(Resource):
 @api.doc(params={'id': 'CURIE identifier of disease, e.g. OMIM:605543, DOID:678. Equivalent IDs can be used with same results'})
 class DiseaseModelAssociations(Resource):
 
-    @api.expect(parser)
+    @api.expect(core_parser)
     @api.marshal_list_with(association_results)
     def get(self, id):
         """
@@ -142,12 +177,12 @@ class DiseaseModelAssociations(Resource):
         """
 
         # TODO: invert
-        return search_associations('model', 'disease', None, id, **parser.parse_args())
+        return search_associations('model', 'disease', None, id, **core_parser.parse_args())
     
 @ns.route('/phenotype/<id>')
 class PhenotypeObject(Resource):
 
-    @api.expect(parser)
+    @api.expect(core_parser)
     #@api.marshal_list_with(association)
     def get(self, id):
         """
@@ -158,7 +193,7 @@ class PhenotypeObject(Resource):
 @ns.route('/phenotype/<id>/anatomy/')
 class PhenotypeAnatomyAssociations(Resource):
 
-    @api.expect(parser)
+    @api.expect(core_parser)
     @api.marshal_list_with(association)
     def get(self, id):
         """
@@ -169,7 +204,7 @@ class PhenotypeAnatomyAssociations(Resource):
 @ns.route('/phenotype/<id>/phenotype/')
 class PhenotypePhenotypeAssociations(Resource):
 
-    @api.expect(parser)
+    @api.expect(core_parser)
     @api.marshal_list_with(association)
     def get(self, id):
         """
@@ -182,7 +217,7 @@ class PhenotypePhenotypeAssociations(Resource):
 @ns.route('/goterm/<id>')
 class GotermObject(Resource):
 
-    @api.expect(parser)
+    @api.expect(core_parser)
     #@api.marshal_list_with(association)
     def get(self, id):
         """
@@ -194,7 +229,7 @@ class GotermObject(Resource):
 @api.doc(params={'id': 'CURIE any pathway element. May be a GO ID or a pathway database ID'})
 class PathwayObject(Resource):
 
-    @api.expect(parser)
+    @api.expect(core_parser)
     #@api.marshal_list_with(association)
     def get(self, id):
         """
@@ -205,7 +240,7 @@ class PathwayObject(Resource):
 @ns.route('/pathway/<id>/genes/')
 class PathwayGeneAssociations(Resource):
 
-    @api.expect(parser)
+    @api.expect(core_parser)
     @api.marshal_list_with(association)
     def get(self, id):
         """
@@ -216,7 +251,7 @@ class PathwayGeneAssociations(Resource):
 @ns.route('/pathway/<id>/participants/')
 class PathwayParticipantAssociations(Resource):
 
-    @api.expect(parser)
+    @api.expect(core_parser)
     @api.marshal_list_with(association)
     def get(self, id):
         """
@@ -227,7 +262,7 @@ class PathwayParticipantAssociations(Resource):
 @ns.route('/anatomy/<id>')
 class AnatomyObject(Resource):
 
-    @api.expect(parser)
+    @api.expect(core_parser)
     #@api.marshal_list_with(association)
     def get(self, id):
         """
@@ -238,7 +273,7 @@ class AnatomyObject(Resource):
 @ns.route('/anatomy/<id>/genes/')
 class AnatomyGeneAssociations(Resource):
 
-    @api.expect(parser)
+    @api.expect(core_parser)
     @api.marshal_list_with(association)
     def get(self, id):
         """
@@ -249,7 +284,7 @@ class AnatomyGeneAssociations(Resource):
 @ns.route('/anatomy/<id>/phenotypes/')
 class AnatomyPhenotypeAssociations(Resource):
 
-    @api.expect(parser)
+    @api.expect(core_parser)
     @api.marshal_list_with(association)
     def get(self, id):
         """
@@ -261,7 +296,7 @@ class AnatomyPhenotypeAssociations(Resource):
 @ns.route('/environment/<id>')
 class EnvironmentObject(Resource):
 
-    @api.expect(parser)
+    @api.expect(core_parser)
     #@api.marshal_list_with(association)
     def get(self, id):
         """
@@ -272,7 +307,7 @@ class EnvironmentObject(Resource):
 @ns.route('/environment/<id>/phenotypes/')
 class EnvironmentPhenotypeAssociations(Resource):
 
-    @api.expect(parser)
+    @api.expect(core_parser)
     @api.marshal_list_with(association)
     def get(self, id):
         """
@@ -283,7 +318,7 @@ class EnvironmentPhenotypeAssociations(Resource):
 @ns.route('/drug/<id>')
 class DrugObject(Resource):
 
-    @api.expect(parser)
+    @api.expect(core_parser)
     @api.marshal_list_with(drug)
     def get(self, id):
         """
@@ -294,7 +329,7 @@ class DrugObject(Resource):
 @ns.route('/drug/<id>/targets/')
 class DrugTargetAssociations(Resource):
 
-    @api.expect(parser)
+    @api.expect(core_parser)
     @api.marshal_list_with(association)
     def get(self, id):
         """
@@ -305,7 +340,7 @@ class DrugTargetAssociations(Resource):
 @ns.route('/drug/<id>/interactions/')
 class DrugInteractions(Resource):
 
-    @api.expect(parser)
+    @api.expect(core_parser)
     @api.marshal_list_with(association)
     def get(self, id):
         """
@@ -316,7 +351,7 @@ class DrugInteractions(Resource):
 @ns.route('/chemical/<id>')
 class ChemicalObject(Resource):
 
-    @api.expect(parser)
+    @api.expect(core_parser)
     #@api.marshal_list_with(association)
     def get(self, id):
         """
@@ -328,7 +363,7 @@ class ChemicalObject(Resource):
 @ns.route('/genotype/<id>')
 class GenotypeObject(Resource):
 
-    @api.expect(parser)
+    @api.expect(core_parser)
     @api.marshal_list_with(genotype)
     def get(self, id):
         """
@@ -340,7 +375,7 @@ class GenotypeObject(Resource):
 @api.doc(params={'id': 'CURIE identifier of genotype, e.g. ZFIN:ZDB-FISH-150901-6607'})
 class GenotypeGenotypeAssociations(Resource):
 
-    @api.expect(parser)
+    @api.expect(core_parser)
     @api.marshal_list_with(association_results)
     def get(self, id):
         """
@@ -348,13 +383,13 @@ class GenotypeGenotypeAssociations(Resource):
         """
 
         # TODO: invert
-        return search_associations('genotype', 'genotype', None, id, **parser.parse_args())
+        return search_associations('genotype', 'genotype', None, id, **core_parser.parse_args())
 
 @ns.route('/genotype/<id>/phenotypes/')
 @api.doc(params={'id': 'CURIE identifier of genotype, e.g. ZFIN:ZDB-FISH-150901-6607'})
 class GenotypePhenotypeAssociations(Resource):
 
-    @api.expect(parser)
+    @api.expect(core_parser)
     @api.marshal_list_with(association_results)
     def get(self, id):
         """
@@ -362,13 +397,13 @@ class GenotypePhenotypeAssociations(Resource):
         """
 
         # TODO: invert
-        return search_associations('genotype', 'phenotypes', None, id, **parser.parse_args())
+        return search_associations('genotype', 'phenotypes', None, id, **core_parser.parse_args())
     
 @ns.route('/genotype/<id>/genes/')
 @api.doc(params={'id': 'CURIE identifier of genotype, e.g. ZFIN:ZDB-FISH-150901-6607'})
 class GenotypeGeneAssociations(Resource):
 
-    @api.expect(parser)
+    @api.expect(core_parser)
     @api.marshal_list_with(association_results)
     def get(self, id):
         """
@@ -376,14 +411,14 @@ class GenotypeGeneAssociations(Resource):
         """
 
         # TODO: invert
-        return search_associations('genotype', 'gene', None, id, **parser.parse_args())
+        return search_associations('genotype', 'gene', None, id, **core_parser.parse_args())
 
 ##
 
 @ns.route('/allele/<id>')
 class AlleleObject(Resource):
 
-    @api.expect(parser)
+    @api.expect(core_parser)
     @api.marshal_list_with(allele)
     def get(self, id):
         """
@@ -401,7 +436,7 @@ class AlleleObject(Resource):
 @api.doc(params={'id': 'CURIE identifier of variant, e.g. ZFIN:ZDB-ALT-010427-8'})
 class VariantObject(Resource):
 
-    @api.expect(parser)
+    @api.expect(core_parser)
     #@api.marshal_list_with(association)
     def get(self, id):
         """
@@ -413,7 +448,7 @@ class VariantObject(Resource):
 @api.doc(params={'id': 'CURIE identifier of variant, e.g. ZFIN:ZDB-ALT-010427-8'})
 class VariantGenotypeAssociations(Resource):
 
-    @api.expect(parser)
+    @api.expect(core_parser)
     @api.marshal_list_with(association_results)
     def get(self, id):
         """
@@ -421,13 +456,13 @@ class VariantGenotypeAssociations(Resource):
         """
 
         # TODO: invert
-        return search_associations('variant', 'genotype', None, id, **parser.parse_args())
+        return search_associations('variant', 'genotype', None, id, **core_parser.parse_args())
 
 @ns.route('/variant/<id>/phenotypes/')
 @api.doc(params={'id': 'CURIE identifier of variant, e.g. ZFIN:ZDB-ALT-010427-8'})
 class VariantPhenotypeAssociations(Resource):
 
-    @api.expect(parser)
+    @api.expect(core_parser)
     @api.marshal_list_with(association_results)
     def get(self, id):
         """
@@ -435,13 +470,13 @@ class VariantPhenotypeAssociations(Resource):
         """
 
         # TODO: invert
-        return search_associations('variant', 'phenotypes', None, id, **parser.parse_args())
+        return search_associations('variant', 'phenotypes', None, id, **core_parser.parse_args())
     
 @ns.route('/variant/<id>/genes/')
 @api.doc(params={'id': 'CURIE identifier of variant, e.g. ZFIN:ZDB-ALT-010427-8'})
 class VariantGeneAssociations(Resource):
 
-    @api.expect(parser)
+    @api.expect(core_parser)
     @api.marshal_list_with(association_results)
     def get(self, id):
         """
@@ -449,12 +484,12 @@ class VariantGeneAssociations(Resource):
         """
 
         # TODO: invert
-        return search_associations('variant', 'gene', None, id, **parser.parse_args())
+        return search_associations('variant', 'gene', None, id, **core_parser.parse_args())
     
 @ns.route('/sequence_feature/<id>')
 class SequenceFeatureObject(Resource):
 
-    @api.expect(parser)
+    @api.expect(core_parser)
     #@api.marshal_list_with(association)
     def get(self, id):
         """
@@ -466,7 +501,7 @@ class SequenceFeatureObject(Resource):
 @ns.route('/patient/<id>')
 class ParentObject(Resource):
 
-    @api.expect(parser)
+    @api.expect(core_parser)
     #@api.marshal_list_with(association)
     def get(self, id):
         """

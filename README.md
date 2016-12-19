@@ -40,6 +40,8 @@ The API is intended to be as self-explanatory as possible, via
 swagger/openapi annotations. Please consult these (you will need to
 start your own server)
 
+![img](docs/biolink-integrator-arch.png)
+
 ### Example API calls
 
 All assocations, first 10:
