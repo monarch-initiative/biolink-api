@@ -15,9 +15,11 @@ parser = api.parser()
 parser.add_argument('subject', help='SUBJECT id, e.g. NCBIGene:84570. Includes inferred by default')
 parser.add_argument('subject_taxon', help='SUBJECT TAXON id, e.g. NCBITaxon:9606. Includes inferred by default')
 parser.add_argument('object', help='OBJECT id, e.g. HP:0011927. Includes inferred by default')
+parser.add_argument('evidence_class', help='CLASS id, e.g. ECO:0000501 (for IEA). Includes inferred by default')
 parser.add_argument('graphize', type=bool, help='If set, includes graph object in response')
 parser.add_argument('exclude_evidence', type=bool, help='If set, excludes evidence objects in response')
 parser.add_argument('page', type=int, required=False, default=1, help='Page number')
+parser.add_argument('map_identifiers', help='Prefix to map all IDs to')
 
 @ns.route('/<id>')
 class AssociationObject(Resource):

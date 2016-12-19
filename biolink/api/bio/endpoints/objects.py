@@ -5,7 +5,7 @@ from flask_restplus import Resource
 from biolink.datamodel.serializers import association_results, association, gene, drug, genotype, allele, search_result
 #import biolink.datamodel.serializers
 from biolink.api.restplus import api
-from biolink.util.golr_associations import search_associations, get_associations
+from biolink.util.golr_associations import search_associations
 import pysolr
 
 log = logging.getLogger(__name__)

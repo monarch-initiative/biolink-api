@@ -99,6 +99,12 @@ def translate_obj(d,name):
 
 def translate_doc(d, **kwargs):
     subject = translate_obj(d,M.SUBJECT)
+    map_identifiers_to = kwargs.get('map_identifiers')
+    if map_identifiers_to:
+        if M.SUBJECT_CLOSURE in d:
+            subject['id'] = map_id(subject, map_identifiers_to, d[M.SUBJECT_CLOSURE])
+        else:
+            print("NO SUBJECT CLOSURE IN: "+str(d))
     if M.SUBJECT_TAXON in d:
         subject['taxon'] = translate_obj(d,M.SUBJECT_TAXON)
     assoc = {'id':d[M.ID],
@@ -118,10 +124,15 @@ def translate_doc(d, **kwargs):
 def translate_docs(ds, **kwargs):
     return [translate_doc(d, **kwargs) for d in ds]
 
-
-# @Deprecated
-def get_associations(id, **kwargs):
-    return search_associations(id=id, **kwargs)
+def map_id(id, prefix, closure_list):
+    prefixc = prefix + ':'
+    ids = [eid for eid in closure_list if eid.startswith(prefixc)]
+    # TODO: add option to fail if no mapping, or if >1 mapping
+    if len(ids) == 0:
+        # default to input
+        return id
+    return ids[0]
+               
 def get_association(id, **kwargs):
     results = search_associations(id=id, **kwargs)
     return results['associations'][0]
@@ -144,6 +155,8 @@ def search_associations(subject_category=None,
         # TODO: make configurable whether to use closure
         qmap['object_closure'] = object
     if subject is not None:
+        # note: by including subject closure by default,
+        # we automaticaly get equivalent nodes
         qmap['subject_closure'] = subject
     if subject_taxon is not None:
         qmap['subject_taxon_closure'] = subject_taxon
@@ -159,6 +172,7 @@ def search_associations(subject_category=None,
         M.SOURCE,
         M.SUBJECT,
         M.SUBJECT_LABEL,
+        M.SUBJECT_CLOSURE,  # TODO - only required if map_identifiers set
         M.RELATION,
         M.RELATION_LABEL,
         M.OBJECT,
