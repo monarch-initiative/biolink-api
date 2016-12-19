@@ -1,7 +1,17 @@
 from flask_restplus import fields
 from biolink.api.restplus import api
 
+
 # todo: split this into modules
+
+# Solr
+
+search_result = api.model('SearchResult', {
+    'numFound': fields.Integer,
+    'start': fields.Integer,
+    'facet_counts': fields.Raw
+    })
+
 ## BBOP/OBO Graphs
 
 
@@ -28,6 +38,13 @@ named_object = api.model('NamedObject', {
     'category': fields.String(readOnly=True, description='Type of object')
 })
 
+relation = api.inherit('Relation', named_object, {
+})
+
+publication = api.inherit('Publication', named_object, {
+    # authors etc
+})
+
 
 # todo: inherits
 taxon = api.model('Taxon', {
@@ -39,27 +56,43 @@ bio_object = api.inherit('BioObject', named_object, {
     'taxon': fields.Nested(taxon)
 })
 
+
 # Assoc
 
 association = api.model('Association', {
-    'id': fields.Integer(readOnly=True, description='Association ID'),
+    'id': fields.String(readOnly=True, description='Association ID'),
     'subject': fields.Nested(bio_object),
     'object': fields.Nested(bio_object),
+    'relation': fields.Nested(relation),
     'evidence_graph': fields.Nested(bbop_graph),
+    'provided_by': fields.List(fields.String),
+    'publications': fields.List(fields.Nested(publication))
 })
 
-association_results = api.model('AssociationResults', {
-    'associations': fields.List(fields.Nested(association)),
-    'facets': fields.List(fields.String()),
+association_results = api.inherit('AssociationResults', search_result, {
+    'associations': fields.List(fields.Nested(association))
 })
 
 
 # Bio Objects
 
+sequence_position = api.inherit('SequencePosition', bio_object, {
+    'position': fields.Integer,
+    'reference': fields.String
+})
+
+sequence_location = api.inherit('SequenceLocation', bio_object, {
+    'begin': fields.Nested(sequence_position),
+    'end': fields.Nested(sequence_position),
+})
+
 sequence_feature = api.inherit('SequenceFeature', bio_object, {
+    'locations': fields.List(fields.Nested(sequence_location)),
+    'sequence': fields.String
 })
 
 gene = api.inherit('Gene', sequence_feature, {
+    'family_ids' : fields.List(fields.String)
 })
 
 gene_product = api.inherit('GeneProduct', sequence_feature, {
@@ -87,3 +120,16 @@ drug = api.inherit('Drug', bio_object, {
     'target_associations': fields.List(fields.Nested(association))
 })
 
+# phylo
+phylogenetic_node = api.inherit('PhylogeneticNode', named_object, {
+    'feature': fields.Nested(sequence_feature),
+    'parent_id': fields.String,
+    'event': fields.String,
+    'branch_length': fields.Float
+})
+phylogenetic_tree = api.inherit('PhylogeneticTree', named_object, {
+})
+
+# clinical
+clinical_individual = api.inherit('ClinicalIndividual', named_object, {
+})

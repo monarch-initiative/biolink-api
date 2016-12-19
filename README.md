@@ -40,6 +40,24 @@ The API is intended to be as self-explanatory as possible, via
 swagger/openapi annotations. Please consult these (you will need to
 start your own server)
 
+### Example API calls
+
+All assocations, first 10:
+
+http://localhost:8888/api/link/search/
+
+Query association by ID:
+
+http://localhost:8888/api/link/cfef92b7-bfa3-44c2-a537-579078d2de37
+
+Evidence graph as bbop-graph:
+
+http://localhost:8888/api/evidence/graph/cfef92b7-bfa3-44c2-a537-579078d2de37
+
+Evidence graph as image:
+
+http://localhost:8888/api/evidence/graph/cfef92b7-bfa3-44c2-a537-579078d2de37/image
+
 ## Notes
 
 May bear some traces of where the code was initially copied from:
