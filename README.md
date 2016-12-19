@@ -48,6 +48,14 @@ All assocations, first 10:
 
 http://localhost:8888/api/link/search/
 
+All mouse gene-phenotype associations:
+
+http://localhost:8888/api/link/search/gene/phenotype/?map_identifiers=MGI&subject_taxon=NCBITaxon:10090
+
+Same but with IDs mapped from NCBIGene to MGI (see #5):
+
+http://localhost:8888/api/link/search/gene/phenotype/?subject_taxon=NCBITaxon:10090
+
 Query association by ID:
 
 http://localhost:8888/api/link/cfef92b7-bfa3-44c2-a537-579078d2de37
