@@ -7,13 +7,13 @@ $ pyvenv venv
 $ source venv/bin/activate
 $ pip install -r requirements.txt
 $ export PYTHONPATH=.:$PYTHONPATH
-$ python rest_api_demo/app.py
+$ python biolink/app.py
 ```
 
 to run:
 
 ```
-python3 biolink/app.py
+python biolink/app.py
 ```
 
 Then look at:
