@@ -36,7 +36,6 @@ class SearchEntities(Resource):
 @ns.route('/autocomplete/<term>')
 class Authocomplete(Resource):
 
-
     @api.expect(parser)
     @api.marshal_list_with(association)
     def get(self, search_term):
