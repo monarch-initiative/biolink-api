@@ -48,7 +48,7 @@ class GeneInteractions(AbstractGeneAssociationResource):
 
 homolog_parser = api.parser()
 homolog_parser.add_argument('homolog_taxon', help='Taxon CURIE of homolog, e.g. NCBITaxon:9606. Can be intermediate note, includes inferred by default')
-homolog_parser.add_argument('type', help='P, O or LDO (paralog, ortholog or least-diverged), or corresponding RO ID')
+homolog_parser.add_argument('type', choices=['P', 'O', 'LDO'], help='P, O or LDO (paralog, ortholog or least-diverged).')
 
 @ns.route('/gene/<id>/homologs/')
 class GeneHomologAssociations(AbstractGeneAssociationResource):
