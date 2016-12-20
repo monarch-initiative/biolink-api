@@ -177,7 +177,7 @@ class DiseaseModelAssociations(Resource):
         """
 
         # TODO: invert
-        return search_associations('model', 'disease', None, id, **core_parser.parse_args())
+        return search_associations('model', 'disease', None, id, invert_subject_object=True, **core_parser.parse_args())
     
 @ns.route('/phenotype/<id>')
 class PhenotypeObject(Resource):

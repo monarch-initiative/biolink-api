@@ -62,9 +62,6 @@ M=GolrFields()
 golr_url = "https://solr.monarchinitiative.org/solr/golr/"
 solr = pysolr.Solr(golr_url, timeout=5)
 
-# TODO: move
-search_url = "https://solr.monarchinitiative.org/solr/search/"
-#solr = pysolr.Solr(golr_url, timeout=5)
 
 def translate_objs(d,name):
     if name not in d:
@@ -97,7 +94,10 @@ def translate_obj(d,name):
     return obj
 
 
-def translate_doc(d, **kwargs):
+def translate_doc(d, field_mapping=None, **kwargs):
+    if field_mapping is not None:
+        for (k,v) in d.items():
+            d[k] = d[v]
     subject = translate_obj(d,M.SUBJECT)
     map_identifiers_to = kwargs.get('map_identifiers')
     if map_identifiers_to:
@@ -143,14 +143,20 @@ def search_associations(subject_category=None,
                         subject=None,
                         object=None,
                         subject_taxon=None,
+                        invert_subject_object=False,
+                        field_mapping=None,
                         **kwargs):
     
     qmap = {}
+    
     if subject_category is not None:
         qmap['subject_category'] = subject_category
     if object_category is not None:
         qmap['object_category'] = object_category
-    
+
+    if invert_subject_object:
+        (subject,object) = (object,subject)
+        
     if object is not None:
         # TODO: make configurable whether to use closure
         qmap['object_closure'] = object
@@ -162,7 +168,14 @@ def search_associations(subject_category=None,
         qmap['subject_taxon_closure'] = subject_taxon
     if 'id' in kwargs:
         qmap['id'] = kwargs['id']
+    if 'evidence' in kwargs:
+        qmap['evidence_object_closure'] = kwargs['evidence']
 
+    if field_mapping is not None:
+        for (k,v) in qmap.items():
+            qmap[v] = qmap[k]
+    
+        
     # UGLY! doesn't pysolr help with this? Need to be careful with escaping?
     qstr = " AND ".join(['{}:"{}"'.format(k,v) for (k,v) in qmap.items()])
     print('Q:'+qstr)
@@ -178,11 +191,14 @@ def search_associations(subject_category=None,
         M.OBJECT,
         M.OBJECT_LABEL,
     ]
-    if 'exclude_evidence' not in kwargs or not kwargs['exclude_evidence']:
+    if 'fl_excludes_evidence' not in kwargs or not kwargs['fl_excludes_evidence']:
         select_fields += [
             M.EVIDENCE_OBJECT,
             M.EVIDENCE_GRAPH
         ]
+        
+    if field_mapping is not None:
+        select_fields = [ map_field(fn, field_mapping) for fn in select_fields ]    
 
     params = {
         'q': qstr,
@@ -194,8 +210,37 @@ def search_associations(subject_category=None,
     }
     results = solr.search(**params)
     fcs = results.facets
-    associations = translate_docs(results.docs, **kwargs)
+    associations = translate_docs(results.docs, field_mapping=field_mapping, **kwargs)
     return {
         'associations':associations,
         'facet_counts':fcs
     }
+
+# GO-SPECIFIC CODE
+
+def goassoc_fieldmap():
+    return {
+        M.SUBJECT: 'bioentity',
+        M.SUBJECT_LABEL: 'bioentity_label',
+        M.OBJECT: 'annotation_class',
+        M.OBJECT_LABEL: 'annotation_class_label',
+    }
+
+def map_field(fn, m) :
+    if fn in m:
+        return m[fn]
+    else:
+        return fn
+
+# TODO: unify this with the monarch-specific instance
+# note that longer term the goal is to unify the go and mon
+# golr schemas more. For now the simplest path is
+# to introduce this extra method, and 'mimic' the monarch one,
+# at the risk of some duplication of code and inelegance
+
+def search_associations_go(**kwargs):
+    go_golr_url = "https://golr.geneontology.org/solr/"
+    go_solr = pysolr.Solr(go_golr_url, timeout=5)
+    return search_associations_go(solr=go_solr,
+                                  field_mapping=goassoc_fieldmap(),
+                                  **kwargs)
