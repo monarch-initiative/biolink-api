@@ -192,6 +192,7 @@ def search_associations(subject_category=None,
                         invert_subject_object=False,
                         field_mapping=None,
                         solr=monarch_solr,
+                        rows=10,
                         **kwargs):
     
     """
@@ -255,7 +256,10 @@ def search_associations(subject_category=None,
     if field_mapping is not None:
         select_fields = [ map_field(fn, field_mapping) for fn in select_fields ]    
 
-    facet_fields = [M.SUBJECT_TAXON_LABEL]
+    facet_fields = [
+        M.SUBJECT_TAXON_LABEL,
+        M.OBJECT_CLOSURE
+    ]
     facet_fields = [ map_field(fn, field_mapping) for fn in facet_fields ]    
         
     print('Q:'+qstr)
@@ -266,7 +270,7 @@ def search_associations(subject_category=None,
         'facet.field': facet_fields,
         'facet.limit': 25,
         'fl': ",".join(select_fields),
-        'rows': 10,
+        'rows': rows,
     }
     results = solr.search(**params)
     fcs = results.facets
