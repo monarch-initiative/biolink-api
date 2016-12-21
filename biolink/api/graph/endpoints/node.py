@@ -3,7 +3,7 @@ import logging
 from flask import request
 from flask_restplus import Resource
 from biolink.datamodel.serializers import association, bbop_graph
-from biolink.util.scigraph_util import SciGraph
+from scigraph.scigraph_util import SciGraph
 #import biolink.util.scigraph.BBOPGraph
 from biolink.api.restplus import api
 
