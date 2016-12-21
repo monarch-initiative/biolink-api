@@ -1,6 +1,7 @@
 import logging.config
 
 from flask import Flask, Blueprint
+from flask_cors import CORS, cross_origin
 from biolink import settings
 from biolink.api.link.endpoints.links import ns as link_search_namespace
 from biolink.api.bio.endpoints.objects import ns as bio_objects_namespace
@@ -25,6 +26,7 @@ from biolink.api.restplus import api
 from biolink.database import db
 
 app = Flask(__name__)
+CORS(app)
 logging.config.fileConfig('logging.conf')
 log = logging.getLogger(__name__)
 

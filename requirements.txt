@@ -1,6 +1,7 @@
 wheel>0.0
 flask-restplus==0.9.2
 Flask-SQLAlchemy==2.1
+flask-cors>=0.0
 pysolr>=3.6.0
 networkx>=1.11
 matplotlib>=0.0
