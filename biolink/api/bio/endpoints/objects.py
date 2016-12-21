@@ -5,7 +5,7 @@ from flask_restplus import Resource
 from biolink.datamodel.serializers import association_results, association, gene, drug, genotype, allele, search_result
 #import biolink.datamodel.serializers
 from biolink.api.restplus import api
-from biolink.util.golr_associations import search_associations
+from biolink.util.golr_associations import search_associations, search_associations_go
 import pysolr
 
 log = logging.getLogger(__name__)
@@ -89,6 +89,18 @@ class GeneExpressionAssociations(Resource):
 
         return search_associations('gene', 'anatomy', None, id, **core_parser.parse_args())
 
+@ns.route('/gene/<id>/function/')
+class GeneExpressionAssociations(AbstractGeneAssociationResource):
+
+    @api.expect(core_parser)
+    @api.marshal_list_with(association_results)
+    def get(self, id):
+        """
+        TODO Returns expression events for a gene
+        """
+
+        return search_associations_go('gene', 'goclass', None, id, **core_parser.parse_args())
+    
 @ns.route('/gene/<id>/pubs/')
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:4750. Equivalent IDs can be used with same results'})
 class GenePublicationList(Resource):
@@ -215,6 +227,7 @@ class PhenotypePhenotypeAssociations(Resource):
         return { 'foo' : 'bar' }
     
 @ns.route('/goterm/<id>')
+@api.doc(params={'id': 'GO class CURIE identifier, e.g GO:0016301 (kinase activity)'})
 class GotermObject(Resource):
 
     @api.expect(core_parser)

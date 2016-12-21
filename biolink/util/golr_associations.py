@@ -3,8 +3,12 @@ import logging
 import pysolr
 import json
 
-# CV
 class GolrFields:
+    """
+    Enumeration of fields in Golr.
+    Note the Monarch golr schema is taken as canonical here
+    """
+
     ID='id'
     SOURCE='source'
     OBJECT_CLOSURE='object_closure'
@@ -53,41 +57,61 @@ class GolrFields:
     RELATION='relation'
     RELATION_LABEL='relation_label'
 
+    # golr convention: for any entity FOO, the id is denoted 'foo'
+    # and the label FOO_label
     def label_field(self, f):
         return f + "_label"
-  
+    
+    # golr convention: for any class FOO, the id is denoted 'foo'
+    # and the cosure FOO_closure. Other closures may exist
+    def closure_field(self, f):
+        return f + "_closure"
+
+# create an instance
 M=GolrFields()  
-  
+
+# We take the monarch golr as default
 # TODO: config
-golr_url = "https://solr.monarchinitiative.org/solr/golr/"
-solr = pysolr.Solr(golr_url, timeout=5)
+monarch_golr_url = "https://solr.monarchinitiative.org/solr/golr/"
+monarch_solr = pysolr.Solr(monarch_golr_url, timeout=5)
 
-
-def translate_objs(d,name):
-    if name not in d:
+def translate_objs(d,fname):
+    """
+    Translate a field whose value is expected to be a list
+    """
+    if fname not in d:
         # TODO: consider adding arg for failure on null
         return None
     
-    lf = M.label_field(name)
-    
-    objs = [{'id': idval} for idval in d[name]]
+    lf = M.label_field(fname)
+
+    v = d[fname]
+    if not isinstance(v,list):
+        v = [v]
+    objs = [{'id': idval} for idval in v]
     # todo - labels
     
     return objs
 
 
-def translate_obj(d,name):
-    if name not in d:
+def translate_obj(d,fname):
+    """
+    Translate a field value from a solr document.
+
+    This includes special logic for when the field value
+    denotes an object, here we nest it
+    """
+    if fname not in d:
         # TODO: consider adding arg for failure on null
         return None
     
-    lf = M.label_field(name)
+    lf = M.label_field(fname)
     
-    obj = {'id': d[name],
+    obj = {'id': d[fname],
             'label': d[lf],
             }
 
-    cf = name + "_category"
+    cf = fname + "_category"
     if cf in d:
         obj['category'] = d[cf]
     
@@ -95,9 +119,16 @@ def translate_obj(d,name):
 
 
 def translate_doc(d, field_mapping=None, **kwargs):
+    """
+    Translate a solr document (i.e. a single result row)
+    """
     if field_mapping is not None:
-        for (k,v) in d.items():
-            d[k] = d[v]
+        for (k,v) in field_mapping.items():
+            if v is not None and k is not None:
+                print("TESTING FOR:"+v+" IN "+str(d))
+                if v in d:
+                    print("Setting field {} to {} // was in {}".format(k,d[v],v))
+                    d[k] = d[v]
     subject = translate_obj(d,M.SUBJECT)
     map_identifiers_to = kwargs.get('map_identifiers')
     if map_identifiers_to:
@@ -112,19 +143,31 @@ def translate_doc(d, field_mapping=None, **kwargs):
              'object': translate_obj(d,'object'),
              'relation': translate_obj(d,M.RELATION),
              'publications': translate_objs(d,M.SOURCE),  # note 'source' is used in the golr schema
-             'provided_by': d[M.IS_DEFINED_BY]
     }
+    if M.IS_DEFINED_BY in d:
+        if isinstance(d[M.IS_DEFINED_BY],list):
+            assoc['provided_by'] = d[M.IS_DEFINED_BY]
+        else:
+            # hack for GO instance
+            assoc['provided_by'] = [d[M.IS_DEFINED_BY]]
     if M.EVIDENCE_OBJECT in d:
         assoc['evidence'] = d[M.EVIDENCE_OBJECT]
     # solr does not allow nested objects, so evidence graph is json-encoded
     if M.EVIDENCE_GRAPH in d:
         assoc[M.EVIDENCE_GRAPH] = json.loads(d[M.EVIDENCE_GRAPH])
+    print(str(assoc))
     return assoc
 
 def translate_docs(ds, **kwargs):
+    """
+    Translate a set of solr results
+    """
     return [translate_doc(d, **kwargs) for d in ds]
 
 def map_id(id, prefix, closure_list):
+    """
+    Map identifiers based on an equivalence closure list.
+    """
     prefixc = prefix + ':'
     ids = [eid for eid in closure_list if eid.startswith(prefixc)]
     # TODO: add option to fail if no mapping, or if >1 mapping
@@ -134,6 +177,9 @@ def map_id(id, prefix, closure_list):
     return ids[0]
                
 def get_association(id, **kwargs):
+    """
+    Fetch an association object by ID
+    """
     results = search_associations(id=id, **kwargs)
     return results['associations'][0]
 
@@ -145,8 +191,12 @@ def search_associations(subject_category=None,
                         subject_taxon=None,
                         invert_subject_object=False,
                         field_mapping=None,
+                        solr=monarch_solr,
                         **kwargs):
     
+    """
+    Fetch a set of association objects based on a query
+    """
     qmap = {}
     
     if subject_category is not None:
@@ -172,13 +222,18 @@ def search_associations(subject_category=None,
         qmap['evidence_object_closure'] = kwargs['evidence']
 
     if field_mapping is not None:
-        for (k,v) in qmap.items():
-            qmap[v] = qmap[k]
+        for (k,v) in field_mapping.items():
+            if k in qmap:
+                if v is None:
+                    del qmap[k]
+                else:
+                    qmap[v] = qmap[k]
+                    del qmap[k]
     
         
     # UGLY! doesn't pysolr help with this? Need to be careful with escaping?
     qstr = " AND ".join(['{}:"{}"'.format(k,v) for (k,v) in qmap.items()])
-    print('Q:'+qstr)
+
     select_fields = [
         M.ID,
         M.IS_DEFINED_BY,
@@ -200,10 +255,15 @@ def search_associations(subject_category=None,
     if field_mapping is not None:
         select_fields = [ map_field(fn, field_mapping) for fn in select_fields ]    
 
+    facet_fields = [M.SUBJECT_TAXON_LABEL]
+    facet_fields = [ map_field(fn, field_mapping) for fn in facet_fields ]    
+        
+    print('Q:'+qstr)
+    print('FL'+str(select_fields))
     params = {
         'q': qstr,
         'facet': 'on',
-        'facet.field': [M.SUBJECT_TAXON_LABEL],
+        'facet.field': facet_fields,
         'facet.limit': 25,
         'fl': ",".join(select_fields),
         'rows': 10,
@@ -219,14 +279,25 @@ def search_associations(subject_category=None,
 # GO-SPECIFIC CODE
 
 def goassoc_fieldmap():
+    """
+    Returns a mapping of canonical monarch fields to golr
+    """
     return {
         M.SUBJECT: 'bioentity',
+        M.SUBJECT_CLOSURE: 'bioentity',
         M.SUBJECT_LABEL: 'bioentity_label',
+        M.SUBJECT_TAXON: 'taxon',
+        M.SUBJECT_TAXON_LABEL: 'taxon_label',
         M.OBJECT: 'annotation_class',
         M.OBJECT_LABEL: 'annotation_class_label',
+        M.SUBJECT_CATEGORY: None,
+        M.OBJECT_CATEGORY: None,
+        M.IS_DEFINED_BY: 'assigned_by'
     }
 
 def map_field(fn, m) :
+    if m is None:
+        return fn
     if fn in m:
         return m[fn]
     else:
@@ -238,9 +309,18 @@ def map_field(fn, m) :
 # to introduce this extra method, and 'mimic' the monarch one,
 # at the risk of some duplication of code and inelegance
 
-def search_associations_go(**kwargs):
-    go_golr_url = "https://golr.geneontology.org/solr/"
+def search_associations_go(
+        subject_category=None,
+        object_category=None,
+        relation=None,
+        subject=None,
+        **kwargs):
+    go_golr_url = "http://golr.geneontology.org/solr/"
     go_solr = pysolr.Solr(go_golr_url, timeout=5)
-    return search_associations_go(solr=go_solr,
-                                  field_mapping=goassoc_fieldmap(),
-                                  **kwargs)
+    return search_associations(subject_category,
+                               object_category,
+                               relation,
+                               subject,
+                               solr=go_solr,
+                               field_mapping=goassoc_fieldmap(),
+                               **kwargs)
