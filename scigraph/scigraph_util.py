@@ -3,9 +3,9 @@ __author__ = 'cjm'
 import logging
 import requests
 
-from biolink.util.model.BBOPGraph import *
-from biolink.util.model.Concept import *
-from biolink.util.model.EntityAnnotationResults import *
+from scigraph.model.BBOPGraph import *
+from scigraph.model.Concept import *
+from scigraph.model.EntityAnnotationResults import *
 
 # TODO: modularize into vocab/graph/etc?
 
