@@ -1,1 +1,1 @@
-web: gunicorn flask_rest_service:app
+python biolink/app.py
