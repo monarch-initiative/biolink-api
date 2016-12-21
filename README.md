@@ -56,6 +56,14 @@ Same but with IDs mapped from NCBIGene to MGI (see #5):
 
 http://localhost:8888/api/link/search/gene/phenotype/?subject_taxon=NCBITaxon:10090
 
+phenotypes for a given gene
+
+http://localhost:8888/api/bio/gene/ZFIN:ZDB-GENE-050417-357/phenotypes/
+
+GO terms for a given gene (uses GO golr)
+
+http://localhost:8888/api/bio/gene/ZFIN:ZDB-GENE-050417-357/function/
+
 Query association by ID:
 
 http://localhost:8888/api/link/cfef92b7-bfa3-44c2-a537-579078d2de37
