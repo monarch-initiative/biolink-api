@@ -11,7 +11,7 @@ log = logging.getLogger(__name__)
 ns = api.namespace('nlp/annotate', description='foo bar')
 
 parser = api.parser()
-#parser.add_argument('subject_taxon', help='SUBJECT TAXON id, e.g. NCBITaxon:9606. Includes inferred by default')
+parser.add_argument('category', action='append', help='E.g. phenotype')
 
 @ns.route('/<text>')
 class Annotate(Resource):

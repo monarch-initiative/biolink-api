@@ -2,7 +2,7 @@ import logging
 
 from flask import request
 from flask_restplus import Resource
-from biolink.datamodel.serializers import association_results, association, gene, drug, genotype, allele, search_result
+from biolink.datamodel.serializers import association_results, association, publication, gene, drug, genotype, allele, search_result
 #import biolink.datamodel.serializers
 from biolink.api.restplus import api
 from biolink.util.golr_associations import search_associations, search_associations_go
@@ -173,7 +173,26 @@ class DiseaseAnatomyAssociations(Resource):
     @api.marshal_list_with(association)
     def get(self, id):
         """
-        TODO Returns anatomical locations associated with a phenotype
+        TODO Returns anatomical locations associated with a disease.
+
+        For example, neurodegeneratibe disease located in nervous system.
+        For cancer, this may include both site of original and end location.
+        """
+        return { 'foo' : 'bar' }
+    
+@ns.route('/disease/<id>/function/')
+class DiseaseFunctionAssociations(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_list_with(association)
+    def get(self, id):
+        """
+        TODO Returns biological functions associated with a disease.
+
+        This may come from a combination of asserted knowledge (e.g. Fanconi Anemia affects DNA repair)
+        or from data-driven approach (cf Translator)
+
+        Results are typically represented as GO classes
         """
         return { 'foo' : 'bar' }
     
@@ -213,6 +232,22 @@ class PhenotypeAnatomyAssociations(Resource):
         """
         return { 'foo' : 'bar' }
 
+@ns.route('/phenotype/<id>/function/')
+class PhenotypeFunctionAssociations(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_list_with(association)
+    def get(self, id):
+        """
+        TODO Returns biological functions associated with a Phenotype.
+
+        This may come from a combination of asserted knowledge (e.g. abnormal levels of metabolite to corresponding GO activity)
+        or from data-driven approach (cf Translator)
+
+        Results are typically represented as GO classes
+        """
+        return { 'foo' : 'bar' }
+    
 @ns.route('/phenotype/<id>/phenotype/')
 class PhenotypePhenotypeAssociations(Resource):
 
@@ -271,6 +306,17 @@ class PathwayParticipantAssociations(Resource):
         TODO Returns associations to participants (molecules, etc) for a pathway
         """
         return { 'foo' : 'bar' }
+
+@ns.route('/pub/<id>')
+class PubObject(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_with(publication)
+    def get(self, id):
+        """
+        TODO Returns publication object
+        """
+        return { 'id' : 'PMID:1' }
     
 @ns.route('/anatomy/<id>')
 class AnatomyObject(Resource):

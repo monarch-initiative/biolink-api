@@ -40,7 +40,6 @@ The API is intended to be as self-explanatory as possible, via
 swagger/openapi annotations. Please consult these (you will need to
 start your own server)
 
-![img](docs/biolink-integrator-arch.png)
 
 ### Example API calls
 
@@ -76,7 +75,36 @@ Evidence graph as image:
 
 http://localhost:8888/api/evidence/graph/cfef92b7-bfa3-44c2-a537-579078d2de37/image
 
+## Implementation
+
+This is intended as a think wrapper layer, integrating existing
+services, as shown here:
+
+![img](docs/biolink-integrator-arch.png)
+
+This is only very partially integrated
+
+### Solr indices
+
+Most of the `link` subset is implemented via the Monarch Golr, with
+function queries coming from the GO instance. See:
+
+https://github.com/monarch-initiative/biolink-api/issues/14
+
+### SciGraph
+
+Two different ways of accessing this are used:
+
+ * Direct access via BOLT/Cypher
+ * Access to SciGraph API layer
+
+### Triplestore
+
+The `lego` calls are imlemented as calls to the GO triplestore.
+
+### OwlSim
+
+http://owlsim3.monarchinitiative.org/api/docs/
+
 ## Notes
 
-May bear some traces of where the code was initially copied from:
-http://michal.karzynski.pl/blog/2016/06/19/building-beautiful-restful-apis-using-flask-swagger-ui-flask-restplus/
