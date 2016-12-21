@@ -1,1 +1,1 @@
-python biolink/app.py
+web: python biolink/app.py
