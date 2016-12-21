@@ -75,7 +75,7 @@ Evidence graph as image:
 
 http://localhost:8888/api/evidence/graph/cfef92b7-bfa3-44c2-a537-579078d2de37/image
 
-## Implementation
+## Implementation and Project Organization
 
 This is intended as a think wrapper layer, integrating existing
 services, as shown here:
@@ -83,6 +83,17 @@ services, as shown here:
 ![img](docs/biolink-integrator-arch.png)
 
 This is only very partially integrated
+
+We have some business logic in the following sub-packages:
+
+ * [scigraph](scigraph) - python API for Monarch Neo4J instance and generic SciGraph functions
+ * [biogolr](biogolr) - python API for any golr instance (GO or Monarch)
+ * [obographs](obographs) - python ontology object model and utilities. See [obographs](https://github.com/geneontology/obographs)
+ * [causalmodels](causalmodels) - python API for LEGO, and wrapper to GO triplestore
+ * [prefixcommons](prefixcommons) - python utilities for handling prefixes/CURIEs
+
+
+These may eventually migrate to their own repos, see #16
 
 ### Solr indices
 

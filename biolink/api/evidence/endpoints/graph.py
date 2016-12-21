@@ -3,9 +3,9 @@ import logging
 from flask import request, send_file
 from flask_restplus import Resource
 from biolink.datamodel.serializers import association, bbop_graph
-from biolink.util.golr_associations import get_association
+from biogolr.golr_associations import get_association
 from biolink.api.restplus import api
-from biolink.core.ontology.obograph_util import convert_json_object
+from obographs.obograph_util import convert_json_object
 import tempfile
 import pysolr
 import matplotlib.pyplot as plt

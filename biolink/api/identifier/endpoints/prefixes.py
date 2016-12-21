@@ -2,7 +2,7 @@ import logging
 
 from flask import request
 from flask_restplus import Resource
-from biolink.util.curie_util import get_prefixes, expand_uri, contract_uri
+from prefixcommons.curie_util import get_prefixes, expand_uri, contract_uri
 from biolink.api.restplus import api
 import pysolr
 

@@ -4,7 +4,7 @@ from flask import request
 from flask_restplus import Resource
 from biolink.datamodel.serializers import association, association_results
 from biolink.api.restplus import api
-from biolink.util.golr_associations import get_association, search_associations
+from biogolr.golr_associations import get_association, search_associations
 import pysolr
 
 log = logging.getLogger(__name__)
