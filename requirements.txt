@@ -5,3 +5,4 @@ pysolr>=3.6.0
 networkx>=1.11
 matplotlib>=0.0
 sparqlwrapper>0.0
+gunicorn==19.0.0
