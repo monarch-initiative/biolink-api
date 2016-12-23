@@ -11,7 +11,7 @@ from biolink.api.ontol.endpoints.slimmer import ns as ontol_slimmer_namespace
 from biolink.api.ontol.endpoints.enrichment import ns as ontol_enrichment_namespace
 from biolink.api.graph.endpoints.node import ns as graph_node_namespace
 
-from biolink.api.lego.endpoints.model import ns as lego_model_namespace
+from biolink.api.cam.endpoints.cam_endpoint import ns as cam_namespace
 from biolink.api.owl.endpoints.ontology import ns as owl_ontology_namespace
 from biolink.api.patient.endpoints.individual import ns as patient_individual_namespace
 from biolink.api.identifier.endpoints.prefixes import ns as identifier_prefixes_namespace
