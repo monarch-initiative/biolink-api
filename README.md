@@ -16,6 +16,11 @@ to run:
 python biolink/app.py
 ```
 
+production mode:
+```
+gunicorn --bind 0.0.0.0:8888 wsgi:app
+```
+
 Then look at:
 
 http://localhost:8888/api/

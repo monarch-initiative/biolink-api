@@ -14,7 +14,7 @@ parser = api.parser()
 sg = SciGraph()
 
 @ns.route('/<id>')
-@api.doc(params={'id': 'CURIE e.g. HP_0000465'})
+@api.doc(params={'id': 'CURIE e.g. HP:0000465'})
 class SearchEntities(Resource):
 
     @api.expect(parser)
