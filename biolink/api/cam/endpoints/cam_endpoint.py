@@ -11,6 +11,8 @@ log = logging.getLogger(__name__)
 ns = api.namespace('cam', description='Operations on causal activity models (LEGO)')
 
 parser = api.parser()
+parser.add_argument('title', help='string to search for in title of model')
+parser.add_argument('contributor', help='string to search for in contributor of model')
 
 @ns.route('/model/')
 class ModelCollection(Resource):
@@ -40,7 +42,10 @@ class ModelCollection(Resource):
         Experimental - will be merged with above
         """
         args = parser.parse_args()
-        mq = ModelQuery()
+        mq = ModelQuery(**args)
+        #if args.get('title'):
+        #    mq.title = args.get('title')
+        
         sparql = mq.gen_sparql()
         return lego_query(sparql, limit=100)
     
