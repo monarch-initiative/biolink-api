@@ -4,30 +4,47 @@ from flask import request
 from flask_restplus import Resource
 from biolink.datamodel.serializers import association
 from biolink.api.restplus import api
-from SPARQLWrapper import SPARQLWrapper, JSON
+from causalmodels.lego_sparql_util import lego_query, ModelQuery
 
 log = logging.getLogger(__name__)
 
 ns = api.namespace('cam', description='Operations on causal activity models (LEGO)')
 
-sparql = SPARQLWrapper("http://rdf.geneontology.org/sparql")
-
-# TODO: implement cursor
-def query(q):
-    prefixes = """
-prefix directly_activates: <http://purl.obolibrary.org/obo/RO_0002406>
-prefix directly_positively_regulates: <http://purl.obolibrary.org/obo/RO_0002629>
-prefix enabled_by: <http://purl.obolibrary.org/obo/RO_0002333>
-prefix inferredG: <http://geneontology.org/rdf/inferred/>
-"""
-    sparql.setQuery(prefixes + q + " LIMIT 10")
-    sparql.setReturnFormat(JSON)
-    results = sparql.query().convert()
-    return results
-
 parser = api.parser()
 
-@ns.route('/graph/')
+@ns.route('/model/')
+class ModelCollection(Resource):
+
+    @api.expect(parser)
+    def get(self):
+        """
+        Returns list of ALL models
+        """
+        args = parser.parse_args()
+        return lego_query("""
+        SELECT ?x ?title ?p ?v WHERE 
+        {?x a owl:Ontology ; 
+           dc:title ?title ;
+           ?p ?v
+        FILTER(?p != json_model:)
+        }""", limit=1000)
+
+@ns.route('/model/query/')
+class ModelCollection(Resource):
+
+    @api.expect(parser)
+    def get(self):
+        """
+        Returns list of models matching query
+
+        Experimental - will be merged with above
+        """
+        args = parser.parse_args()
+        mq = ModelQuery()
+        sparql = mq.gen_sparql()
+        return lego_query(sparql, limit=100)
+    
+@ns.route('/properties/model/')
 class ModelCollection(Resource):
 
     @api.expect(parser)
@@ -36,16 +53,30 @@ class ModelCollection(Resource):
         Returns list of models
         """
         args = parser.parse_args()
-        sparql.setQuery("""
-        SELECT ?x ?title WHERE 
+        return lego_query("""
+        SELECT DISTINCT ?p WHERE 
         {?x a owl:Ontology ; 
-           dc:title ?title
-        } LIMIT 10""")
-        sparql.setReturnFormat(JSON)
-        results = sparql.query().convert()
-        return results
+           ?p ?v
+        FILTER(?p != json_model:)
+        }""", limit=1000)
 
-@ns.route('/graph/<id>')
+@ns.route('/model/pvs/')
+class ModelCollection(Resource):
+
+    @api.expect(parser)
+    def get(self):
+        """
+        Returns list of models
+        """
+        args = parser.parse_args()
+        return lego_query("""
+        SELECT DISTINCT ?m ?p ?v WHERE 
+        {?m a owl:Ontology ; 
+           ?p ?v
+        FILTER(?p != json_model:)
+        }""", limit=1000)
+    
+@ns.route('/model/<id>')
 class Model(Resource):
 
     @api.expect(parser)
@@ -83,7 +114,7 @@ class ActivityCollection(Resource):
         Returns list of models
         """
         args = parser.parse_args()
-        return query("""
+        return lego_query("""
         SELECT ?g ?a ?type WHERE 
         {?a a <http://purl.obolibrary.org/obo/GO_0003674> .
         GRAPH ?g {?a a ?type } .
@@ -99,7 +130,7 @@ class PhysicalInteraction(Resource):
         """
         Returns list of models
         """
-        return query("""
+        return lego_query("""
         SELECT * WHERE {
         GRAPH ?g {
         ?a1 enabled_by: ?m1 ;
