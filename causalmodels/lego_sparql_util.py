@@ -39,22 +39,67 @@ class ModelQuery():
     TODO: make abstract class
     TODO: evaluate alternatives e.g. https://github.com/chapmanb/bcbb/blob/master/semantic/systemsbio.py
     """
-    def __init__(self):
-        self.title=""
-
+    def __init__(self, title=None, contributor=None):
+        self.title=title
+        self.contributor=contributor
 
     def gen_sparql(self):
-        
+
+        filters = []
+        #filters.append("FILTER ?p != json_model:")  # die, json_model!
+
+        # TODO: escape quote nastiness
+        if self.title is not None:
+            filters.append("FILTER regex(str(?title),'{}','i')".format(self.title))
+        if self.contributor is not None:
+            filters.append("FILTER regex(str(?contributor),'{}','i')".format(self.contributor))
+        sparql_filter= "\n".join(filters)
+
+        # remember, double curl braces required for interpolation
+        sparql = """
+        CONSTRUCT {{
+        ?model dc:title ?title ;
+        lego:modelstate ?modelstate ;
+        dc:contributor ?contributor
+        }}
+        WHERE {{
+        ?model a owl:Ontology ;
+        dc:title ?title ;
+        lego:modelstate ?modelstate .
+        OPTIONAL {{ ?model pav:providedBy ?providedBy }}
+        OPTIONAL {{ ?model dc:contributor ?contributor }}
+        OPTIONAL {{ 
+            ?inst rdfs:isDefinedBy ?model ;
+                  a ?type
+        }}
+        {filters}
+        }}
+        """.format(filters=sparql_filter)
+        print(sparql)
+        return sparql
+    
+    def OLD_gen_sparql(self):
+
+        filters = []
+        #filters.append("FILTER ?p != json_model:")  # die, json_model!
+
+        # TODO: escape quote nastiness
+        if self.contributor is not None:
+            filters.append("FILTER regex(?contributors,'{}','i')".format(self.contributor))
+        if self.contributor is not None:
+            filters.append("FILTER regex(?contributors,'{}','i')".format(self.contributor))
+        sparql_filter= "\n".join(filters)
+            
         sparql = """
         SELECT ?model ?title ?modelstate ?providedBy (GROUP_CONCAT(?contributor ; separator=";") as ?contributors)  WHERE 
-        {?model a owl:Ontology ; 
+        {{?model a owl:Ontology ; 
            dc:title ?title ;
            dc:contributor ?contributor ;
            lego:modelstate ?modelstate ;
            pav:providedBy ?providedBy
-        FILTER(?p != json_model:)
-        }
-        GROUP BY ?model ?title ?modelstate ?providedBy"""
+        {filters}
+        }}
+        GROUP BY ?model ?title ?modelstate ?providedBy""".format(filters=sparql_filter)
         
         return sparql
     
