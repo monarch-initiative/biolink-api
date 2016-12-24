@@ -70,7 +70,8 @@ association = api.model('Association', {
 })
 
 association_results = api.inherit('AssociationResults', search_result, {
-    'associations': fields.List(fields.Nested(association))
+    'associations': fields.List(fields.Nested(association)),
+    'objects': fields.List(fields.String)
 })
 
 

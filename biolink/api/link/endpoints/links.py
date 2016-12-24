@@ -21,6 +21,7 @@ parser.add_argument('evidence', help="""Object id, e.g. ECO:0000501 (for IEA; In
 parser.add_argument('graphize', type=bool, help='If set, includes graph object in response')
 parser.add_argument('fl_excludes_evidence', type=bool, help='If set, excludes evidence objects in response')
 parser.add_argument('page', type=int, required=False, default=1, help='Page number')
+parser.add_argument('rows', type=int, required=False, default=10, help='number of rows')
 parser.add_argument('map_identifiers', help='Prefix to map all IDs to')
 
 @ns.route('/<id>')

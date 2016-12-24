@@ -13,7 +13,9 @@ log = logging.getLogger(__name__)
 ns = api.namespace('bio', description='Retrieval of domain objects plus associations')
 
 core_parser = api.parser()
+core_parser.add_argument('rows', type=int, required=False, default=20, help='number of rows')
 core_parser.add_argument('exclude_evidence', type=bool, help='If set, excludes evidence objects in response')
+core_parser.add_argument('fetch_objects', type=bool, default=True, help='If true, returns a distinct set of association.objects (typically ontology terms). This appears at the top level of the results payload')
 
 @ns.route('/gene/<id>')
 @api.doc(params={'id': 'id, e.g. NCBIGene:84570'})
@@ -492,7 +494,7 @@ class AlleleObject(Resource):
     
 
 @ns.route('/variant/<id>')
-@api.doc(params={'id': 'CURIE identifier of variant, e.g. ZFIN:ZDB-ALT-010427-8'})
+@api.doc(params={'id': 'CURIE identifier of variant, e.g. ZFIN:ZDB-ALT-010427-8, ClinVarVariant:39783'})
 class VariantObject(Resource):
 
     @api.expect(core_parser)
@@ -504,7 +506,7 @@ class VariantObject(Resource):
         return { 'foo' : 'bar' }
 
 @ns.route('/variant/<id>/genotypes/')
-@api.doc(params={'id': 'CURIE identifier of variant, e.g. ZFIN:ZDB-ALT-010427-8'})
+@api.doc(params={'id': 'CURIE identifier of variant, e.g. ZFIN:ZDB-ALT-010427-8, ClinVarVariant:39783'})
 class VariantGenotypeAssociations(Resource):
 
     @api.expect(core_parser)
@@ -518,7 +520,7 @@ class VariantGenotypeAssociations(Resource):
         return search_associations('variant', 'genotype', None, id, **core_parser.parse_args())
 
 @ns.route('/variant/<id>/phenotypes/')
-@api.doc(params={'id': 'CURIE identifier of variant, e.g. ZFIN:ZDB-ALT-010427-8'})
+@api.doc(params={'id': 'CURIE identifier of variant, e.g. ZFIN:ZDB-ALT-010427-8, ClinVarVariant:39783'})
 class VariantPhenotypeAssociations(Resource):
 
     @api.expect(core_parser)
@@ -532,7 +534,7 @@ class VariantPhenotypeAssociations(Resource):
         return search_associations('variant', 'phenotypes', None, id, **core_parser.parse_args())
     
 @ns.route('/variant/<id>/genes/')
-@api.doc(params={'id': 'CURIE identifier of variant, e.g. ZFIN:ZDB-ALT-010427-8'})
+@api.doc(params={'id': 'CURIE identifier of variant, e.g. ZFIN:ZDB-ALT-010427-8, ClinVarVariant:39783'})
 class VariantGeneAssociations(Resource):
 
     @api.expect(core_parser)

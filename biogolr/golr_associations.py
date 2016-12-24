@@ -1,3 +1,38 @@
+"""Wrapper for a Solr index following Golr conventions
+
+Intended to work with:
+
+ * Monarch golr instance
+ * AmiGO/GO golr instance
+
+# Conventions
+
+Documents follow either entity or association patterns.
+
+## Associations
+
+Connects some kind of *subject* to an *object* via a *relation*, this
+should be read as any RDF triple.
+
+The subject may be a molecular biological entity such as a gene, or an
+ontology class. The distinction between these two may be malleable.
+
+The object is typically an ontology class, but not
+always. E.g. gene-gene interactions or homology for exceptions.
+
+An association also has evidence plus various provenance metadata.
+
+In Monarch, the evidence is modeled as a graph encoded as a JSON blob;
+
+In AmiGO, we follow the GAF data model where it is assumed evidence is
+simple as does not follow chains, there is assumed to be one evidence
+object for the intermediate entity.
+
+### Entities
+
+TODO
+
+"""
 import logging
 
 import pysolr
@@ -192,11 +227,25 @@ def search_associations(subject_category=None,
                         invert_subject_object=False,
                         field_mapping=None,
                         solr=monarch_solr,
+                        fetch_objects=False,
                         rows=10,
                         **kwargs):
     
-    """
-    Fetch a set of association objects based on a query
+    """Fetch a set of association objects based on a query.
+
+    Arguments
+    ---------
+
+    field_objects : bool
+
+        we frequently want a list of distinct association objects (in
+        the RDF sense).  for example, when querying for all phenotype
+        associations for a gene, it is convenient to get a list of
+        distinct phenotype terms. Although this can be obtained by
+        iterating over the list of associations, it can be expensive
+        to obtain all associations. 
+
+
     """
     qmap = {}
     
@@ -269,22 +318,45 @@ def search_associations(subject_category=None,
         'facet': 'on',
         'facet.field': facet_fields,
         'facet.limit': 25,
+        'facet.mincount': 1,
         'fl': ",".join(select_fields),
         'rows': rows,
     }
     results = solr.search(**params)
     fcs = results.facets
     associations = translate_docs(results.docs, field_mapping=field_mapping, **kwargs)
-    return {
+
+    payload = {
         'associations':associations,
         'facet_counts':fcs
     }
+
+    # For solr, we implement this by finding all facets
+    if fetch_objects:
+        object_field = map_field(M.OBJECT, field_mapping)
+        oq_params = params.copy()
+        oq_params['fl'] = []
+        oq_params['facet.field'] = [object_field]
+        oq_params['facet.limit'] = -1
+        oq_params['rows'] = 0
+        oq_params['facet.mincount'] = 1
+        print('OQ:'+str(oq_params))
+        oq_results = solr.search(**oq_params)
+        ff = oq_results.facets['facet_fields']
+        ofl = ff.get(object_field)
+        # solr returns facets counts as list, every 2nd element is number
+        payload['objects'] = ofl[0::2]
+    
+    return payload
 
 # GO-SPECIFIC CODE
 
 def goassoc_fieldmap():
     """
-    Returns a mapping of canonical monarch fields to golr
+    Returns a mapping of canonical monarch fields to amigo-golr.
+
+    See: https://github.com/geneontology/amigo/blob/master/metadata/ann-config.yaml
+    
     """
     return {
         M.SUBJECT: 'bioentity',
@@ -293,6 +365,7 @@ def goassoc_fieldmap():
         M.SUBJECT_TAXON: 'taxon',
         M.SUBJECT_TAXON_LABEL: 'taxon_label',
         M.OBJECT: 'annotation_class',
+        M.OBJECT_CLOSURE: 'isa_partof_closure',
         M.OBJECT_LABEL: 'annotation_class_label',
         M.SUBJECT_CATEGORY: None,
         M.OBJECT_CATEGORY: None,
@@ -300,6 +373,10 @@ def goassoc_fieldmap():
     }
 
 def map_field(fn, m) :
+    """
+    Maps a field name, given a mapping file.
+    Returns input if fieldname is unmapped.
+    """
     if m is None:
         return fn
     if fn in m:
@@ -319,6 +396,9 @@ def search_associations_go(
         relation=None,
         subject=None,
         **kwargs):
+    """
+    Perform association search using Monarch golr
+    """
     go_golr_url = "http://golr.geneontology.org/solr/"
     go_solr = pysolr.Solr(go_golr_url, timeout=5)
     return search_associations(subject_category,
