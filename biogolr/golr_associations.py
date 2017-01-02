@@ -222,12 +222,20 @@ def search_associations(subject_category=None,
                         object_category=None,
                         relation=None,
                         subject=None,
+                        subjects=None,
                         object=None,
+                        objects=None,
                         subject_taxon=None,
                         invert_subject_object=False,
                         field_mapping=None,
                         solr=monarch_solr,
                         fetch_objects=False,
+                        facet_fields = [
+                            M.SUBJECT_TAXON_LABEL,
+                            M.OBJECT_CLOSURE
+                        ],
+                        facet_limit=25,
+                        facet_mincount=1,
                         rows=10,
                         **kwargs):
     
@@ -247,43 +255,58 @@ def search_associations(subject_category=None,
 
 
     """
-    qmap = {}
+    fq = {}
+    facet_pivot_fields = []
+    print("SUBJECTS="+str(subjects))
+    
     
     if subject_category is not None:
-        qmap['subject_category'] = subject_category
+        fq['subject_category'] = subject_category
     if object_category is not None:
-        qmap['object_category'] = object_category
+        fq['object_category'] = object_category
 
     if invert_subject_object:
         (subject,object) = (object,subject)
         
     if object is not None:
         # TODO: make configurable whether to use closure
-        qmap['object_closure'] = object
+        fq['object_closure'] = object
     if subject is not None:
         # note: by including subject closure by default,
         # we automaticaly get equivalent nodes
-        qmap['subject_closure'] = subject
+        fq['subject_closure'] = subject
+    if subjects is not None:
+        # lists are assumed to be disjunctive
+        fq['subject_closure'] = subjects
+    if objects is not None:
+        # lists are assumed to be disjunctive
+        fq['object_closure'] = objects
     if subject_taxon is not None:
-        qmap['subject_taxon_closure'] = subject_taxon
+        fq['subject_taxon_closure'] = subject_taxon
     if 'id' in kwargs:
-        qmap['id'] = kwargs['id']
+        fq['id'] = kwargs['id']
     if 'evidence' in kwargs:
-        qmap['evidence_object_closure'] = kwargs['evidence']
-
-    if field_mapping is not None:
-        for (k,v) in field_mapping.items():
-            if k in qmap:
-                if v is None:
-                    del qmap[k]
-                else:
-                    qmap[v] = qmap[k]
-                    del qmap[k]
+        fq['evidence_object_closure'] = kwargs['evidence']
+    if 'exclude_automatic_assertions' in kwargs and kwargs['exclude_automatic_assertions']:
+        fq['-evidence_object_closure'] = 'ECO:0000501'
+    if 'pivot_subject_object' in kwargs and kwags['pivot_subject_object']:
+        facet_pivot_fields = [M.SUBJECT, M.OBJECT]
     
         
-    # UGLY! doesn't pysolr help with this? Need to be careful with escaping?
-    qstr = " AND ".join(['{}:"{}"'.format(k,v) for (k,v) in qmap.items()])
+    if field_mapping is not None:
+        for (k,v) in field_mapping.items():
+            if k in fq:
+                if v is None:
+                    del fq[k]
+                else:
+                    fq[v] = fq[k]
+                    del fq[k]
+    
 
+    filter_queries = []
+    qstr = "*:*"
+    filter_queries = [ '{}:{}'.format(k,solr_quotify(v))  for (k,v) in fq.items()]
+    
     select_fields = [
         M.ID,
         M.IS_DEFINED_BY,
@@ -291,6 +314,8 @@ def search_associations(subject_category=None,
         M.SUBJECT,
         M.SUBJECT_LABEL,
         M.SUBJECT_CLOSURE,  # TODO - only required if map_identifiers set
+        M.SUBJECT_TAXON,
+        M.SUBJECT_TAXON_LABEL,
         M.RELATION,
         M.RELATION_LABEL,
         M.OBJECT,
@@ -305,23 +330,24 @@ def search_associations(subject_category=None,
     if field_mapping is not None:
         select_fields = [ map_field(fn, field_mapping) for fn in select_fields ]    
 
-    facet_fields = [
-        M.SUBJECT_TAXON_LABEL,
-        M.OBJECT_CLOSURE
-    ]
     facet_fields = [ map_field(fn, field_mapping) for fn in facet_fields ]    
         
     print('Q:'+qstr)
     print('FL'+str(select_fields))
     params = {
         'q': qstr,
+        'fq': filter_queries,
         'facet': 'on',
         'facet.field': facet_fields,
-        'facet.limit': 25,
-        'facet.mincount': 1,
+        'facet.limit': facet_limit,
+        'facet.mincount': facet_mincount,
         'fl': ",".join(select_fields),
         'rows': rows,
     }
+    if (len(facet_pivot_fields) > 0):
+        params['facet.pivot'] = ",".join(facet_pivot_fields)
+        params['facet.pivot.mincount'] = 1
+    print("PARAMS="+str(params))
     results = solr.search(**params)
     fcs = results.facets
     associations = translate_docs(results.docs, field_mapping=field_mapping, **kwargs)
@@ -332,6 +358,7 @@ def search_associations(subject_category=None,
     }
 
     # For solr, we implement this by finding all facets
+    # TODO: no need to do 2nd query, see https://wiki.apache.org/solr/SimpleFacetParameters#Parameters
     if fetch_objects:
         object_field = map_field(M.OBJECT, field_mapping)
         oq_params = params.copy()
@@ -348,6 +375,13 @@ def search_associations(subject_category=None,
         payload['objects'] = ofl[0::2]
     
     return payload
+
+def solr_quotify(v):
+    if isinstance(v, list):
+        return '({})'.format(" OR ".join([solr_quotify(x) for x in v]))
+    else:
+        # TODO - escape quotes
+        return '"{}"'.format(v)
 
 # GO-SPECIFIC CODE
 

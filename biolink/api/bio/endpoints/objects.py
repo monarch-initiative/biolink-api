@@ -14,7 +14,8 @@ ns = api.namespace('bio', description='Retrieval of domain objects plus associat
 
 core_parser = api.parser()
 core_parser.add_argument('rows', type=int, required=False, default=20, help='number of rows')
-core_parser.add_argument('exclude_evidence', type=bool, help='If set, excludes evidence objects in response')
+core_parser.add_argument('unselect_evidence', type=bool, help='If set, excludes evidence objects in response')
+core_parser.add_argument('exclude_automatic_assertions', default=False, type=bool, help='If set, excludes associations that involve IEAs (ECO:0000501)')
 core_parser.add_argument('fetch_objects', type=bool, default=True, help='If true, returns a distinct set of association.objects (typically ontology terms). This appears at the top level of the results payload')
 
 @ns.route('/gene/<id>')
@@ -570,4 +571,5 @@ class ParentObject(Resource):
         """
         return { 'foo' : 'bar' }
 
+    
 
