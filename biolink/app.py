@@ -6,7 +6,7 @@ from biolink import settings
 from biolink.api.link.endpoints.links import ns as link_search_namespace
 from biolink.api.bio.endpoints.objects import ns as bio_objects_namespace
 from biolink.api.entity.endpoints.search import ns as bio_objects_namespace
-from biolink.api.stats.endpoints.counts import ns as stats_counts_namespace
+from biolink.api.entityset.endpoints.summary import ns as entityset_summary_namespace
 from biolink.api.nlp.endpoints.annotate import ns as nlp_annotate_namespace
 from biolink.api.ontol.endpoints.slimmer import ns as ontol_slimmer_namespace
 from biolink.api.ontol.endpoints.enrichment import ns as ontol_enrichment_namespace

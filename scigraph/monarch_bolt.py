@@ -10,4 +10,5 @@ def get_node(iri=iri):
                          {'iri':"http://purl.obolibrary.org/obo/HP_0000465")
     a = result[0].record["a"]
     return a
-    
+
+                         

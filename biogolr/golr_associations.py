@@ -118,7 +118,7 @@ def translate_objs(d,fname):
         # TODO: consider adding arg for failure on null
         return None
     
-    lf = M.label_field(fname)
+    #lf = M.label_field(fname)
 
     v = d[fname]
     if not isinstance(v,list):
@@ -142,10 +142,11 @@ def translate_obj(d,fname):
     
     lf = M.label_field(fname)
     
-    obj = {'id': d[fname],
-            'label': d[lf],
-            }
+    obj = {'id': d[fname]}
 
+    if lf in d:
+        obj['label'] = d[lf]
+    
     cf = fname + "_category"
     if cf in d:
         obj['category'] = d[cf]
@@ -173,7 +174,7 @@ def translate_doc(d, field_mapping=None, **kwargs):
             print("NO SUBJECT CLOSURE IN: "+str(d))
     if M.SUBJECT_TAXON in d:
         subject['taxon'] = translate_obj(d,M.SUBJECT_TAXON)
-    assoc = {'id':d[M.ID],
+    assoc = {'id':d.get(M.ID),
              'subject': subject,
              'object': translate_obj(d,'object'),
              'relation': translate_obj(d,M.RELATION),
@@ -198,6 +199,22 @@ def translate_docs(ds, **kwargs):
     Translate a set of solr results
     """
     return [translate_doc(d, **kwargs) for d in ds]
+
+
+def translate_docs_compact(ds, **kwargs):
+    """
+    Translate golr association documents to a compact representation
+    """
+    amap = {}
+    for d in ds:
+        rel = d.get(M.RELATION)
+        k = (d[M.SUBJECT],rel)
+        if k not in amap:
+            amap[k] = {'subject':d[M.SUBJECT],
+                       'relation':rel,
+                       'objects': []}
+        amap[k]['objects'].append(d[M.OBJECT])
+    return list(amap.values())
 
 def map_id(id, prefix, closure_list):
     """
@@ -227,8 +244,10 @@ def search_associations(subject_category=None,
                         objects=None,
                         subject_taxon=None,
                         invert_subject_object=False,
+                        use_compact_associations=False,
                         field_mapping=None,
                         solr=monarch_solr,
+                        select_fields=[],
                         fetch_objects=False,
                         facet_fields = [
                             M.SUBJECT_TAXON_LABEL,
@@ -244,7 +263,7 @@ def search_associations(subject_category=None,
     Arguments
     ---------
 
-    field_objects : bool
+    fetch_objects : bool
 
         we frequently want a list of distinct association objects (in
         the RDF sense).  for example, when querying for all phenotype
@@ -253,6 +272,11 @@ def search_associations(subject_category=None,
         iterating over the list of associations, it can be expensive
         to obtain all associations. 
 
+    use_compact_associations : bool
+
+        If true, then the associations list will be false, instead
+        compact_associations contains a more compact representation
+        consisting of objects with (subject, relation and objects)
 
     """
     fq = {}
@@ -289,7 +313,7 @@ def search_associations(subject_category=None,
         fq['evidence_object_closure'] = kwargs['evidence']
     if 'exclude_automatic_assertions' in kwargs and kwargs['exclude_automatic_assertions']:
         fq['-evidence_object_closure'] = 'ECO:0000501'
-    if 'pivot_subject_object' in kwargs and kwags['pivot_subject_object']:
+    if 'pivot_subject_object' in kwargs and kwargs['pivot_subject_object']:
         facet_pivot_fields = [M.SUBJECT, M.OBJECT]
     
         
@@ -306,34 +330,35 @@ def search_associations(subject_category=None,
     filter_queries = []
     qstr = "*:*"
     filter_queries = [ '{}:{}'.format(k,solr_quotify(v))  for (k,v) in fq.items()]
-    
-    select_fields = [
-        M.ID,
-        M.IS_DEFINED_BY,
-        M.SOURCE,
-        M.SUBJECT,
-        M.SUBJECT_LABEL,
-        M.SUBJECT_CLOSURE,  # TODO - only required if map_identifiers set
-        M.SUBJECT_TAXON,
-        M.SUBJECT_TAXON_LABEL,
-        M.RELATION,
-        M.RELATION_LABEL,
-        M.OBJECT,
-        M.OBJECT_LABEL,
-    ]
-    if 'fl_excludes_evidence' not in kwargs or not kwargs['fl_excludes_evidence']:
-        select_fields += [
-            M.EVIDENCE_OBJECT,
-            M.EVIDENCE_GRAPH
+
+    # unless caller specifies a field list, use default
+    if len(select_fields)==0:
+        select_fields = [
+            M.ID,
+            M.IS_DEFINED_BY,
+            M.SOURCE,
+            M.SUBJECT,
+            M.SUBJECT_LABEL,
+            M.SUBJECT_CLOSURE,  # TODO - only required if map_identifiers set
+            M.SUBJECT_TAXON,
+            M.SUBJECT_TAXON_LABEL,
+            M.RELATION,
+            M.RELATION_LABEL,
+            M.OBJECT,
+            M.OBJECT_LABEL,
         ]
+        if 'fl_excludes_evidence' not in kwargs or not kwargs['fl_excludes_evidence']:
+            select_fields += [
+                M.EVIDENCE_OBJECT,
+                M.EVIDENCE_GRAPH
+            ]
         
     if field_mapping is not None:
         select_fields = [ map_field(fn, field_mapping) for fn in select_fields ]    
 
     facet_fields = [ map_field(fn, field_mapping) for fn in facet_fields ]    
         
-    print('Q:'+qstr)
-    print('FL'+str(select_fields))
+    #print('FL'+str(select_fields))
     params = {
         'q': qstr,
         'fq': filter_queries,
@@ -342,21 +367,36 @@ def search_associations(subject_category=None,
         'facet.limit': facet_limit,
         'facet.mincount': facet_mincount,
         'fl': ",".join(select_fields),
-        'rows': rows,
+        'rows': rows
     }
+    if True:
+        params['json.facet'] = json.dumps({
+            'uniq_subject': "unique(subject_taxon_label)",
+            'uniq_object': "unique(object)"
+        })
+    
     if (len(facet_pivot_fields) > 0):
         params['facet.pivot'] = ",".join(facet_pivot_fields)
         params['facet.pivot.mincount'] = 1
-    print("PARAMS="+str(params))
+    #print("PARAMS="+str(params))
     results = solr.search(**params)
     fcs = results.facets
-    associations = translate_docs(results.docs, field_mapping=field_mapping, **kwargs)
 
     payload = {
-        'associations':associations,
-        'facet_counts':fcs
+        'facet_counts': translate_facet_field(fcs),
     }
+    
+    if use_compact_associations:
+        payload['compact_associations'] = translate_docs_compact(results.docs, field_mapping=field_mapping, **kwargs)
+    else:
+        payload['associations'] = translate_docs(results.docs, field_mapping=field_mapping, **kwargs)
 
+    if 'facet_pivot' in fcs:
+        payload['facet_pivot'] = fcs['facet_pivot']
+    if 'facets' in results.raw_response:
+        payload['facets'] = results.raw_response['facets']
+    #print("FCS="+str(payload['facets']))
+        
     # For solr, we implement this by finding all facets
     # TODO: no need to do 2nd query, see https://wiki.apache.org/solr/SimpleFacetParameters#Parameters
     if fetch_objects:
@@ -371,7 +411,7 @@ def search_associations(subject_category=None,
         oq_results = solr.search(**oq_params)
         ff = oq_results.facets['facet_fields']
         ofl = ff.get(object_field)
-        # solr returns facets counts as list, every 2nd element is number
+        # solr returns facets counts as list, every 2nd element is number, we don't need the numbers here
         payload['objects'] = ofl[0::2]
     
     return payload
@@ -382,6 +422,50 @@ def solr_quotify(v):
     else:
         # TODO - escape quotes
         return '"{}"'.format(v)
+
+def translate_facet_field(fcs):
+    ffs = fcs['facet_fields']
+    rs={}
+    for (facet, facetresults) in ffs.items():
+        pairs = {}
+        rs[facet] = pairs
+        for i in range(int(len(facetresults)/2)):
+            (fv,fc) = (facetresults[i*2],facetresults[i*2+1])
+            pairs[fv] = fc
+    return rs
+
+# TODO: move to other module
+# TODO: rewrite using unique calculations, e.g. https://cwiki.apache.org/confluence/display/solr/Faceted+Search
+# this may depend on: https://github.com/django-haystack/pysolr/issues/213
+def find_enriched(subjects=[],
+                  **kwargs):
+    
+    results = search_associations(subjects=subjects,
+                                  rows=0,
+                                  facet_fields=[M.OBJECT_CLOSURE, M.IS_DEFINED_BY, M.SUBJECT_TAXON],
+                                  facet_mincount=3, # TODO
+                                  facet_limit=-1,
+                                  **kwargs)
+    fcs = results['facet_counts']
+    obj_count_dict = fcs[M.OBJECT_CLOSURE]
+
+    taxon_count_dict = fcs[M.SUBJECT_TAXON]
+    taxon=None
+    for (t,tc) in taxon_count_dict.items():
+        # TODO - throw error if multiple taxa
+        taxon = t
+    objects = list(obj_count_dict.keys())
+    
+    term_results = search_associations(objects=objects,
+                                       subject_taxon=taxon,
+                                       rows=0,
+                                       facet_fields=[M.OBJECT_CLOSURE],
+                                       facet_limit=-1,
+                                       **kwargs)
+    term_fcs = term_results['facet_counts']
+    
+
+    
 
 # GO-SPECIFIC CODE
 

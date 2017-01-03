@@ -69,8 +69,16 @@ association = api.model('Association', {
     'publications': fields.List(fields.Nested(publication))
 })
 
+
+compact_association_set = api.model('CompactAssociationSet', {
+    'subject': fields.String,
+    'relation': fields.String,
+    'objects': fields.List(fields.String),
+})
+
 association_results = api.inherit('AssociationResults', search_result, {
     'associations': fields.List(fields.Nested(association)),
+    'compact_associations': fields.List(fields.Nested(compact_association_set)),
     'objects': fields.List(fields.String)
 })
 
