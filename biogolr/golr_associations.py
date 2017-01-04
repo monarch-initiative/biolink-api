@@ -107,7 +107,7 @@ M=GolrFields()
 
 # We take the monarch golr as default
 # TODO: config
-monarch_golr_url = "https://solr.monarchinitiative.org/solr/golr/"
+monarch_golr_url = "https://solr-dev.monarchinitiative.org/solr/golr/"
 monarch_solr = pysolr.Solr(monarch_golr_url, timeout=5)
 
 def translate_objs(d,fname):
