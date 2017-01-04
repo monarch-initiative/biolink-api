@@ -9,7 +9,7 @@ import pysolr
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('link', description='Associations between entities or entity and descriptors')
+ns = api.namespace('association', description='Associations between entities or entity and descriptors')
 
 parser = api.parser()
 parser.add_argument('subject', help='SUBJECT id, e.g. NCBIGene:84570. Includes inferred by default')
@@ -31,16 +31,19 @@ class AssociationObject(Resource):
     @api.marshal_list_with(association)
     def get(self,id):
         """
-        Returns list of associations
+        Returns the association with a given identifier.
+
+        An association connects, at a minimum, two things, designated subject and object,
+        via some relationship. Associations also include evidence, provenance etc.
         """
         args = parser.parse_args()
 
         return get_association(id)
 
 
-@ns.route('/search/')
-@ns.route('/search/<subject_category>/')
-@ns.route('/search/<subject_category>/<object_category>/')
+@ns.route('/find/')
+@ns.route('/find/<subject_category>/')
+@ns.route('/find/<subject_category>/<object_category>/')
 @api.doc(params={'subject_category': 'CATEGORY of entity at link SUBJECT (source), e.g. gene, disease, genotype'})
 @api.doc(params={'object_category': 'CATEGORY of entity at link OBJECT (target), e.g. phenotype, disease'})
 class AssociationSearch(Resource):
@@ -49,7 +52,7 @@ class AssociationSearch(Resource):
     @api.marshal_list_with(association_results)
     def get(self, subject_category='gene', object_category='gene'):
         """
-        Returns list of associations
+        Returns list of matching associations
         """
         args = parser.parse_args()
 

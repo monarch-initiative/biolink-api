@@ -8,7 +8,7 @@ import pysolr
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('entity/search', description='Search for entities')
+ns = api.namespace('search/entity', description='Search for entities')
 
 parser = api.parser()
 parser.add_argument('subject_taxon', type=str, help='SUBJECT TAXON id, e.g. NCBITaxon:9606. Includes inferred by default')

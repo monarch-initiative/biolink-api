@@ -8,12 +8,12 @@ import pysolr
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('patient', description='foo bar')
+ns = api.namespace('individual', description='Individual humans (including patients), or organisms')
 
 parser = api.parser()
 #parser.add_argument('subject_taxon', help='SUBJECT TAXON id, e.g. NCBITaxon:9606. Includes inferred by default')
 
-@ns.route('/individual/<id>')
+@ns.route('/<id>')
 class Individual(Resource):
 
     @api.expect(parser)

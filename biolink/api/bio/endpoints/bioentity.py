@@ -2,7 +2,7 @@ import logging
 
 from flask import request
 from flask_restplus import Resource
-from biolink.datamodel.serializers import association_results, association, publication, gene, drug, genotype, allele, search_result
+from biolink.datamodel.serializers import named_object, association_results, association, publication, gene, drug, genotype, allele, search_result
 #import biolink.datamodel.serializers
 from biolink.api.restplus import api
 from biogolr.golr_associations import search_associations, search_associations_go
@@ -10,7 +10,7 @@ import pysolr
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('bio', description='Retrieval of domain objects plus associations')
+ns = api.namespace('bioentity', description='Retrieval of domain entities plus associations')
 
 core_parser = api.parser()
 core_parser.add_argument('rows', type=int, required=False, default=20, help='number of rows')
@@ -18,6 +18,29 @@ core_parser.add_argument('unselect_evidence', type=bool, help='If set, excludes 
 core_parser.add_argument('exclude_automatic_assertions', default=False, type=bool, help='If set, excludes associations that involve IEAs (ECO:0000501)')
 core_parser.add_argument('fetch_objects', type=bool, default=True, help='If true, returns a distinct set of association.objects (typically ontology terms). This appears at the top level of the results payload')
 
+@ns.route('/<id>')
+@api.doc(params={'id': 'id, e.g. NCBIGene:84570'})
+class GenericObject(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_list_with(named_object)
+    def get(self, id):
+        """
+        TODO Returns object of any type
+        """
+        return { 'foo' : 'bar' }
+
+@ns.route('/<id>/associations/')
+class GenericAssociations(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_list_with(association_results)
+    def get(self, id):
+        """
+        Returns associations for an entity regardless of the type
+        """
+        return search_associations(None, None, None, id, **core_parser.parse_args())
+    
 @ns.route('/gene/<id>')
 @api.doc(params={'id': 'id, e.g. NCBIGene:84570'})
 class GeneObject(Resource):
@@ -295,7 +318,7 @@ class PathwayGeneAssociations(Resource):
     @api.marshal_list_with(association)
     def get(self, id):
         """
-        TODO Returns list of associations
+        TODO Returns list of genes associated with a pathway
         """
         return { 'foo' : 'bar' }
 
@@ -328,7 +351,9 @@ class AnatomyObject(Resource):
     #@api.marshal_list_with(association)
     def get(self, id):
         """
-        TODO Returns list of objects
+        TODO Returns anatomical entity
+
+        Anatomical entities span ranges from the subcellular (e.g. nucleus) through cells to tissues, organs and organ systems.
         """
         return { 'foo' : 'bar' }
 
@@ -339,7 +364,9 @@ class AnatomyGeneAssociations(Resource):
     @api.marshal_list_with(association)
     def get(self, id):
         """
-        TODO Returns list of associations
+        TODO Returns associations between anatomical entity and genes
+
+        Typically encompasses genes expressed in a particular location.
         """
         return { 'foo' : 'bar' }
 
@@ -350,7 +377,7 @@ class AnatomyPhenotypeAssociations(Resource):
     @api.marshal_list_with(association)
     def get(self, id):
         """
-        TODO Returns list of associations
+        TODO Returns associations between anatomical entity and phenotypes
         """
         return { 'foo' : 'bar' }
     
@@ -362,7 +389,9 @@ class EnvironmentObject(Resource):
     #@api.marshal_list_with(association)
     def get(self, id):
         """
-        TODO Returns list of objects
+        TODO Returns environment entity
+
+        TODO consider renaming exposure
         """
         return { 'foo' : 'bar' }
     
@@ -384,7 +413,7 @@ class DrugObject(Resource):
     @api.marshal_list_with(drug)
     def get(self, id):
         """
-        TODO Returns list of associations
+        TODO Returns drug entity
         """
         return { 'foo' : 'bar' }
 
@@ -395,7 +424,7 @@ class DrugTargetAssociations(Resource):
     @api.marshal_list_with(association)
     def get(self, id):
         """
-        TODO Returns list of associations
+        TODO Returns associations between given drug and targets
         """
         return { 'foo' : 'bar' }
 
@@ -406,7 +435,9 @@ class DrugInteractions(Resource):
     @api.marshal_list_with(association)
     def get(self, id):
         """
-        TODO Returns list of associations
+        TODO Returns associations between given drug and interactions
+
+        Interactions can encompass drugs or environments
         """
         return { 'foo' : 'bar' }
     
@@ -417,7 +448,7 @@ class ChemicalObject(Resource):
     #@api.marshal_list_with(association)
     def get(self, id):
         """
-        TODO Returns list of objects
+        TODO Returns chemical entity
         """
         return { 'foo' : 'bar' }
     
@@ -429,7 +460,7 @@ class GenotypeObject(Resource):
     @api.marshal_list_with(genotype)
     def get(self, id):
         """
-        TODO Returns list of objects
+        TODO Returns genotype object
         """
         return { 'foo' : 'bar' }
 
@@ -504,7 +535,7 @@ class VariantObject(Resource):
     #@api.marshal_list_with(association)
     def get(self, id):
         """
-        TODO Returns list of objects
+        TODO Returns sequence variant entity
         """
         return { 'foo' : 'bar' }
 
@@ -557,21 +588,36 @@ class SequenceFeatureObject(Resource):
     #@api.marshal_list_with(association)
     def get(self, id):
         """
-        TODO Returns list of objects
+        TODO Returns seqfeature
         """
         return { 'foo' : 'bar' }
 
 
-@ns.route('/patient/<id>')
+@ns.route('/individual/<id>')
 class ParentObject(Resource):
 
     @api.expect(core_parser)
     #@api.marshal_list_with(association)
     def get(self, id):
         """
-        TODO Returns list of objects
+        TODO Returns individual
+
+        Individuals may typically encompass patients, but can be individuals of any species
         """
         return { 'foo' : 'bar' }
 
+@ns.route('/investigation/<id>')
+class ParentObject(Resource):
+
+    @api.expect(core_parser)
+    #@api.marshal_list_with(association)
+    def get(self, id):
+        """
+        TODO Returns investigation object
+
+        Investigations encompass clinical trials, molecular biology experiments or any kind of study
+        """
+        return { 'foo' : 'bar' }
+    
     
 
