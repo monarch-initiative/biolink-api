@@ -242,6 +242,7 @@ def search_associations(subject_category=None,
                         subjects=None,
                         object=None,
                         objects=None,
+                        subject_direct=False,
                         subject_taxon=None,
                         invert_subject_object=False,
                         use_compact_associations=False,
@@ -249,6 +250,7 @@ def search_associations(subject_category=None,
                         solr=monarch_solr,
                         select_fields=[],
                         fetch_objects=False,
+                        json_facet=None,
                         facet_fields = [
                             M.SUBJECT_TAXON_LABEL,
                             M.OBJECT_CLOSURE
@@ -281,7 +283,7 @@ def search_associations(subject_category=None,
     """
     fq = {}
     facet_pivot_fields = []
-    print("SUBJECTS="+str(subjects))
+    #print("SUBJECTS="+str(subjects))
     
     
     if subject_category is not None:
@@ -298,10 +300,16 @@ def search_associations(subject_category=None,
     if subject is not None:
         # note: by including subject closure by default,
         # we automaticaly get equivalent nodes
-        fq['subject_closure'] = subject
+        if subject_direct:
+            fq['subject'] = subject
+        else:
+            fq['subject_closure'] = subject
     if subjects is not None:
         # lists are assumed to be disjunctive
-        fq['subject_closure'] = subjects
+        if subject_direct:
+            fq['subject'] = subjects
+        else:
+            fq['subject_closure'] = subjects
     if objects is not None:
         # lists are assumed to be disjunctive
         fq['object_closure'] = objects
@@ -369,16 +377,13 @@ def search_associations(subject_category=None,
         'fl': ",".join(select_fields),
         'rows': rows
     }
-    if True:
-        params['json.facet'] = json.dumps({
-            'uniq_subject': "unique(subject_taxon_label)",
-            'uniq_object': "unique(object)"
-        })
+    if json_facet:
+        params['json.facet'] = json.dumps(json_facet)
     
     if (len(facet_pivot_fields) > 0):
         params['facet.pivot'] = ",".join(facet_pivot_fields)
         params['facet.pivot.mincount'] = 1
-    #print("PARAMS="+str(params))
+    print("PARAMS="+str(params))
     results = solr.search(**params)
     fcs = results.facets
 
@@ -434,35 +439,7 @@ def translate_facet_field(fcs):
             pairs[fv] = fc
     return rs
 
-# TODO: move to other module
-# TODO: rewrite using unique calculations, e.g. https://cwiki.apache.org/confluence/display/solr/Faceted+Search
-# this may depend on: https://github.com/django-haystack/pysolr/issues/213
-def find_enriched(subjects=[],
-                  **kwargs):
-    
-    results = search_associations(subjects=subjects,
-                                  rows=0,
-                                  facet_fields=[M.OBJECT_CLOSURE, M.IS_DEFINED_BY, M.SUBJECT_TAXON],
-                                  facet_mincount=3, # TODO
-                                  facet_limit=-1,
-                                  **kwargs)
-    fcs = results['facet_counts']
-    obj_count_dict = fcs[M.OBJECT_CLOSURE]
-
-    taxon_count_dict = fcs[M.SUBJECT_TAXON]
-    taxon=None
-    for (t,tc) in taxon_count_dict.items():
-        # TODO - throw error if multiple taxa
-        taxon = t
-    objects = list(obj_count_dict.keys())
-    
-    term_results = search_associations(objects=objects,
-                                       subject_taxon=taxon,
-                                       rows=0,
-                                       facet_fields=[M.OBJECT_CLOSURE],
-                                       facet_limit=-1,
-                                       **kwargs)
-    term_fcs = term_results['facet_counts']
+        
     
 
     

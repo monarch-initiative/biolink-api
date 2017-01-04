@@ -8,6 +8,8 @@ from biogolr.golr_associations import search_associations, GolrFields
 from biolink.api.restplus import api
 import pysolr
 
+MAX_ROWS=10000
+
 log = logging.getLogger(__name__)
 
 ns = api.namespace('entityset', description='foo bar')
@@ -63,7 +65,7 @@ class EntitySetAssociations(Resource):
         results = search_associations(subjects=args.get('subject'),
                                       select_fields=[M.SUBJECT, M.RELATION, M.OBJECT],
                                       use_compact_associations=True,
-                                      rows=999,
+                                      rows=MAX_ROWS,
                                       facet_fields=[],
                                       **args)
         return results
