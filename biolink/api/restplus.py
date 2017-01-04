@@ -7,8 +7,8 @@ from sqlalchemy.orm.exc import NoResultFound
 
 log = logging.getLogger(__name__)
 
-api = Api(version='1.0', title='Uber Bio API',
-          description='A draft of an API integration layer')
+api = Api(version='1.0', title='BioLink API',
+          description='API integration layer for linked biological objects')
 
 
 @api.errorhandler

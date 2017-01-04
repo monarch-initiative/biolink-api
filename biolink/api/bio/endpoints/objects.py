@@ -441,7 +441,9 @@ class GenotypeGenotypeAssociations(Resource):
     @api.marshal_list_with(association_results)
     def get(self, id):
         """
-        Returns genotypes associated with a genotype
+        Returns genotypes-genotype associations.
+
+        Genotypes may be related to one another according to the GENO model
         """
 
         # TODO: invert

@@ -7,33 +7,33 @@ from biolink.api.restplus import api
 # Solr
 
 search_result = api.model('SearchResult', {
-    'numFound': fields.Integer,
-    'start': fields.Integer,
-    'facet_counts': fields.Raw
+    'numFound': fields.Integer(description='total number of associations matching query'),
+    'start': fields.Integer(description='Cursor position'),
+    'facet_counts': fields.Raw(description='Mapping between field names and association counts')
     })
 
 ## BBOP/OBO Graphs
 
 
 node = api.model('Node', {
-    'id': fields.String(readOnly=True, description='ID'),
-    'lbl': fields.String(readOnly=True, description='RDFS Label')
+    'id': fields.String(readOnly=True, description='ID or CURIE'),
+    'lbl': fields.String(readOnly=True, description='human readable label, maps to rdfs:label')
 })
 
 edge = api.model('Edge', {
-    'sub': fields.String(readOnly=True, description='Subject Node ID'),
-    'pred': fields.String(readOnly=True, description='Predicate (Relation) ID'),
-    'obj': fields.String(readOnly=True, description='Subject Node ID'),
+    'sub': fields.String(readOnly=True, description='Subject (source) Node ID'),
+    'pred': fields.String(readOnly=True, description='Predicate (relation) ID'),
+    'obj': fields.String(readOnly=True, description='Object (target) Node ID'),
 })
 
 bbop_graph = api.model('Graph', {
-    'nodes': fields.List(fields.Nested(node)),
-    'edges': fields.List(fields.Nested(edge)),
+    'nodes': fields.List(fields.Nested(node), description='All nodes in graph'),
+    'edges': fields.List(fields.Nested(edge), description='All edges in graph'),
 })
 
 
 named_object = api.model('NamedObject', {
-    'id': fields.String(readOnly=True, description='ID'),
+    'id': fields.String(readOnly=True, description='ID or CURIE e.g. MGI:1201606'),
     'label': fields.String(readOnly=True, description='RDFS Label'),
     'category': fields.String(readOnly=True, description='Type of object')
 })
@@ -48,38 +48,38 @@ publication = api.inherit('Publication', named_object, {
 
 # todo: inherits
 taxon = api.model('Taxon', {
-    'id': fields.String(readOnly=True, description='ID'),
+    'id': fields.String(readOnly=True, description='CURIE ID, e.g. NCBITaxon:9606'),
     'label': fields.String(readOnly=True, description='RDFS Label')
 })
 
 bio_object = api.inherit('BioObject', named_object, {
-    'taxon': fields.Nested(taxon)
+    'taxon': fields.Nested(taxon, description='Taxon to which the object belongs')
 })
 
 
 # Assoc
 
 association = api.model('Association', {
-    'id': fields.String(readOnly=True, description='Association ID'),
-    'subject': fields.Nested(bio_object),
-    'object': fields.Nested(bio_object),
-    'relation': fields.Nested(relation),
-    'evidence_graph': fields.Nested(bbop_graph),
-    'provided_by': fields.List(fields.String),
-    'publications': fields.List(fields.Nested(publication))
+    'id': fields.String(readOnly=True, description='Association/annotation unique ID'),
+    'subject': fields.Nested(bio_object, description='Subject of association (what it is about), e.g. MGI:1201606'),
+    'object': fields.Nested(bio_object, description='Object (sensu RDF), aka target, e.g. MP:0002109'),
+    'relation': fields.Nested(relation, description='Relationship type connecting subject and object'),
+    'evidence_graph': fields.Nested(bbop_graph, description='Subject-object relationship may be indirect, this graph has explicit relationships'),
+    'provided_by': fields.List(fields.String, description='Provider of association TODO'),
+    'publications': fields.List(fields.Nested(publication), description='Publications supporting association')
 })
 
 
 compact_association_set = api.model('CompactAssociationSet', {
-    'subject': fields.String,
-    'relation': fields.String,
-    'objects': fields.List(fields.String),
+    'subject': fields.String(description='Subject of association (what it is about), e.g. MGI:1201606'),
+    'relation': fields.String(description='Relationship type connecting subject and object list'),
+    'objects': fields.List(fields.String, description='List of O, for a given (S,R) pair, yielding (S,R,O) triples. E.g. list of MPs for (MGI:nnn, has_phenotype)'),
 })
 
 association_results = api.inherit('AssociationResults', search_result, {
-    'associations': fields.List(fields.Nested(association)),
-    'compact_associations': fields.List(fields.Nested(compact_association_set)),
-    'objects': fields.List(fields.String)
+    'associations': fields.List(fields.Nested(association), description='Complete representation of full association object, plus evidence'),
+    'compact_associations': fields.List(fields.Nested(compact_association_set), description='Compact representation in which objects (e.g. phenotypes) are collected for subject-predicate pairs'),
+    'objects': fields.List(fields.String, description='List of distinct objects used')
 })
 
 
