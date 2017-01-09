@@ -9,3 +9,4 @@ matplotlib>=0.0
 sparqlwrapper>0.0
 gunicorn>=19.0.0
 scipy>=0.0
+jsonpickle>=0.0

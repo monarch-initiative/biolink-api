@@ -149,7 +149,7 @@ def translate_obj(d,fname):
     
     cf = fname + "_category"
     if cf in d:
-        obj['category'] = d[cf]
+        obj['categories'] = [d[cf]]
     
     return obj
 
@@ -274,6 +274,8 @@ def search_associations(subject_category=None,
         iterating over the list of associations, it can be expensive
         to obtain all associations. 
 
+        Results are in the 'objects' field
+
     use_compact_associations : bool
 
         If true, then the associations list will be false, instead
@@ -284,15 +286,16 @@ def search_associations(subject_category=None,
     fq = {}
     facet_pivot_fields = []
     #print("SUBJECTS="+str(subjects))
-    
+
+    if invert_subject_object:
+        (subject,object) = (object,subject)
+        (subject_category,object_category) = (object_category,subject_category)
     
     if subject_category is not None:
         fq['subject_category'] = subject_category
     if object_category is not None:
         fq['object_category'] = object_category
 
-    if invert_subject_object:
-        (subject,object) = (object,subject)
         
     if object is not None:
         # TODO: make configurable whether to use closure
@@ -319,7 +322,7 @@ def search_associations(subject_category=None,
         fq['subject_taxon_closure'] = subject_taxon
     if 'id' in kwargs:
         fq['id'] = kwargs['id']
-    if 'evidence' in kwargs:
+    if 'evidence' in kwargs and kwargs['evidence'] is not None:
         fq['evidence_object_closure'] = kwargs['evidence']
     if 'exclude_automatic_assertions' in kwargs and kwargs['exclude_automatic_assertions']:
         fq['-evidence_object_closure'] = 'ECO:0000501'

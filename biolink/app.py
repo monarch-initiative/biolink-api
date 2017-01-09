@@ -3,7 +3,8 @@ import logging.config
 from flask import Flask, Blueprint
 from flask_cors import CORS, cross_origin
 from biolink import settings
-from biolink.api.link.endpoints.links import ns as link_search_namespace
+from biolink.api.link.endpoints.associations_from import ns as associations_from_namespace
+from biolink.api.link.endpoints.find_associations import ns as find_associations_namespace
 from biolink.api.search.endpoints.entitysearch import ns as entity_search_namespace
 from biolink.api.bio.endpoints.bioentity import ns as bio_objects_namespace
 from biolink.api.entityset.endpoints.summary import ns as entityset_summary_namespace
@@ -21,6 +22,8 @@ from biolink.api.identifier.endpoints.mapper import ns as identifier_prefixes_ma
 from biolink.api.evidence.endpoints.graph import ns as evidence_graph_namespace
 
 from biolink.api.variation.endpoints.variantset import ns as variation_variantset_namespace
+
+from biolink.api.pub.endpoints.pubs import ns as pubs_namespace
 
 from biolink.api.restplus import api
 
@@ -47,7 +50,7 @@ app.config['ERROR_404_HELP'] = settings.RESTPLUS_ERROR_404_HELP
 
 blueprint = Blueprint('api', __name__, url_prefix='/api')
 api.init_app(blueprint)
-api.add_namespace(link_search_namespace)
+#api.add_namespace(link_search_namespace)
 app.register_blueprint(blueprint)
 db.init_app(app)
 

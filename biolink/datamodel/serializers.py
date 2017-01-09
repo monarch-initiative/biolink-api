@@ -14,6 +14,15 @@ search_result = api.model('SearchResult', {
 
 ## BBOP/OBO Graphs
 
+abstract_property_value = api.model('AbstractPropertyValue', {
+    'val': fields.String(readOnly=True, description='value part'),
+    'pred': fields.String(readOnly=True, description='predicate (attribute) part'),
+    'xrefs': fields.List(fields.String, description='Xrefs provenance for property-value'),
+})
+
+synonym_property_value = api.inherit('SynonymPropertyValue', abstract_property_value, {
+})
+
 
 node = api.model('Node', {
     'id': fields.String(readOnly=True, description='ID or CURIE'),
@@ -31,11 +40,11 @@ bbop_graph = api.model('Graph', {
     'edges': fields.List(fields.Nested(edge), description='All edges in graph'),
 })
 
-
 named_object = api.model('NamedObject', {
     'id': fields.String(readOnly=True, description='ID or CURIE e.g. MGI:1201606'),
     'label': fields.String(readOnly=True, description='RDFS Label'),
-    'category': fields.String(readOnly=True, description='Type of object')
+    'categories': fields.List(fields.String(readOnly=True, description='Type of object')),
+    'synonyms': fields.List(fields.Nested(synonym_property_value), description='list of synonyms or alternate labels')
 })
 
 relation = api.inherit('Relation', named_object, {
@@ -56,7 +65,6 @@ bio_object = api.inherit('BioObject', named_object, {
     'taxon': fields.Nested(taxon, description='Taxon to which the object belongs')
 })
 
-
 # Assoc
 
 association = api.model('Association', {
@@ -68,7 +76,6 @@ association = api.model('Association', {
     'provided_by': fields.List(fields.String, description='Provider of association TODO'),
     'publications': fields.List(fields.Nested(publication), description='Publications supporting association')
 })
-
 
 compact_association_set = api.model('CompactAssociationSet', {
     'subject': fields.String(description='Subject of association (what it is about), e.g. MGI:1201606'),
@@ -85,7 +92,7 @@ association_results = api.inherit('AssociationResults', search_result, {
 
 # Bio Objects
 
-sequence_position = api.inherit('SequencePosition', bio_object, {
+sequence_position = api.model('SequencePosition', {
     'position': fields.Integer,
     'reference': fields.String
 })
@@ -97,11 +104,19 @@ sequence_location = api.inherit('SequenceLocation', bio_object, {
 
 sequence_feature = api.inherit('SequenceFeature', bio_object, {
     'locations': fields.List(fields.Nested(sequence_location)),
-    'sequence': fields.String
+    'sequence': fields.String,
+    'homology_associations': fields.List(fields.Nested(association)),
 })
 
+
 gene = api.inherit('Gene', sequence_feature, {
-    'family_ids' : fields.List(fields.String)
+    'family_ids' : fields.List(fields.String),
+    'phenotype_associations': fields.List(fields.Nested(association)),
+    'disease_associations': fields.List(fields.Nested(association)),
+    'homology_associations': fields.List(fields.Nested(association)),
+    'function_associations': fields.List(fields.Nested(association)),
+    'genotype_associations': fields.List(fields.Nested(association)),
+    #'genotypes': fields.List(fields.Nested(bio_object), desc='List of references to genotype objects')
 })
 
 gene_product = api.inherit('GeneProduct', sequence_feature, {
@@ -112,12 +127,15 @@ transcript = api.inherit('Transcript', sequence_feature, {
     'genes': fields.List(fields.Nested(gene))
 })
 
+# in GENO, this corresponds to (genotype OR part-of some genotype)
 genotype = api.inherit('Genotype', sequence_feature, {
-    'genes': fields.List(fields.Nested(gene))
+    #'genes': fields.List(fields.Nested(bio_object), desc='List of references to gene object'),
+    'phenotype_associations': fields.List(fields.Nested(association)),
+    'disease_associations': fields.List(fields.Nested(association)),
+    'gene_associations': fields.List(fields.Nested(association)),
 })
 
-allele = api.inherit('Allele', sequence_feature, {
-    'genes': fields.List(fields.Nested(gene))
+allele = api.inherit('Allele', genotype, {
 })
 
 # molecular entities
@@ -125,8 +143,11 @@ molecular_complex = api.inherit('MolecularComplex', bio_object, {
     'genes': fields.List(fields.Nested(gene))
 })
 
-drug = api.inherit('Drug', bio_object, {
-    'target_associations': fields.List(fields.Nested(association))
+substance = api.inherit('Substance', bio_object, {
+    'target_associations': fields.List(fields.Nested(association)),
+    'inchi': fields.List(fields.String),
+    'inchi_key': fields.List(fields.String),
+    'smiles': fields.List(fields.String),
 })
 
 # phylo

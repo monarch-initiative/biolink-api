@@ -12,7 +12,7 @@ log = logging.getLogger(__name__)
 ns = api.namespace('association', description='Associations between entities or entity and descriptors')
 
 parser = api.parser()
-parser.add_argument('subject', help='SUBJECT id, e.g. NCBIGene:84570. Includes inferred by default')
+parser.add_argument('subject', help='SUBJECT id, e.g. NCBIGene:84570, ZFIN:ZDB-GENE-050417-357. Includes inferred by default')
 parser.add_argument('subject_taxon', help='SUBJECT TAXON id, e.g. NCBITaxon:9606. Includes inferred by default')
 parser.add_argument('object', help='OBJECT id, e.g. HP:0011927. Includes inferred by default')
 parser.add_argument('evidence', help="""Object id, e.g. ECO:0000501 (for IEA; Includes inferred by default)
@@ -22,7 +22,7 @@ parser.add_argument('graphize', type=bool, help='If set, includes graph object i
 parser.add_argument('fl_excludes_evidence', type=bool, help='If set, excludes evidence objects in response')
 parser.add_argument('page', type=int, required=False, default=1, help='Page number')
 parser.add_argument('rows', type=int, required=False, default=10, help='number of rows')
-parser.add_argument('map_identifiers', help='Prefix to map all IDs to')
+parser.add_argument('map_identifiers', help='Prefix to map all IDs to. E.g. NCBIGene')
 
 @ns.route('/<id>')
 class AssociationObject(Resource):
@@ -42,6 +42,18 @@ class AssociationObject(Resource):
 
 
 @ns.route('/find/')
+class AssociationSearch(Resource):
+
+    @api.expect(parser)
+    @api.marshal_list_with(association_results)
+    def get(self):
+        """
+        Returns list of matching associations
+        """
+        args = parser.parse_args()
+
+        return search_associations(**args)
+
 @ns.route('/find/<subject_category>/')
 @ns.route('/find/<subject_category>/<object_category>/')
 @api.doc(params={'subject_category': 'CATEGORY of entity at link SUBJECT (source), e.g. gene, disease, genotype'})
@@ -57,6 +69,7 @@ class AssociationSearch(Resource):
         args = parser.parse_args()
 
         return search_associations(subject_category, object_category, **args)
+
     
     
 

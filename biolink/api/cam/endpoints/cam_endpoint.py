@@ -17,7 +17,7 @@ parser.add_argument('contributor', help='string to search for in contributor of 
 @ns.route('/model/')
 class ModelCollection(Resource):
 
-    @api.expect(parser)
+    #@api.expect(parser)
     def get(self):
         """
         Returns list of ALL models
@@ -38,8 +38,6 @@ class ModelCollection(Resource):
     def get(self):
         """
         Returns list of models matching query
-
-        Experimental - will be merged with above
         """
         args = parser.parse_args()
         mq = ModelQuery(**args)
@@ -49,13 +47,13 @@ class ModelCollection(Resource):
         sparql = mq.gen_sparql()
         return lego_query(sparql, limit=100)
     
-@ns.route('/properties/model/')
+@ns.route('/model/properties/')
 class ModelCollection(Resource):
 
     @api.expect(parser)
     def get(self):
         """
-        Returns list of models
+        Returns list of all properties used across all models
         """
         args = parser.parse_args()
         return lego_query("""
@@ -65,13 +63,42 @@ class ModelCollection(Resource):
         FILTER(?p != json_model:)
         }""", limit=1000)
 
-@ns.route('/model/pvs/')
+@ns.route('/model/contributors/')
+class ModelContibutors(Resource):
+
+    #@api.expect(parser)
+    def get(self):
+        """
+        Returns list of all contributors across all models
+        """
+        args = parser.parse_args()
+        return lego_query("""
+        SELECT DISTINCT ?v WHERE 
+        {?x a owl:Ontology ; 
+           dc:contributor ?v
+        }""", limit=1000)
+
+@ns.route('/instances/')
+class ModelContibutors(Resource):
+
+    #@api.expect(parser)
+    def get(self):
+        """
+        Returns list of all instances
+        """
+        args = parser.parse_args()
+        return lego_query("""
+        SELECT DISTINCT ?i ?model WHERE 
+        {?i rdfs:isDefinedBy ?model 
+        }""", limit=1000)
+    
+@ns.route('/model/property_values/')
 class ModelCollection(Resource):
 
     @api.expect(parser)
     def get(self):
         """
-        Returns list of models
+        Returns list property-values for all models
         """
         args = parser.parse_args()
         return lego_query("""
@@ -84,13 +111,18 @@ class ModelCollection(Resource):
 @ns.route('/model/<id>')
 class Model(Resource):
 
-    @api.expect(parser)
-    @api.marshal_list_with(association)
-    def get(self, term):
+    #@api.expect(parser)
+    #@api.marshal_list_with(association)
+    def get(self, id):
         """
-        Returns list of matches
+        Returns a complete model
         """
         args = parser.parse_args()
+        return lego_query("""
+        CONSTRUCT { ?i ?p ?v } WHERE 
+        {?i rdfs:isDefinedBy <http://model.geneontology.org/%s>; 
+           ?p ?v
+        }""" % id, limit=1000)
 
         return []
 

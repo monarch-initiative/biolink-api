@@ -2,10 +2,12 @@ import logging
 
 from flask import request
 from flask_restplus import Resource
-from biolink.datamodel.serializers import named_object, association_results, association, publication, gene, drug, genotype, allele, search_result
+from biolink.datamodel.serializers import node, named_object, bio_object, association_results, association, publication, gene, substance, genotype, allele, search_result
 #import biolink.datamodel.serializers
 from biolink.api.restplus import api
 from biogolr.golr_associations import search_associations, search_associations_go
+from scigraph.scigraph_util import SciGraph
+
 import pysolr
 
 log = logging.getLogger(__name__)
@@ -18,17 +20,39 @@ core_parser.add_argument('unselect_evidence', type=bool, help='If set, excludes 
 core_parser.add_argument('exclude_automatic_assertions', default=False, type=bool, help='If set, excludes associations that involve IEAs (ECO:0000501)')
 core_parser.add_argument('fetch_objects', type=bool, default=True, help='If true, returns a distinct set of association.objects (typically ontology terms). This appears at the top level of the results payload')
 
+scigraph = SciGraph('https://scigraph-data.monarchinitiative.org/scigraph/')
+
+homol_rel = 'RO:0002434'  # TODO
+
+def get_object_gene(id, **args):
+        obj = scigraph.bioobject(id, 'Gene')
+        obj.phenotype_associations = search_associations(subject=id, object_category='phenotype', **args)['associations']
+        obj.homology_associations = search_associations(subject=id, rel=homol_rel, object_category='gene', **args)['associations']
+        obj.disease_associations = search_associations(subject=id, object_category='disease', **args)['associations']
+        obj.genotype_associations = search_associations(subject=id, invert_subject_object=True, object_category='genotype', **args)['associations']
+        
+        return(obj)
+
+def get_object_genotype(id, **args):
+        obj = scigraph.bioobject(id, 'Genotype')
+        obj.phenotype_associations = search_associations(subject=id, object_category='phenotype', **args)['associations']
+        obj.disease_associations = search_associations(subject=id, object_category='disease', **args)['associations']
+        obj.gene_associations = search_associations(subject=id, object_category='gene', **args)['associations']
+        
+        return(obj)
+    
 @ns.route('/<id>')
 @api.doc(params={'id': 'id, e.g. NCBIGene:84570'})
 class GenericObject(Resource):
 
     @api.expect(core_parser)
-    @api.marshal_list_with(named_object)
+    @api.marshal_list_with(bio_object)
     def get(self, id):
         """
         TODO Returns object of any type
         """
-        return { 'foo' : 'bar' }
+        obj = scigraph.bioobject(id)
+        return(obj)
 
 @ns.route('/<id>/associations/')
 class GenericAssociations(Resource):
@@ -49,9 +73,9 @@ class GeneObject(Resource):
     @api.marshal_list_with(gene)
     def get(self, id):
         """
-        TODO Returns gene object
+        Returns gene object
         """
-        return { 'foo' : 'bar' }
+        return get_object_gene(id)
 
 @api.doc(params={'id': 'id, e.g. NCBIGene:3630. Equivalent IDs can be used with same results'})
 class AbstractGeneAssociationResource(Resource):
@@ -85,8 +109,7 @@ class GeneHomologAssociations(AbstractGeneAssociationResource):
         """
         Returns homologs for a gene
         """
-        rel = 'RO:0002434'  # TODO
-        return search_associations('gene', 'gene', rel, id, **core_parser.parse_args())
+        return search_associations('gene', 'gene', homol_rel, id, **core_parser.parse_args())
     
 @ns.route('/gene/<id>/phenotypes/')
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:4750. Equivalent IDs can be used with same results'})
@@ -299,6 +322,30 @@ class GotermObject(Resource):
         """
         return { 'foo' : 'bar' }
 
+@ns.route('/goterm/<id>/phenotype/')
+class GotermPhenotypeAssociations(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_list_with(association)
+    def get(self, id):
+        """
+        TODO Returns associated phenotypes
+
+        """
+        return { 'foo' : 'bar' }
+
+@ns.route('/goterm/<id>/genes/')
+class GotermGeneAssociations(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_list_with(association)
+    def get(self, id):
+        """
+        TODO Returns associated phenotypes
+
+        """
+        return { 'foo' : 'bar' }
+    
 @ns.route('/pathway/<id>')
 @api.doc(params={'id': 'CURIE any pathway element. May be a GO ID or a pathway database ID'})
 class PathwayObject(Resource):
@@ -406,19 +453,19 @@ class EnvironmentPhenotypeAssociations(Resource):
         """
         return { 'foo' : 'bar' }
 
-@ns.route('/drug/<id>')
-class DrugObject(Resource):
+@ns.route('/substance/<id>')
+class SubstanceObject(Resource):
 
     @api.expect(core_parser)
-    @api.marshal_list_with(drug)
+    @api.marshal_list_with(substance)
     def get(self, id):
         """
-        TODO Returns drug entity
+        TODO Returns substance entity
         """
         return { 'foo' : 'bar' }
 
-@ns.route('/drug/<id>/targets/')
-class DrugTargetAssociations(Resource):
+@ns.route('/substance/<id>/targets/')
+class SubstanceTargetAssociations(Resource):
 
     @api.expect(core_parser)
     @api.marshal_list_with(association)
@@ -428,8 +475,21 @@ class DrugTargetAssociations(Resource):
         """
         return { 'foo' : 'bar' }
 
-@ns.route('/drug/<id>/interactions/')
-class DrugInteractions(Resource):
+@ns.route('/substance/<id>/roles/')
+class SubstanceRoleAssociations(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_list_with(association)
+    def get(self, id):
+        """
+        TODO Returns associations between given drug and roles
+
+        Roles may be human-oriented (e.g. pesticide) or molecular (e.g. enzyme inhibitor)
+        """
+        return { 'foo' : 'bar' }
+
+@ns.route('/substance/<id>/interactions/')
+class SubstanceInteractions(Resource):
 
     @api.expect(core_parser)
     @api.marshal_list_with(association)
@@ -441,16 +501,32 @@ class DrugInteractions(Resource):
         """
         return { 'foo' : 'bar' }
     
-@ns.route('/chemical/<id>')
-class ChemicalObject(Resource):
+@ns.route('/substance/<id>/substances/')
+class SubstanceRelationships(Resource):
 
     @api.expect(core_parser)
-    #@api.marshal_list_with(association)
+    @api.marshal_list_with(association)
     def get(self, id):
         """
-        TODO Returns chemical entity
+        TODO Returns associations between a substance and other substances
+
+        E.g. metabolite-of, tautomer-of, parent-of, ...
         """
         return { 'foo' : 'bar' }
+    
+@ns.route('/substance/<id>/exposures/')
+class SubstanceExposures(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_list_with(association)
+    def get(self, id):
+        """
+        TODO Returns associations between a substance and related exposures
+
+        E.g. between pesticide and occupational exposure class
+        """
+        return { 'foo' : 'bar' }
+    
     
 
 @ns.route('/genotype/<id>')
@@ -460,9 +536,16 @@ class GenotypeObject(Resource):
     @api.marshal_list_with(genotype)
     def get(self, id):
         """
-        TODO Returns genotype object
+        Returns genotype object.
+
+        The genotype object will have the following association sets populated:
+
+         * gene
+         * phenotype
+         * disease
+
         """
-        return { 'foo' : 'bar' }
+        return get_object_genotype(id)
 
 @ns.route('/genotype/<id>/genotypes/')
 @api.doc(params={'id': 'CURIE identifier of genotype, e.g. ZFIN:ZDB-FISH-150901-6607'})
@@ -481,7 +564,7 @@ class GenotypeGenotypeAssociations(Resource):
         return search_associations('genotype', 'genotype', None, id, **core_parser.parse_args())
 
 @ns.route('/genotype/<id>/phenotypes/')
-@api.doc(params={'id': 'CURIE identifier of genotype, e.g. ZFIN:ZDB-FISH-150901-6607'})
+@api.doc(params={'id': 'CURIE identifier of genotype, e.g. ZFIN:ZDB-FISH-150901-4286'})
 class GenotypePhenotypeAssociations(Resource):
 
     @api.expect(core_parser)
@@ -493,6 +576,20 @@ class GenotypePhenotypeAssociations(Resource):
 
         # TODO: invert
         return search_associations('genotype', 'phenotypes', None, id, **core_parser.parse_args())
+
+@ns.route('/genotype/<id>/diseases/')
+@api.doc(params={'id': 'CURIE identifier of genotype, e.g. ZFIN:ZDB-FISH-150901-4286 (if non-human will return models)'})
+class GenotypeDiseaseAssociations(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_list_with(association_results)
+    def get(self, id):
+        """
+        Returns diseases associated with a genotype
+        """
+
+        # TODO: invert
+        return search_associations('genotype', 'disease', None, id, **core_parser.parse_args())
     
 @ns.route('/genotype/<id>/genes/')
 @api.doc(params={'id': 'CURIE identifier of genotype, e.g. ZFIN:ZDB-FISH-150901-6607'})

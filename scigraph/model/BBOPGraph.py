@@ -22,7 +22,7 @@ class BBOPGraph:
     def add_json_graph(self, obj={}):
         #print(obj)
         for n in obj['nodes']:
-            self.add_node(Node(n))
+            self.add_node(Node(**n))
         for e in obj['edges']:
             self.add_edge(Edge(e))
         #print("EDGES="+str(self.edges))
@@ -77,10 +77,10 @@ class BBOPGraph:
         return el
 
 class Node:
-    def __init__(self, obj={}):    
-        self.id = obj['id']
-        self.lbl = obj['lbl']
-        self.meta = Meta(obj['meta'])
+    def __init__(self, id, lbl=None, meta=None):    
+        self.id = id
+        self.lbl = lbl
+        self.meta = Meta(meta)
     def __str__(self):
         return self.id+' "'+str(self.lbl)+'"'
 
