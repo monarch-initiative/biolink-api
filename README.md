@@ -1,5 +1,69 @@
 # Biolink API
 
+An API providing access to information on biologically and
+biomedically relevant entities, and the relationships between them, including:
+
+ * genes, gene products, proteins
+ * diseases, phenotypes, traits and clinical measurements
+ * pathways, biological process
+ * substances: small molecules, drugs, chemical entities
+ * biological and molecular roles and activities
+ * genotypes, alleles, sequence variants; for plants, germplasms
+ * environmental contexts and exposures
+ * individual organisms: patients, cohorts, model organisms
+ * cell lines and cell types
+ * investigations: experiments, clinical trials and 'natural experiments'
+ * genomic features
+ * phylogenies
+ * metadata: publications, ontology terms, database metadata, prefixes
+
+This repository provides an example server for the biolink API. The
+swagger is also generated from this.
+
+## Demo
+
+This API is designed to be implemented or partially implemented via a
+variety of databases.
+
+The Monarch instance provides access to a wide variety of aggregated
+data:
+
+http://api.monarchinitiative.org/api/
+
+## Datamodel
+
+See the swagger UI for more details. Click on 'model' under any of the routes.
+
+The primary abstraction used in the modeling is the distinction
+between _named objects_ and _associations_.
+
+ * Named objects include things like genes, drugs, pathways.
+    * specific types subclass from a more generic type
+ * Associations connect these, usually via some _evidence_ and provenance information.
+    * Some associations can be direct, others are indirect or *inferred*
+    * Where associations are inferred, these is a *graph of evidence* tracing the primary associations
+
+## Examples
+
+TODO
+
+## Writing client code
+
+The API uses Swagger, which means you can take advantage of a variety of swagger tooling
+
+For example, to generate a python client:
+
+    swagger-codegen generate -i http://api.monarchinitiative.org/api/swagger.json -l $* -o $@
+
+# Contributing to BioLink-API
+
+This is the repo:
+
+https://github.com/monarch-initiative/biolink-api/
+
+You can run a server instance locally with very little effort (less
+than one minute), see below:
+
 ## Setting up
 
 ```

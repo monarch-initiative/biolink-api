@@ -10,3 +10,5 @@ sparqlwrapper>0.0
 gunicorn>=19.0.0
 scipy>=0.0
 jsonpickle>=0.0
+behave>=0.0
+jsonpath_rw>=0.0
