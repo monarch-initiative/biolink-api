@@ -108,9 +108,8 @@ sequence_feature = api.inherit('SequenceFeature', bio_object, {
     'homology_associations': fields.List(fields.Nested(association)),
 })
 
-
 gene = api.inherit('Gene', sequence_feature, {
-    'family_ids' : fields.List(fields.String),
+    'families' : fields.List(fields.Nested(named_object), description='Families, superfamilies etc to which these gene belongs'),
     'phenotype_associations': fields.List(fields.Nested(association)),
     'disease_associations': fields.List(fields.Nested(association)),
     'homology_associations': fields.List(fields.Nested(association)),
@@ -133,6 +132,7 @@ genotype = api.inherit('Genotype', sequence_feature, {
     'phenotype_associations': fields.List(fields.Nested(association)),
     'disease_associations': fields.List(fields.Nested(association)),
     'gene_associations': fields.List(fields.Nested(association)),
+    'variant_associations': fields.List(fields.Nested(association)),
 })
 
 allele = api.inherit('Allele', genotype, {

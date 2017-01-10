@@ -1,5 +1,9 @@
 __author__ = 'cjm'
 
+"""
+Utility classes for wrapping a SciGraph service
+"""
+
 import logging
 import requests
 import importlib
@@ -10,6 +14,9 @@ from scigraph.model.EntityAnnotationResults import *
 from biomodel.core import NamedObject, BioObject, SynonymPropertyValue
 
 # TODO: modularize into vocab/graph/etc?
+
+HAS_PART = 'http://purl.obolibrary.org/obo/BFO_0000051'
+INHERES_IN = 'http://purl.obolibrary.org/obo/RO_0000052'
 
 class SciGraph:
     """
@@ -55,6 +62,57 @@ class SciGraph:
         g1.merge(g3)
         return g1
 
+    # TODO: replace with https://github.com/SciGraph/SciGraph/issues/200
+    def cbd(self, id=None):
+        """
+        Returns the Concise Bounded Description of a node
+        """
+        nodes = [id]
+        g=BBOPGraph()
+        while len(nodes)>0:
+            n = nodes.pop()
+            nextg = self.neighbors(n, {'blankNodes':True, 'direction':'OUTGOING','depth':1})
+            for nn in nextg.nodes:
+                if nn.id.startswith("_:"):
+                    n.append(nn.id)
+            g.merge(nextg)
+        return g
+
+    # TODO - direct SciGraph method?
+    def traverse_chain(self, id=None, rels=[], type=None):
+        """
+        Finds all nodes reachable via a specified chain of relationship types
+        """
+
+        relsr = rels.copy()
+        relsr.reverse()
+        
+        # list of tuples
+        stack = [ (id, relsr) ]
+
+        nmap = {}
+        sinks = []
+        while len(stack)>0:
+            (nextid, nextrels) = stack.pop()
+            if len(nextrels) == 0:
+                sinks.append(nextid)
+            else:
+                nextrel = nextrels.pop()
+                nextg = self.neighbors(nextid,
+                                       blankNodes=True,
+                                       relationshipType=nextrel,
+                                       direction='OUTGOING',
+                                       depth=1)
+                for n in nextg.nodes:
+                    nmap[n.id] = n
+                for e in nextg.edges:
+                    stack.append( (e.obj, nextrels.copy()) )
+                
+        sinknodes = [nmap[x] for x in sinks]
+        if type is not None:
+            sinknodes = [x for x in sinknodes if type in x.meta.pmap['types']]
+        return sinknodes
+            
     
     def autocomplete(self, term=None):
         response = self.get_response("vocabulary/autocomplete", term)
@@ -85,8 +143,6 @@ class SciGraph:
         module = importlib.import_module("biomodel.core")
         DynClass = getattr(module, class_name)
         return DynClass(**self.map_tuple(**kwargs))
-    def make_BioObject(self, **kwargs):
-        return NamedObject(**self.map_tuple(**kwargs))
 
     def map_tuple(self, id, lbl, meta):
         obj = {
@@ -99,4 +155,7 @@ class SciGraph:
         if 'synonym' in meta:
             obj['synonyms'] = [SynonymPropertyValue(pred='synonym', val=s) for s in meta['synonym']]
         return obj
-    
+
+    def phenotype_to_entity_list(self, id):
+        objs = self.traverse_chain(id, [HAS_PART, INHERES_IN], "anatomical entity")
+        return [self.make_NamedObject(id=x.id, lbl=x.lbl, meta={}, class_name='NamedObject') for x in objs]

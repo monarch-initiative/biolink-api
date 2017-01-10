@@ -3,11 +3,11 @@
 ## Setting up
 
 ```
-$ pyvenv venv
-$ source venv/bin/activate
-$ pip install -r requirements.txt
-$ export PYTHONPATH=.:$PYTHONPATH
-$ python biolink/app.py
+pyvenv venv
+source venv/bin/activate
+pip install -r requirements.txt
+export PYTHONPATH=.:$PYTHONPATH
+python biolink/app.py
 ```
 
 to run:
@@ -18,7 +18,7 @@ python biolink/app.py
 
 Then look at:
 
-http://localhost:8888/api/
+http://localhost:5000/api/
 
 For the swagger docs
 
@@ -45,35 +45,39 @@ start your own server)
 
 All assocations, first 10:
 
-http://localhost:8888/api/link/search/
+http://localhost:5000/api/link/search/
 
 All mouse gene-phenotype associations:
 
-http://localhost:8888/api/link/search/gene/phenotype/?map_identifiers=MGI&subject_taxon=NCBITaxon:10090
+http://localhost:5000/api/link/search/gene/phenotype/?map_identifiers=MGI&subject_taxon=NCBITaxon:10090
 
 Same but with IDs mapped from NCBIGene to MGI (see #5):
 
-http://localhost:8888/api/link/search/gene/phenotype/?subject_taxon=NCBITaxon:10090
+http://localhost:5000/api/link/search/gene/phenotype/?subject_taxon=NCBITaxon:10090
 
 phenotypes for a given gene
 
-http://localhost:8888/api/bio/gene/ZFIN:ZDB-GENE-050417-357/phenotypes/
+http://localhost:5000/api/bio/gene/ZFIN:ZDB-GENE-050417-357/phenotypes/
 
 GO terms for a given gene (uses GO golr)
 
-http://localhost:8888/api/bio/gene/ZFIN:ZDB-GENE-050417-357/function/
+http://localhost:5000/api/bio/gene/ZFIN:ZDB-GENE-050417-357/function/
 
 Query association by ID:
 
-http://localhost:8888/api/link/cfef92b7-bfa3-44c2-a537-579078d2de37
+http://localhost:5000/api/link/cfef92b7-bfa3-44c2-a537-579078d2de37
 
 Evidence graph as bbop-graph:
 
-http://localhost:8888/api/evidence/graph/cfef92b7-bfa3-44c2-a537-579078d2de37
+http://localhost:5000/api/evidence/graph/cfef92b7-bfa3-44c2-a537-579078d2de37
 
 Evidence graph as image:
 
-http://localhost:8888/api/evidence/graph/cfef92b7-bfa3-44c2-a537-579078d2de37/image
+http://localhost:5000/api/evidence/graph/cfef92b7-bfa3-44c2-a537-579078d2de37/image
+
+Anatomical entities for a given phenotype:
+
+http://localhost:5000/api/bioentity/phenotype/ZP:0004204/anatomy/
 
 ## Implementation and Project Organization
 

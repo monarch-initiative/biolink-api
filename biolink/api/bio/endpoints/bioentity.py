@@ -274,12 +274,16 @@ class PhenotypeObject(Resource):
 class PhenotypeAnatomyAssociations(Resource):
 
     @api.expect(core_parser)
-    @api.marshal_list_with(association)
+    @api.marshal_list_with(named_object)
     def get(self, id):
         """
-        TODO Returns anatomical locations associated with a phenotype
+        Returns anatomical entities associated with a phenotype (e.g. ZP:0004204)
+
+        For example, *abnormal limb development* will map to *limb*
         """
-        return { 'foo' : 'bar' }
+        objs = scigraph.phenotype_to_entity_list(id)
+        return objs
+
 
 @ns.route('/phenotype/<id>/function/')
 class PhenotypeFunctionAssociations(Resource):
@@ -530,6 +534,7 @@ class SubstanceExposures(Resource):
     
 
 @ns.route('/genotype/<id>')
+@api.doc(params={'id': 'CURIE identifier of genotype, e.g. ZFIN:ZDB-FISH-150901-6607'})
 class GenotypeObject(Resource):
 
     @api.expect(core_parser)
