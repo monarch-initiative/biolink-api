@@ -9,8 +9,9 @@ import time
 
 ## Run this before anything else.
 def before_all(context):
-    ## Determine the server target. Default: http://beta.monarchinitiative.org.
-    context.target = 'http://api.monarchinitiative.org/api'
+    ## Determine the server target.
+    ##context.target = 'http://api.monarchinitiative.org/api'
+    context.target = 'http://localhost:5000/api'
     context.content_type = None
     
 ## Do this after completing everything.

@@ -5,7 +5,7 @@ from flask_restplus import Resource
 from biolink.datamodel.serializers import node, named_object, bio_object, association_results, association, publication, gene, substance, genotype, allele, search_result
 #import biolink.datamodel.serializers
 from biolink.api.restplus import api
-from biogolr.golr_associations import search_associations, search_associations_go
+from biogolr.golr_associations import search_associations, search_associations_go, select_distinct_subjects
 from scigraph.scigraph_util import SciGraph
 
 import pysolr
@@ -19,6 +19,7 @@ core_parser.add_argument('rows', type=int, required=False, default=20, help='num
 core_parser.add_argument('unselect_evidence', type=bool, help='If set, excludes evidence objects in response')
 core_parser.add_argument('exclude_automatic_assertions', default=False, type=bool, help='If set, excludes associations that involve IEAs (ECO:0000501)')
 core_parser.add_argument('fetch_objects', type=bool, default=True, help='If true, returns a distinct set of association.objects (typically ontology terms). This appears at the top level of the results payload')
+core_parser.add_argument('use_compact_associations', type=bool, default=False, help='If true, returns results in compact associations format')
 
 scigraph = SciGraph('https://scigraph-data.monarchinitiative.org/scigraph/')
 
@@ -277,7 +278,12 @@ class PhenotypeAnatomyAssociations(Resource):
     @api.marshal_list_with(named_object)
     def get(self, id):
         """
-        Returns anatomical entities associated with a phenotype (e.g. ZP:0004204)
+        Returns anatomical entities associated with a phenotype.
+
+        Example IDs:
+
+         * ZP:0004204 
+         * MP:0008521 abnormal Bowman membrane
 
         For example, *abnormal limb development* will map to *limb*
         """
@@ -313,7 +319,38 @@ class PhenotypePhenotypeAssociations(Resource):
         Includes phenologs, as well as equivalent phenotypes in other species
         """
         return { 'foo' : 'bar' }
-    
+
+@ns.route('/phenotype/<id>/genes/')
+class PhenotypeGeneAssociations(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_list_with(association)
+    def get(self, id):
+        """
+        TODO Returns associated phenotypes
+
+        """
+        return { 'foo' : 'bar' }
+
+@ns.route('/phenotype/<id>/gene/<taxid>/ids')
+@api.doc(params={'id': 'Pheno class CURIE identifier, e.g  MP:0001569 (abnormal circulating bilirubin level)'})
+@api.doc(params={'taxid': 'Species or high level taxon grouping, e.g  NCBITaxon:10090 (Mus musculus)'})
+class PhenotypeGeneAssociations(Resource):
+
+    @api.expect(core_parser)
+    #@api.marshal_list_with(association)
+    def get(self, id, taxid):
+        """
+        Returns gene ids for all genes for a particular phenotype in a taxon
+
+        For example, + NCBITaxon:10090 (mouse)
+
+        """
+        results = select_distinct_subjects(subject_category='gene',
+                                           object_category='phenotype',
+                                           subject_taxon=taxid)
+        return results
+
 @ns.route('/goterm/<id>')
 @api.doc(params={'id': 'GO class CURIE identifier, e.g GO:0016301 (kinase activity)'})
 class GotermObject(Resource):

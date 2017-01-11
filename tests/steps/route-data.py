@@ -36,7 +36,7 @@ def get_and_process(context, url):
 ###
 
 ## Collector for internal path.
-@given('I collect data at path "{path}"')
+@given('a path "{path}"')
 def step_impl(context, path):
     full_url = context.target + path
     get_and_process(context, full_url)

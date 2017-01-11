@@ -25,6 +25,7 @@ parser.add_argument('map_identifiers', help='Prefix to map all IDs to. E.g. NCBI
 parser.add_argument('subject_category', help='e.g. gene, genotype, disease')
 parser.add_argument('object_category', help='e.g. disease, phenotype, gene')
 
+parser.add_argument('use_compact_associations', type=bool, help='If true, returns results in compact associations format')
 
 @ns.route('/from/<subject>')
 @api.doc(params={'subject': 'E.g. e.g. NCBIGene:84570'})
@@ -42,7 +43,7 @@ class AssociationsFrom(Resource):
 
 @ns.route('/to/<object>')
 @api.doc(params={'object': 'E.g. e.g. MP:0013765, can also be a biological entity such as a gene'})
-class AssociationsFrom(Resource):
+class AssociationsTo(Resource):
 
     @api.expect(parser)
     @api.marshal_list_with(association_results)
@@ -51,6 +52,8 @@ class AssociationsFrom(Resource):
         Returns list of matching associations
         """
         args = parser.parse_args()
+        print("XXCOMPACT="+str(args.get('use_compact_associations')))
+        print("XXFL="+str(args.get('fl_excludes_evidence')))
 
         return search_associations(object=object, **args)
 
@@ -66,7 +69,6 @@ class AssociationsFrom(Resource):
         Returns list of matching associations
         """
         args = parser.parse_args()
-
         return search_associations(object=object, **args)
     
     

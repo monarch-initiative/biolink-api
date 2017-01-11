@@ -255,6 +255,7 @@ def search_associations(subject_category=None,
                             M.SUBJECT_TAXON_LABEL,
                             M.OBJECT_CLOSURE
                         ],
+                        facet_field_limits = None,
                         facet_limit=25,
                         facet_mincount=1,
                         rows=10,
@@ -384,8 +385,13 @@ def search_associations(subject_category=None,
     }
     if json_facet:
         params['json.facet'] = json.dumps(json_facet)
+
+    if facet_field_limits is not None:
+        for (f,flim) in facet_field_limits.items():
+            params["f."+f+".facet.limit"] = flim
+            
     
-    if (len(facet_pivot_fields) > 0):
+    if len(facet_pivot_fields) > 0:
         params['facet.pivot'] = ",".join(facet_pivot_fields)
         params['facet.pivot.mincount'] = 1
     print("PARAMS="+str(params))
@@ -395,7 +401,8 @@ def search_associations(subject_category=None,
     payload = {
         'facet_counts': translate_facet_field(fcs),
     }
-    
+
+    print("COMPACT="+str(use_compact_associations))
     if use_compact_associations:
         payload['compact_associations'] = translate_docs_compact(results.docs, field_mapping=field_mapping, **kwargs)
     else:
@@ -434,6 +441,15 @@ def solr_quotify(v):
         return '"{}"'.format(v)
 
 def translate_facet_field(fcs):
+    """
+    Translates solr facet_fields results into something easier to manipulate
+
+    A solr facet field looks like this: [field1, count1, field2, count2, ..., fieldN, countN]
+
+    We translate this to a dict {f1: c1, ..., fn: cn}
+
+    This has slightly higher overhead for sending over the wire, but is easier to use
+    """
     ffs = fcs['facet_fields']
     rs={}
     for (facet, facetresults) in ffs.items():
@@ -445,6 +461,14 @@ def translate_facet_field(fcs):
     return rs
 
         
+def select_distinct_subjects(**kwargs):
+    #kwargs['rows']=0
+    results = search_associations(rows=0,
+                                  facet_field_limits = {
+                                      M.SUBJECT : -1
+                                  },
+                                  facet_fields=[M.SUBJECT])
+    return results['facet_counts'][M.SUBJECT].keys()
     
 
     
