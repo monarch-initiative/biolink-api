@@ -248,7 +248,7 @@ def search_associations(subject_category=None,
                         use_compact_associations=False,
                         field_mapping=None,
                         solr=monarch_solr,
-                        select_fields=[],
+                        select_fields=None,
                         fetch_objects=False,
                         json_facet=None,
                         facet_fields = [
@@ -346,7 +346,7 @@ def search_associations(subject_category=None,
     filter_queries = [ '{}:{}'.format(k,solr_quotify(v))  for (k,v) in fq.items()]
 
     # unless caller specifies a field list, use default
-    if len(select_fields)==0:
+    if select_fields is None:
         select_fields = [
             M.ID,
             M.IS_DEFINED_BY,
@@ -464,11 +464,14 @@ def translate_facet_field(fcs):
 def select_distinct_subjects(**kwargs):
     #kwargs['rows']=0
     results = search_associations(rows=0,
+                                  select_fields=[],
                                   facet_field_limits = {
                                       M.SUBJECT : -1
                                   },
-                                  facet_fields=[M.SUBJECT])
-    return results['facet_counts'][M.SUBJECT].keys()
+                                  facet_fields=[M.SUBJECT],
+                                  **kwargs
+    )
+    return list(results['facet_counts'][M.SUBJECT].keys())
     
 
     
