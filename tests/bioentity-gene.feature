@@ -37,18 +37,19 @@ between these entities
  Scenario: User fetches all phenotypes for a mouse gene
     Given a path "/bioentity/gene/MGI:1342287/phenotypes"
     when the content is converted to JSON
-      then the JSON should have some JSONPath "phenotype_associations[*].object.id" with "string" "MP:0008521"
-      and the JSON should have some JSONPath "phenotype_associations[*].object.label" with "string" "abnormal Bowman membrane"
+      then the JSON should have some JSONPath "associations[*].object.id" with "string" "MP:0008521"
+      and the JSON should have some JSONPath "associations[*].object.label" with "string" "abnormal Bowman membrane"
 
- Scenario: User fetches all GO functional assignments for a mouse gene
-    Given a path "/bioentity/gene/MGI:1342287/function"
+ Scenario: User fetches all GO functional assignments for a zebrafish gene
+    Given a path "/bioentity/gene/ZFIN:ZDB-GENE-050417-357/function"
     when the content is converted to JSON
-      then the JSON should have some JSONPath "phenotype_associations[*].object.id" with "string" "GO:0048679"
-      and the JSON should have some JSONPath "phenotype_associations[*].object.label" with "string" "regulation of axon regeneration"
+      then the JSON should have some JSONPath "associations[*].object.id" with "string" "GO:0030500"
+      and the JSON should have some JSONPath "associations[*].object.label" with "string" "regulation of bone mineralization"
 
  Scenario: User fetches all interactions for a mouse gene
     Given a path "/bioentity/gene/MGI:1342287/interactions"
+     then the content should contain "http://data.monarchinitiative.org/ttl/biogrid.ttl"
     when the content is converted to JSON
-      then the JSON should have some JSONPath "phenotype_associations[*].object.id" with "string" "GO:0048679"
-      and the JSON should have some JSONPath "phenotype_associations[*].object.label" with "string" "regulation of axon regeneration"
+      then the JSON should have some JSONPath "associations[*].object.id" with "string" "MGI:88039"
+      and the JSON should have some JSONPath "associations[*].object.label" with "string" "Apc"
 
