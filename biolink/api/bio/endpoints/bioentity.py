@@ -253,20 +253,42 @@ class DiseaseModelAssociations(Resource):
     @api.expect(core_parser)
     @api.marshal_list_with(association_results)
     def get(self, id):
-        """
-        Returns associations to models of the disease
+        """Returns associations to models of the disease
 
         In the association object returned, the subject will be the disease, and the object will be the model.
         The model may be a gene or genetic element.
 
-        If the query disease is a general class, the association subject may be to a specific disease
+        If the query disease is a general class, the association subject may be to a specific disease.
+
+        In some cases the association will be *direct*, for example if a paper asserts a genotype is a model of a disease.
+
+        In other cases, the association will be *indirect*, for
+        example, chaining over orthology. In these cases the chain
+        will be reflected in the *evidence graph*
 
         * TODO: provide hook into owlsim for dynamic computation of models by similarity
+
         """
 
         # TODO: invert
-        return search_associations('model', 'disease', None, id, invert_subject_object=True, **core_parser.parse_args())
-    
+        return search_associations('disease', 'model', None, id, invert_subject_object=True, **core_parser.parse_args())
+
+@ns.route('/disease/<id>/models/<taxon>')
+@api.doc(params={'id': 'CURIE identifier of disease, e.g. OMIM:605543, DOID:678. Equivalent IDs can be used with same results'})
+@api.doc(params={'taxon': 'CURIE of organism taxonomy class to constrain models, e.g NCBITaxon:6239 (C elegans).\n\n Higher level taxa may be used'})
+class DiseaseModelTaxonAssociations(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_list_with(association_results)
+    def get(self, id, taxon):
+        """
+        Same as `/disease/<id>/models` but constrain models by taxon
+
+        """
+
+        # TODO: invert
+        return search_associations('disease', 'model', None, id, invert_subject_object=True, subject_taxon=taxon, **core_parser.parse_args())
+
 @ns.route('/phenotype/<id>')
 class PhenotypeObject(Resource):
 

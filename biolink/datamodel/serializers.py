@@ -23,6 +23,9 @@ abstract_property_value = api.model('AbstractPropertyValue', {
 synonym_property_value = api.inherit('SynonymPropertyValue', abstract_property_value, {
 })
 
+association_property_value = api.inherit('AssociationPropertyValue', abstract_property_value, {
+})
+
 
 node = api.model('Node', {
     'id': fields.String(readOnly=True, description='ID or CURIE'),
@@ -67,14 +70,30 @@ bio_object = api.inherit('BioObject', named_object, {
 
 # Assoc
 
+annotation_extension = api.model('AnnotationRelation', {
+    'relation_chain': fields.List(fields.Nested(relation, description='Relationship type. If more than one value, interpreted as chain')),
+    'filler': fields.Nested(named_object, description='Extension interpreted as OWL expression (r1 some r2 some .. some filler'),
+})
+
 association = api.model('Association', {
     'id': fields.String(readOnly=True, description='Association/annotation unique ID'),
-    'subject': fields.Nested(bio_object, description='Subject of association (what it is about), e.g. MGI:1201606'),
-    'object': fields.Nested(bio_object, description='Object (sensu RDF), aka target, e.g. MP:0002109'),
+    'type': fields.String(readOnly=True, description='Type of association, e.g. gene-phenotype'),
+    'subject': fields.Nested(bio_object, description='Subject of association (what it is about), e.g. ClinVar:nnn, MGI:1201606'),
+    'subject_extension': fields.List(fields.Nested(annotation_extension, description='Additional properties of the subject in the context of this association')),
+    'object': fields.Nested(bio_object, description='Object (sensu RDF), aka target, e.g. HP:0000448, MP:0002109, DOID:14330'),
+    'object_extension': fields.List(fields.Nested(annotation_extension, description='Additional properties of the object in the context of this association')),
     'relation': fields.Nested(relation, description='Relationship type connecting subject and object'),
+    'qualifiers': fields.List(fields.Nested(association_property_value, description='Qualifier on the association')),
     'evidence_graph': fields.Nested(bbop_graph, description='Subject-object relationship may be indirect, this graph has explicit relationships'),
-    'provided_by': fields.List(fields.String, description='Provider of association TODO'),
-    'publications': fields.List(fields.Nested(publication), description='Publications supporting association')
+    'evidence_types': fields.List(fields.Nested(named_object, description='Evidence types (ECO classes) extracted from evidence graph')),
+    'provided_by': fields.List(fields.String, description='Provider of association, e.g. Orphanet, ClinVar'),
+    'publications': fields.List(fields.Nested(publication), description='Publications supporting association, extracted from evidence graph')
+})
+
+# For example, via homology
+chained_association = api.model('ChainedAssociation', {
+    'proximal_association': fields.Nested(association, description='immediate association, between subject and intermediate object'),
+    'distal_associations': fields.List(fields.Nested(association), description='Associations where the intermediate object is the subject')
 })
 
 compact_association_set = api.model('CompactAssociationSet', {
