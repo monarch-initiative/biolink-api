@@ -70,8 +70,8 @@ bio_object = api.inherit('BioObject', named_object, {
 
 # Assoc
 
-annotation_extension = api.model('AnnotationRelation', {
-    'relation_chain': fields.List(fields.Nested(relation, description='Relationship type. If more than one value, interpreted as chain')),
+annotation_extension = api.model('AnnotationExtension', {
+    'relation_chain': fields.List(fields.Nested(relation), description='Relationship type. If more than one value, interpreted as chain'),
     'filler': fields.Nested(named_object, description='Extension interpreted as OWL expression (r1 some r2 some .. some filler'),
 })
 
@@ -85,7 +85,7 @@ association = api.model('Association', {
     'relation': fields.Nested(relation, description='Relationship type connecting subject and object'),
     'qualifiers': fields.List(fields.Nested(association_property_value, description='Qualifier on the association')),
     'evidence_graph': fields.Nested(bbop_graph, description='Subject-object relationship may be indirect, this graph has explicit relationships'),
-    'evidence_types': fields.List(fields.Nested(named_object, description='Evidence types (ECO classes) extracted from evidence graph')),
+    'evidence_types': fields.List(fields.Nested(named_object), description='Evidence types (ECO classes) extracted from evidence graph'),
     'provided_by': fields.List(fields.String, description='Provider of association, e.g. Orphanet, ClinVar'),
     'publications': fields.List(fields.Nested(publication), description='Publications supporting association, extracted from evidence graph')
 })
