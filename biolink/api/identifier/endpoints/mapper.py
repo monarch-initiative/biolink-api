@@ -23,7 +23,7 @@ class PrefixCollection(Resource):
     @api.marshal_list_with(association)
     def get(self, source, target):
         """
-        Returns list of prefixes
+        TODO maps a list of identifiers from a source to a target
         """
         args = parser.parse_args()
 

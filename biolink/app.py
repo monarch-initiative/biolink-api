@@ -8,6 +8,7 @@ from biolink.api.link.endpoints.find_associations import ns as find_associations
 from biolink.api.search.endpoints.entitysearch import ns as entity_search_namespace
 from biolink.api.bio.endpoints.bioentity import ns as bio_objects_namespace
 from biolink.api.entityset.endpoints.summary import ns as entityset_summary_namespace
+from biolink.api.entityset.endpoints.geneset_homologs import ns as geneset_homologs_namespace
 from biolink.api.nlp.endpoints.annotate import ns as nlp_annotate_namespace
 from biolink.api.ontol.endpoints.slimmer import ns as ontol_slimmer_namespace
 from biolink.api.ontol.endpoints.termstats import ns as ontol_termstats_namespace
@@ -19,6 +20,8 @@ from biolink.api.owl.endpoints.ontology import ns as owl_ontology_namespace
 from biolink.api.patient.endpoints.individual import ns as patient_individual_namespace
 from biolink.api.identifier.endpoints.prefixes import ns as identifier_prefixes_namespace
 from biolink.api.identifier.endpoints.mapper import ns as identifier_prefixes_mapper
+
+from biolink.api.genome.endpoints.region import ns as genome_region_namespace
 
 from biolink.api.evidence.endpoints.graph import ns as evidence_graph_namespace
 

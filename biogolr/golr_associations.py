@@ -463,6 +463,9 @@ def translate_facet_field(fcs):
     return rs
 
 def select_distinct(distinct_field=None, **kwargs):
+    """
+    select distinct values for a given field for a given a query
+    """
     results = search_associations(rows=0,
                                   select_fields=[],
                                   facet_field_limits = {
@@ -475,11 +478,20 @@ def select_distinct(distinct_field=None, **kwargs):
 
         
 def select_distinct_subjects(**kwargs):
+    """
+    select distinct subject IDs given a query
+    """
     return select_distinct(M.SUBJECT, **kwargs)
     
 def calculate_information_content(**kwargs):
     """
-    
+
+    Arguments are as for search_associations, in particular:
+
+     - subject_category
+     - object_category
+     - subject_taxon
+
     """
     # TODO - constraint using category and species
     results = search_associations(rows=0,

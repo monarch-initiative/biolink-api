@@ -37,6 +37,7 @@ class AssociationObject(Resource):
         return [eg]
 
 @ns.route('/<id>/image')
+@api.doc(params={'id': 'association id, e.g. cfef92b7-bfa3-44c2-a537-579078d2de37'})
 class AssociationObject(Resource):
 
     @api.expect(parser)

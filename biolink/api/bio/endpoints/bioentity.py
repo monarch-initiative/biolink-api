@@ -421,7 +421,7 @@ class PathwayParticipantAssociations(Resource):
         """
         return { 'foo' : 'bar' }
 
-@ns.route('/pub/<id>')
+@ns.route('/literature/<id>')
 class PubObject(Resource):
 
     @api.expect(core_parser)
@@ -431,7 +431,40 @@ class PubObject(Resource):
         TODO Returns publication object
         """
         return { 'id' : 'PMID:1' }
-    
+
+@ns.route('/literature/<id>/genes/')
+class LiteratureGeneAssociations(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_list_with(association)
+    def get(self, id):
+        """
+        Returns associations between a lit entity and a gene
+        """
+        return search_associations('literature', 'gene', None, id, **core_parser.parse_args())
+
+@ns.route('/literature/<id>/diseases/')
+class LiteratureDiseaseAssociations(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_list_with(association)
+    def get(self, id):
+        """
+        Returns associations between a lit entity and a disease
+        """
+        return search_associations('literature', 'disease', None, id, **core_parser.parse_args())
+
+@ns.route('/literature/<id>/genotypes/')
+class LiteratureGenotypeAssociations(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_list_with(association)
+    def get(self, id):
+        """
+        Returns associations between a lit entity and a genotype
+        """
+        return search_associations('literature', 'genotype', None, id, **core_parser.parse_args())
+
 @ns.route('/anatomy/<id>')
 class AnatomyObject(Resource):
 

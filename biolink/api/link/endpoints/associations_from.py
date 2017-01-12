@@ -52,8 +52,6 @@ class AssociationsTo(Resource):
         Returns list of matching associations
         """
         args = parser.parse_args()
-        print("XXCOMPACT="+str(args.get('use_compact_associations')))
-        print("XXFL="+str(args.get('fl_excludes_evidence')))
 
         return search_associations(object=object, **args)
 
@@ -66,7 +64,12 @@ class AssociationsFrom(Resource):
     @api.marshal_list_with(association_results)
     def get(self, subject, object):
         """
-        Returns list of matching associations
+        Returns associations connecting two entities
+
+        Given two entities (e.g. a particular gene and a particular disease), if these two entities
+        are connected (directly or indirectly), then return the association objects describing
+        the connection.
+        
         """
         args = parser.parse_args()
         return search_associations(object=object, **args)

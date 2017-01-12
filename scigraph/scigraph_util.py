@@ -117,6 +117,23 @@ class SciGraph:
             g.merge(nextg)
         return g
 
+    def extract_subgraph(self, ids=[], relationshipType='subClassOf'):
+        """
+        Returns subgraph module extracted using list of node IDs as seed
+        """
+        g=BBOPGraph()
+        visited=[]
+        while len(ids)>0:
+            id = ids.pop()
+            nextg = self.neighbors(id, {'blankNodes':False, relationshipType: relationshipType, 'direction':'OUTGOING','depth':1})
+            for edge in nextg.edges:
+                next_id = edge.obj
+                if next_id not in visited:
+                    ids.append(next_id)
+                    visited.append(next_id)
+            g.merge(nextg)
+        return g
+    
     # TODO - direct SciGraph method?
     def traverse_chain(self, id=None, rels=[], type=None):
         """

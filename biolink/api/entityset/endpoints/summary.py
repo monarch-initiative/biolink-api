@@ -16,7 +16,6 @@ ns = api.namespace('bioentityset', description='operations over sets of entities
 
 parser = api.parser()
 
-
 parser.add_argument('subject', action='append', help='Entity ids to be examined, e.g. NCBIGene:9342, NCBIGene:7227, NCBIGene:8131, NCBIGene:157570, NCBIGene:51164, NCBIGene:6689, NCBIGene:6387')
 parser.add_argument('background', action='append', help='Entity ids in background set, e.g. NCBIGene:84570, NCBIGene:3630; used in over-representation tests')
 parser.add_argument('object_category', help='E.g. phenotype, function')
@@ -72,8 +71,8 @@ class EntitySetAssociations(Resource):
                                       **args)
         return results
 
-@ns.route('/homologs/')
-class EntitySetHomologs(Resource):
+@ns.route('/DEPRECATEDhomologs/')
+class EntitySetHomologsDEPRECATED(Resource):
 
     @api.expect(parser)
     @api.marshal_list_with(association_results)
