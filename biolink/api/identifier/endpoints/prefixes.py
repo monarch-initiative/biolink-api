@@ -42,7 +42,6 @@ class PrefixCollection(Resource):
         """
         Returns contracted URI
         """
-        print(str(uri))
         return contract_uri(uri)
     
 

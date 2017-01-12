@@ -15,6 +15,17 @@ class NoContraction(CurieError):
     """Thrown if no prefix matches."""
     def __init__(self, uri):
         self.uri = uri
+        
+class NoPrefix(CurieError):
+    """Thrown if no prefix matches."""
+    def __init__(self, curie):
+        self.curie = curie
+        
+class AmbiguousPrefix(CurieError):
+    """Thrown if multiple prefix matches."""
+    def __init__(self, uri, curies):
+        self.uri = uri
+        self.curie = curie
 
 class InvalidSyntax(CurieError):
     """Thrown if curie does not contain ":" ."""
@@ -30,7 +41,7 @@ def read_local_jsonld_context(fn):
     f = open(fn, 'r')
     jsonstr = f.read()
     f.close()
-    return json.loads(jsonstr)
+    return extract_prefixmap(json.loads(jsonstr))
 
 def read_remote_jsonld_context(url):
     """
@@ -41,8 +52,14 @@ def read_remote_jsonld_context(url):
     with closing(requests.get(url, stream=False)) as resp:
         # TODO: redirects
         if resp.status_code == 200:
-            return resp.json()
+            return extract_prefixmap(resp.json())
 
+def extract_prefixmap(obj):
+    if '@context' in obj:
+        return obj['@context']
+    else:
+        return obj
+        
 def read_biocontext(name):
     """
     Uses prefixcommons registry
@@ -63,16 +80,32 @@ def get_prefixes(cmaps=default_curie_maps):
         
 
 def contract_uri(uri, cmaps=default_curie_maps, strict=False):
+    """
+    Contracts a URI/IRI to a CURIE/identifier
+
+    Returns a list of possible CURIES
+
+    If strict is True, then exactly on result expected.
+
+    Note if there are ambiguous rules it is possible to have multiple (e.g. GO:nnnn and OBO:GO_nnnn)
+    """
+    curies = []
     for cmap in cmaps:
         for (k,v) in cmap.items():
-            if (uri.startswith(v)):
-                return uri.replace(v, k+":")
+            if isinstance(v, str):
+                if (uri.startswith(v)):
+                    curies.append(uri.replace(v, k+":"))
     if strict:
-        raise NoPrefix(prefix, id)
-    else:
-        return uri
+        if len(curies) == 0:
+            raise NoPrefix(uri)
+        if len(curies) > 1:
+            raise AmbiguousPrefix(uri, curies)
+    return curies
 
 def expand_uri(id, cmaps=default_curie_maps, strict=False):
+    """
+    Expands a CURIE/identifier to a URI
+    """
     if id.find(":") == -1:
         if strict:
             raise InvalidSyntax(id)

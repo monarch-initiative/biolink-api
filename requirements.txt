@@ -12,3 +12,4 @@ scipy>=0.0
 jsonpickle>=0.0
 behave>=0.0
 jsonpath_rw>=0.0
+pytest>=0.0

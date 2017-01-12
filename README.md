@@ -45,7 +45,9 @@ between _named objects_ and _associations_.
 
 ## Examples
 
-TODO
+See [EXAMPLE-QUERIES.md](EXAMPLE-QUERIES.md)
+
+These examples are compiled from the [behave tests](tests/)
 
 ## Writing client code
 
@@ -88,6 +90,17 @@ For the swagger docs
 
 Note that only a small subset has been implemented
 
+## Organization
+
+This repo contains multiple sub-packages. These can all be used in
+python programs independent of biolink or a web service context.
+
+ * [biolink](biolink) FlaskREST service implementation for BioLink API
+ * [biomodel](biomodel) Data access objects
+ * [biogolr](biogolr) Python API onto Monarch and GO golr instances
+ * [scigraph](scigraph) Python API onto Monarch SciGraph instance
+ * [prefixcommons](prefixcommons) Python code for working with ID prefixes
+
 ## Goals
 
 This API will wrap and integrate number of different more modular APIs
@@ -98,14 +111,9 @@ ontology graphs.
 
 This is a proof of concept implementation. May be implemented using a JVM language, e.g. scala in future.
 
-## Overview
-
-The API is intended to be as self-explanatory as possible, via
-swagger/openapi annotations. Please consult these (you will need to
-start your own server)
 
 
-### Example API calls
+### Example API calls (OLD)
 
 All assocations, first 10:
 

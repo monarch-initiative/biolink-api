@@ -38,6 +38,8 @@ import logging
 import pysolr
 import json
 
+import math ### TODO - move?
+
 class GolrFields:
     """
     Enumeration of fields in Golr.
@@ -460,19 +462,47 @@ def translate_facet_field(fcs):
             pairs[fv] = fc
     return rs
 
-        
-def select_distinct_subjects(**kwargs):
-    #kwargs['rows']=0
+def select_distinct(distinct_field=None, **kwargs):
     results = search_associations(rows=0,
                                   select_fields=[],
                                   facet_field_limits = {
-                                      M.SUBJECT : -1
+                                      distinct_field : -1
                                   },
-                                  facet_fields=[M.SUBJECT],
+                                  facet_fields=[distinct_field],
                                   **kwargs
     )
-    return list(results['facet_counts'][M.SUBJECT].keys())
+    return list(results['facet_counts'][distinct_field].keys())
+
+        
+def select_distinct_subjects(**kwargs):
+    return select_distinct(M.SUBJECT, **kwargs)
     
+def calculate_information_content(**kwargs):
+    """
+    
+    """
+    # TODO - constraint using category and species
+    results = search_associations(rows=0,
+                                  select_fields=[],
+                                  facet_field_limits = {
+                                      M.OBJECT : -1
+                                  },
+                                  facet_fields=[M.OBJECT],
+                                  **kwargs
+    )
+    pop_size = None
+    icmap = {}
+
+    # find max
+    for (f,fc) in results['facet_counts'][M.OBJECT].items():
+        if pop_size is None or pop_size < fc:
+            pop_size = fc
+
+    # IC = -Log2(freq)
+    for (f,fc) in results['facet_counts'][M.OBJECT].items():
+        freq = fc/pop_size
+        icmap[f] = -math.log(freq, 2)
+    return icmap
 
     
 

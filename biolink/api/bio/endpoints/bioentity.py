@@ -523,11 +523,33 @@ class SubstanceRoleAssociations(Resource):
     @api.marshal_list_with(association)
     def get(self, id):
         """
-        TODO Returns associations between given drug and roles
+        Returns associations between given drug and roles
 
         Roles may be human-oriented (e.g. pesticide) or molecular (e.g. enzyme inhibitor)
         """
-        return { 'foo' : 'bar' }
+        return scigraph.substance_to_role_associations(id)
+
+@ns.route('/substance/<id>/participant_in/')
+class SubstanceParticipantInAssociations(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_list_with(association)
+    def get(self, id):
+        """
+        Returns associations between an activity and process and the specified substance
+
+        Examples relationships:
+
+         * substance is a metabolite of a process
+         * substance is synthesized by a process
+         * substance is modified by an activity
+         * substance elicits a response program/pathway
+         * substance is transported by activity or pathway
+
+        For example, CHEBI:40036 (amitrole) 
+
+        """
+        return scigraph.substance_participates_in_associations(id)
 
 @ns.route('/substance/<id>/interactions/')
 class SubstanceInteractions(Resource):
