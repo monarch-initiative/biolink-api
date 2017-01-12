@@ -55,6 +55,40 @@ URL: [http://api.monarchinitiative.org/api/association/find/gene/phenotype?subje
 when the content is converted to JSON:
 
 
+# Disease entity queries work as expected
+
+TODO - consider swapping subject/object
+
+## Diseases
+
+Scenario: __User queries for a specific form of Parkinson disease__
+
+URL: [http://api.monarchinitiative.org/api/bioentity/disease/OMIM:605543/models](http://api.monarchinitiative.org/api/bioentity/disease/OMIM:605543/models)
+
+ * then the content should contain "Snca"
+    * and the content should contain "Mus musculus"
+    * and the content should contain "C57BL/6"
+
+when the content is converted to JSON:
+
+ * then the JSON should have some JSONPath `associations[*].subject.id` with `string` `MGI:5544308`
+
+Scenario: __User queries for worm models of supranuclear palsy__
+
+URL: [http://api.monarchinitiative.org/api/bioentity/disease/DOID:678/models/NCBITaxon:6239](http://api.monarchinitiative.org/api/bioentity/disease/DOID:678/models/NCBITaxon:6239)
+
+ * then the content should contain "wormbase"
+    * and the content should contain "Caenorhabditis elegans"
+    * and the content should contain "ptl-1"
+
+Scenario: __User queries for dog models of lipid storage diseases (e.g. gangliosidosis)__
+
+URL: [http://api.monarchinitiative.org/api/bioentity/disease/DOID:9455/models/NCBITaxon:9615](http://api.monarchinitiative.org/api/bioentity/disease/DOID:9455/models/NCBITaxon:9615)
+
+ * then the content should contain "GM11474"
+    * and the content should contain "Canis lupus"
+    * and the content should contain "Gangliosidosis"
+
 
 # bioentity routes work as expected
 
@@ -207,5 +241,15 @@ Scenario: __Expand a GO ID to a URI__
 URL: [http://api.monarchinitiative.org/api/identifier/prefixes/expand/GO:0008150](http://api.monarchinitiative.org/api/identifier/prefixes/expand/GO:0008150)
 
  * then the content should contain "http://purl.obolibrary.org/obo/GO_0008150"
+
+
+# Dynamic information content calculation
+
+Scenario: __Client code fetches ICs for MP terms based on mouse gene associations__
+
+URL: [http://api.monarchinitiative.org/api/information_content/gene/phenotype/NCBITaxon:9606](http://api.monarchinitiative.org/api/information_content/gene/phenotype/NCBITaxon:9606)
+
+ * then the content should contain "MP:0000709"
+
 
 
