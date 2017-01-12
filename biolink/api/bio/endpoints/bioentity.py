@@ -254,7 +254,14 @@ class DiseaseModelAssociations(Resource):
     @api.marshal_list_with(association_results)
     def get(self, id):
         """
-        TODO Returns models associated with a disease
+        Returns associations to models of the disease
+
+        In the association object returned, the subject will be the disease, and the object will be the model.
+        The model may be a gene or genetic element.
+
+        If the query disease is a general class, the association subject may be to a specific disease
+
+        * TODO: provide hook into owlsim for dynamic computation of models by similarity
         """
 
         # TODO: invert
