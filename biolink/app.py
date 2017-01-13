@@ -24,6 +24,7 @@ from biolink.api.identifier.endpoints.mapper import ns as identifier_prefixes_ma
 from biolink.api.genome.endpoints.region import ns as genome_region_namespace
 
 from biolink.api.evidence.endpoints.graph import ns as evidence_graph_namespace
+from biolink.api.relations.endpoints.relation_usage import ns as relation_usage_namespace
 
 from biolink.api.variation.endpoints.variantset import ns as variation_variantset_namespace
 

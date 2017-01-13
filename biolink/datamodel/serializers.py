@@ -9,7 +9,8 @@ from biolink.api.restplus import api
 search_result = api.model('SearchResult', {
     'numFound': fields.Integer(description='total number of associations matching query'),
     'start': fields.Integer(description='Cursor position'),
-    'facet_counts': fields.Raw(description='Mapping between field names and association counts')
+    'facet_counts': fields.Raw(description='Mapping between field names and association counts'),
+    'facet_pivot': fields.Raw(description='Populated in facet_pivots is passed'),
     })
 
 ## BBOP/OBO Graphs
@@ -72,14 +73,14 @@ bio_object = api.inherit('BioObject', named_object, {
 
 annotation_extension = api.model('AnnotationExtension', {
     'relation_chain': fields.List(fields.Nested(relation), description='Relationship type. If more than one value, interpreted as chain'),
-    'filler': fields.Nested(named_object, description='Extension interpreted as OWL expression (r1 some r2 some .. some filler'),
+    'filler': fields.Nested(named_object, description='Extension interpreted as OWL expression (r1 some r2 some .. some filler).'),
 })
 
 association = api.model('Association', {
     'id': fields.String(readOnly=True, description='Association/annotation unique ID'),
     'type': fields.String(readOnly=True, description='Type of association, e.g. gene-phenotype'),
     'subject': fields.Nested(bio_object, description='Subject of association (what it is about), e.g. ClinVar:nnn, MGI:1201606'),
-    'subject_extension': fields.List(fields.Nested(annotation_extension, description='Additional properties of the subject in the context of this association')),
+    'subject_extension': fields.List(fields.Nested(annotation_extension, description='Additional properties of the subject in the context of this association.')),
     'object': fields.Nested(bio_object, description='Object (sensu RDF), aka target, e.g. HP:0000448, MP:0002109, DOID:14330'),
     'object_extension': fields.List(fields.Nested(annotation_extension, description='Additional properties of the object in the context of this association')),
     'relation': fields.Nested(relation, description='Relationship type connecting subject and object'),
@@ -102,6 +103,7 @@ compact_association_set = api.model('CompactAssociationSet', {
     'objects': fields.List(fields.String, description='List of O, for a given (S,R) pair, yielding (S,R,O) triples. E.g. list of MPs for (MGI:nnn, has_phenotype)'),
 })
 
+# A search result that returns a set of associations
 association_results = api.inherit('AssociationResults', search_result, {
     'associations': fields.List(fields.Nested(association), description='Complete representation of full association object, plus evidence'),
     'compact_associations': fields.List(fields.Nested(compact_association_set), description='Compact representation in which objects (e.g. phenotypes) are collected for subject-predicate pairs'),

@@ -260,6 +260,7 @@ def search_associations(subject_category=None,
                         facet_field_limits = None,
                         facet_limit=25,
                         facet_mincount=1,
+                        facet_pivot_fields = [],
                         rows=10,
                         **kwargs):
     
@@ -287,7 +288,7 @@ def search_associations(subject_category=None,
 
     """
     fq = {}
-    facet_pivot_fields = []
+    
     #print("SUBJECTS="+str(subjects))
 
     if invert_subject_object:
