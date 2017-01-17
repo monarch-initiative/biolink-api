@@ -193,7 +193,6 @@ def translate_doc(d, field_mapping=None, **kwargs):
     # solr does not allow nested objects, so evidence graph is json-encoded
     if M.EVIDENCE_GRAPH in d:
         assoc[M.EVIDENCE_GRAPH] = json.loads(d[M.EVIDENCE_GRAPH])
-    print(str(assoc))
     return assoc
 
 def translate_docs(ds, **kwargs):
@@ -376,6 +375,10 @@ def search_associations(subject_category=None,
     facet_fields = [ map_field(fn, field_mapping) for fn in facet_fields ]    
         
     #print('FL'+str(select_fields))
+    is_unlimited = False
+    if rows < 0:
+        is_unlimited = True
+        rows = 100000
     params = {
         'q': qstr,
         'fq': filter_queries,
@@ -401,9 +404,13 @@ def search_associations(subject_category=None,
     results = solr.search(**params)
     fcs = results.facets
 
+    
     payload = {
         'facet_counts': translate_facet_field(fcs),
+        'raw': results,
+        'pagination': {}
     }
+    # TODO - check if truncated
 
     print("COMPACT="+str(use_compact_associations))
     if use_compact_associations:
@@ -483,7 +490,9 @@ def select_distinct_subjects(**kwargs):
     select distinct subject IDs given a query
     """
     return select_distinct(M.SUBJECT, **kwargs)
-    
+
+
+
 def calculate_information_content(**kwargs):
     """
 

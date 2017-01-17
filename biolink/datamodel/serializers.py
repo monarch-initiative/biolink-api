@@ -85,7 +85,7 @@ association = api.model('Association', {
     'object_extension': fields.List(fields.Nested(annotation_extension, description='Additional properties of the object in the context of this association')),
     'relation': fields.Nested(relation, description='Relationship type connecting subject and object'),
     'qualifiers': fields.List(fields.Nested(association_property_value, description='Qualifier on the association')),
-    'evidence_graph': fields.Nested(bbop_graph, description='Subject-object relationship may be indirect, this graph has explicit relationships'),
+    'evidence_graph': fields.Nested(bbop_graph, description='An indirect association is a join between two or more direct assocations, e.g. gene to disease via ortholog. We record the full set of associations as a graph object'),
     'evidence_types': fields.List(fields.Nested(named_object), description='Evidence types (ECO classes) extracted from evidence graph'),
     'provided_by': fields.List(fields.String, description='Provider of association, e.g. Orphanet, ClinVar'),
     'publications': fields.List(fields.Nested(publication), description='Publications supporting association, extracted from evidence graph')
@@ -123,32 +123,41 @@ sequence_location = api.inherit('SequenceLocation', bio_object, {
     'end': fields.Nested(sequence_position),
 })
 
+seq = api.inherit('Seq', bio_object, {
+    'alphabet': fields.String(description='one of: DNA, RNA or AA'),
+    'residues': fields.String(description='string representing sequence of residues'),
+    'md5checksum': fields.String(description='checksum'),
+    'seqlen': fields.String(description='length of sequence'),
+})
+
 sequence_feature = api.inherit('SequenceFeature', bio_object, {
     'locations': fields.List(fields.Nested(sequence_location)),
-    'sequence': fields.String,
+    'seq': fields.Nested(seq),
     'homology_associations': fields.List(fields.Nested(association)),
 })
 
-gene = api.inherit('Gene', sequence_feature, {
+gene = api.inherit('Gene', bio_object, {
+    'sequence_features' : fields.List(fields.Nested(sequence_feature), description='Sequence feature representing particular instance on a genome'),
     'families' : fields.List(fields.Nested(named_object), description='Families, superfamilies etc to which these gene belongs'),
-    'phenotype_associations': fields.List(fields.Nested(association)),
-    'disease_associations': fields.List(fields.Nested(association)),
-    'homology_associations': fields.List(fields.Nested(association)),
-    'function_associations': fields.List(fields.Nested(association)),
-    'genotype_associations': fields.List(fields.Nested(association)),
+    'phenotype_associations': fields.List(fields.Nested(association), description='phenotypes associated with alterations of gene'),
+    'disease_associations': fields.List(fields.Nested(association), description='diseases associated with alterations of gene'),
+    'homology_associations': fields.List(fields.Nested(association), description='orthology and paralogy assocations for this gene'),
+    'function_associations': fields.List(fields.Nested(association), description='GO assocations for wild type gene'),
+    'genotype_associations': fields.List(fields.Nested(association), description='genotypes in which this gene is altered'),
     #'genotypes': fields.List(fields.Nested(bio_object), desc='List of references to genotype objects')
 })
 
-gene_product = api.inherit('GeneProduct', sequence_feature, {
+gene_product = api.inherit('GeneProduct', bio_object, {
     'genes': fields.List(fields.Nested(gene))
 })
 
-transcript = api.inherit('Transcript', sequence_feature, {
+transcript = api.inherit('Transcript', bio_object, {
+    'sequence_features' : fields.List(fields.Nested(sequence_feature), description='Sequence feature representing particular instance on a genome'),
     'genes': fields.List(fields.Nested(gene))
 })
 
 # in GENO, this corresponds to (genotype OR part-of some genotype)
-genotype = api.inherit('Genotype', sequence_feature, {
+genotype = api.inherit('Genotype', bio_object, {
     #'genes': fields.List(fields.Nested(bio_object), desc='List of references to gene object'),
     'phenotype_associations': fields.List(fields.Nested(association)),
     'disease_associations': fields.List(fields.Nested(association)),
@@ -157,6 +166,7 @@ genotype = api.inherit('Genotype', sequence_feature, {
 })
 
 allele = api.inherit('Allele', genotype, {
+    'sequence_features' : fields.List(fields.Nested(sequence_feature), description='Sequence feature representing particular instance on a genome'),
 })
 
 # molecular entities
@@ -173,7 +183,7 @@ substance = api.inherit('Substance', bio_object, {
 
 # phylo
 phylogenetic_node = api.inherit('PhylogeneticNode', named_object, {
-    'feature': fields.Nested(sequence_feature),
+    'feature': fields.Nested(bio_object),
     'parent_id': fields.String,
     'event': fields.String,
     'branch_length': fields.Float

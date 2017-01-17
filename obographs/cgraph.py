@@ -15,14 +15,14 @@ class CompactGraph():
         # TODO: order nodes
         # TODO: include undeclared
         for n in nodes:
-            id = n['id']
+            id = n.id
             id2index[id] = i
             i = i+1
             id_arr.append(id)
-            label_arr.append(n['lbl'])
+            label_arr.append(n.lbl)
             
         for e in edges:
-            ids = [e['sub'],e['pred'],e['obj']]
+            ids = [e.sub,e.pred,e.obj]
             for id in ids:
                 if id not in id2index:
                     id2index[id] = i
@@ -31,7 +31,7 @@ class CompactGraph():
                     label_arr.append(id)
             
         for e in edges:
-            (s,p,o) = (e['sub'],e['pred'],e['obj'])
+            (s,p,o) = (e.sub,e.pred,e.obj)
             (si,pi,oi) = (id2index[s],id2index[p],id2index[o])
             if pi not in e_by_p:
                 e_by_p[pi] = []

@@ -21,7 +21,7 @@ parser.add_argument('evidence', help="""Object id, e.g. ECO:0000501 (for IEA; In
 
 
 @ns.route('/')
-class AssociationSearch(Resource):
+class RelationUsageResource(Resource):
 
     @api.expect(parser)
     @api.marshal_list_with(association_results)
@@ -36,8 +36,25 @@ class AssociationSearch(Resource):
                                    facet_pivot_fields=[M.SUBJECT_CATEGORY, M.OBJECT_CATEGORY, M.RELATION],
                                    **args)
 
+@ns.route('/between/<subject_category>/<object_category>')
+class RelationUsageBetweenResource(Resource):
+
+    @api.expect(parser)
+    @api.marshal_list_with(association_results)
+    def get(self, subject_category, object_category):
+        """
+        All relations used plus count of associations
+        """
+        args = parser.parse_args()
+
+        return search_associations(rows=0,
+                                   subject_category=subject_category,
+                                   object_category=object_category,
+                                   facet_fields=[M.RELATION, M.RELATION_LABEL],
+                                   **args)
+    
 @ns.route('/pivot/')
-class AssociationSearch(Resource):
+class RelationUsagePivotResource(Resource):
 
     @api.expect(parser)
     @api.marshal_list_with(association_results)
@@ -54,7 +71,7 @@ class AssociationSearch(Resource):
     
     
 @ns.route('/pivot/label')
-class AssociationSearch(Resource):
+class RelationUsagePivotLabelResource(Resource):
 
     @api.expect(parser)
     @api.marshal_list_with(association_results)

@@ -15,7 +15,6 @@ ns = api.namespace('variation/set', description='Operations related to sets of v
 
 pagination_arguments = reqparse.RequestParser()
 pagination_arguments.add_argument('page', type=int, required=False, default=1, help='Page number')
-pagination_arguments.add_argument('bool', type=bool, required=False, default=1, help='Page number')
 pagination_arguments.add_argument('per_page', type=int, required=False, choices=[2, 10, 20, 30, 40, 50],
                                   default=10, help='Results per page {error_msg}')
 
@@ -100,8 +99,8 @@ class VariantSetItem(Resource):
         return None, 204
 
 
-@ns.route('/archive/<int:year>/')
-@ns.route('/archive/<int:year>/<int:month>/')
+#@ns.route('/archive/<int:year>/')
+#@ns.route('/archive/<int:year>/<int:month>/')
 @ns.route('/archive/<int:year>/<int:month>/<int:day>/')
 class VariantSetsArchiveCollection(Resource):
 

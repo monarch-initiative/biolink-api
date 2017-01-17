@@ -7,6 +7,7 @@ my %class_by_var = ();
 my %parenth = ();
 my %sloth = ();
 my %slothd = ();
+my %slothtype = ();
 my @clss = ();
 
 my $cls;
@@ -28,12 +29,25 @@ while(<>) {
     else {
         if (m@ '(\w+)': (.*)@) {
             my ($s, $rest) = ($1,$2);
-            if ($s ne 'id') {
                 push(@{$sloth{$cls}}, $s);
+                if ($rest =~ m@fields@) {
+                    my $fs = $rest;
+                    my @fields = ();
+                    while ($fs =~ m@fields\.(\w+)(.*)@) {
+                        push(@fields, $1);
+                        $fs = $2;
+                    }
+                    if ($fields[-1] eq 'Nested') {
+                        if ($fs =~ m@^\((\w+)@) {
+                            push(@fields, $1);
+                        }
+                    }
+                    $slothtype{$cls}->{$s} = \@fields;
+                }
                 if ($rest =~ m@description='(.*)'@) {
                     $slothd{$cls}{$s} = $1;
                 }
-            }
+            
         }
 
     }
@@ -60,7 +74,7 @@ foreach my $cls (@clss) {
     print '    """'."\n";
     print "    def __init__(self,\n";
     print "                 id=None,\n";
-    print "                 $_=None,\n" foreach @{$sloth{$cls} || []};
+    print "                 $_=None,\n" foreach grep {$_ ne 'id'} (@{$sloth{$cls} || []});  # ensure id is first
     print "                 \*\*kwargs):\n";
     if ($p) {
         print "        super($cls, self).__init__(id, \*\*kwargs)\n";
@@ -70,4 +84,45 @@ foreach my $cls (@clss) {
     }
     print "        self.$_=$_\n" foreach @{$sloth{$cls} || []};
     print "\n\n";
+    print '    """'."\n";
+    print '    Create an object from a json representation'."\n";
+    print '    """'."\n";
+    print "    def from_json(json_obj={}):\n";
+    print "        obj = $cls()\n";
+    write_slot_set_from_json($cls);
+    print "        return obj";
+    print "\n\n";
+}
+
+sub write_slot_set_from_json {
+    my ($cls) = @_;
+    my $p = $parenth{$cls};
+    write_slot_set_from_json($p) if $p;
+    foreach my $slot (keys %{$slothtype{$cls} || {}}) {
+        my @fields = @{$slothtype{$cls}->{$slot} || []};
+        print "        if '$slot' in json_obj:\n";
+        print "            obj.$slot = ".from_json("json_obj['$slot']", @fields)."\n";
+    }
+}
+
+sub from_json {
+    print STDERR "V=@_\n";
+    my ($v, @fields) = @_;
+    if (!@fields) {
+        return $v;
+    }
+    my $f = shift @fields;
+    if ($f eq 'List') {
+        my $nextv = from_json('x', @fields);
+        return "[$nextv for x in $v]";
+    }
+    if ($f eq 'Nested') {
+        my $t = shift @fields;
+        my $cn = $class_by_var{$t};
+        if (!$cn) {
+            die "NO MAP: $t";
+        }
+        return "$cn.from_json($v)";
+    }
+    return $v;
 }
