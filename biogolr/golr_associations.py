@@ -248,6 +248,7 @@ def search_associations(subject_category=None,
                         object_taxon=None,
                         invert_subject_object=False,
                         use_compact_associations=False,
+                        include_raw=False,
                         field_mapping=None,
                         solr=monarch_solr,
                         select_fields=None,
@@ -420,9 +421,13 @@ def search_associations(subject_category=None,
     
     payload = {
         'facet_counts': translate_facet_field(fcs),
-        'raw': results,
         'pagination': {}
     }
+
+    if include_raw:
+        # note: this is not JSON serializable, do not send via REST
+        payload['raw'] = results
+
     # TODO - check if truncated
 
     print("COMPACT="+str(use_compact_associations))

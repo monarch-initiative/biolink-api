@@ -28,6 +28,7 @@ def term_matrix(idlist, subject_category, taxon, **kwargs):
                                   select_fields=[M.SUBJECT, M.OBJECT_CLOSURE],
                                   facet_fields=[],
                                   rows=-1,
+                                  include_raw=True,
                                   **kwargs)
     docs = results['raw'].docs
 

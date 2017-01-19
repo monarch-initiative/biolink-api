@@ -14,8 +14,8 @@ parser = api.parser()
 parser.add_argument('object_category', help='e.g. disease, phenotype, gene. Two subjects will be compared based on overlap between associations to objects in this category')
 
 @ns.route('/jaccard/<id1>/<id2>/')
-@api.doc(params={'id1': 'id, e.g. NCBIGene:10891'})
-@api.doc(params={'id2': 'id, e.g. NCBIGene:1200'})
+@api.doc(params={'id1': 'id, e.g. NCBIGene:10891; ZFIN:ZDB-GENE-980526-166; UniProtKB:Q15465'})
+@api.doc(params={'id2': 'id, e.g. NCBIGene:1200; ZFIN:ZDB-GENE-980528-2059; UniProtKB:P12644'})
 class PairSimJaccardResource(Resource):
 
     @api.expect(parser)
