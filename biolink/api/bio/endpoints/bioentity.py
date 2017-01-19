@@ -7,6 +7,7 @@ from biolink.datamodel.serializers import node, named_object, bio_object, associ
 from biolink.api.restplus import api
 from biogolr.golr_associations import search_associations, search_associations_go, select_distinct_subjects
 from scigraph.scigraph_util import SciGraph
+from biowikidata.wd_sparql import doid_to_wikidata, resolve_to_wikidata, condition_to_drug
 
 import pysolr
 
@@ -250,7 +251,22 @@ class DiseaseFunctionAssociations(Resource):
         Results are typically represented as GO classes
         """
         return { 'foo' : 'bar' }
-    
+
+@ns.route('/disease/<id>/substance/')
+@api.doc(params={'id': 'CURIE identifier of disease, e.g. DOID:2841 (asthma). Equivalent IDs not yet supported'})
+class DiseaseSubstanceAssociations(Resource):
+
+    @api.expect(core_parser)
+    #TODO: @api.marshal_list_with(association)
+    def get(self, id):
+        """
+        Returns substances associated with a disease.
+
+        e.g. drugs or small molecules used to treat
+
+        """
+        return condition_to_drug(id)
+
 @ns.route('/disease/<id>/models/')
 @api.doc(params={'id': 'CURIE identifier of disease, e.g. OMIM:605543, DOID:678. Equivalent IDs can be used with same results'})
 class DiseaseModelAssociations(Resource):
