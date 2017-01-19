@@ -137,6 +137,7 @@ sequence_feature = api.inherit('SequenceFeature', bio_object, {
 })
 
 gene = api.inherit('Gene', bio_object, {
+    'description': fields.String(description='full text description'),
     'sequence_features' : fields.List(fields.Nested(sequence_feature), description='Sequence feature representing particular instance on a genome'),
     'families' : fields.List(fields.Nested(named_object), description='Families, superfamilies etc to which these gene belongs'),
     'phenotype_associations': fields.List(fields.Nested(association), description='phenotypes associated with alterations of gene'),

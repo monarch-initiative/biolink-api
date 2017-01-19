@@ -140,16 +140,23 @@ class GeneExpressionAssociations(Resource):
         return search_associations('gene', 'anatomy', None, id, **core_parser.parse_args())
 
 @ns.route('/gene/<id>/function/')
-class GeneExpressionAssociations(AbstractGeneAssociationResource):
+class GeneFunctionAssociations(AbstractGeneAssociationResource):
 
     @api.expect(core_parser)
     @api.marshal_list_with(association_results)
     def get(self, id):
         """
-        TODO Returns expression events for a gene
+        Returns function associations for a gene.
+
+        Note: currently this is implemented as a query to the GO solr instance.
+        A smaller set of identifiers may be supported:
+
+         - ZFIN e.g. ZFIN:ZDB-GENE-050417-357
+         - MGI e.g. MGI:1342287
+         - Use UniProt for human (TODO: map this)
         """
 
-        return search_associations_go('gene', 'goclass', None, id, **core_parser.parse_args())
+        return search_associations('gene', 'function', None, id, **core_parser.parse_args())
     
 @ns.route('/gene/<id>/pubs/')
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:4750. Equivalent IDs can be used with same results'})
@@ -212,9 +219,7 @@ class DiseaseGeneAssociations(Resource):
         Returns genes associated with a disease
         """
         args = core_parser.parse_args()
-        print(args)
-
-        return search_associations('disease', 'gene', None, id, **core_parser.parse_args())
+        return search_associations('disease', 'gene', None, id, invert_subject_object=True, **core_parser.parse_args())
 
 @ns.route('/disease/<id>/anatomy/')
 class DiseaseAnatomyAssociations(Resource):
@@ -270,7 +275,6 @@ class DiseaseModelAssociations(Resource):
 
         """
 
-        # TODO: invert
         return search_associations('disease', 'model', None, id, invert_subject_object=True, **core_parser.parse_args())
 
 @ns.route('/disease/<id>/models/<taxon>')

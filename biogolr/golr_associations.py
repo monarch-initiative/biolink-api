@@ -245,6 +245,7 @@ def search_associations(subject_category=None,
                         objects=None,
                         subject_direct=False,
                         subject_taxon=None,
+                        object_taxon=None,
                         invert_subject_object=False,
                         use_compact_associations=False,
                         field_mapping=None,
@@ -287,13 +288,25 @@ def search_associations(subject_category=None,
 
     """
     fq = {}
-    
-    #print("SUBJECTS="+str(subjects))
 
+    # temporary: for querying go solr, map fields
+    if object_category is not None and object_category == 'function':
+        go_golr_url = "http://golr.geneontology.org/solr/"
+        solr = pysolr.Solr(go_golr_url, timeout=5)
+        field_mapping=goassoc_fieldmap()
+        fq['document_category'] = 'annotation'
+        print('MGI hack: '+str(subject))
+        if subject is not None and subject.startswith('MGI:'):
+            subject = 'MGI:' + subject
+    
+    # typically information is stored one-way, e.g. model-disease;
+    # sometimes we want associations from perspective of object
     if invert_subject_object:
         (subject,object) = (object,subject)
         (subject_category,object_category) = (object_category,subject_category)
-    
+        (subject_taxon,object_taxon) = (object_taxon,subject_taxon)
+
+        
     if subject_category is not None:
         fq['subject_category'] = subject_category
     if object_category is not None:
@@ -428,13 +441,14 @@ def search_associations(subject_category=None,
     # TODO: no need to do 2nd query, see https://wiki.apache.org/solr/SimpleFacetParameters#Parameters
     if fetch_objects:
         object_field = map_field(M.OBJECT, field_mapping)
+        if invert_subject_object:
+            object_field = map_field(M.SUBJECT, field_mapping)
         oq_params = params.copy()
         oq_params['fl'] = []
         oq_params['facet.field'] = [object_field]
         oq_params['facet.limit'] = -1
         oq_params['rows'] = 0
         oq_params['facet.mincount'] = 1
-        print('OQ:'+str(oq_params))
         oq_results = solr.search(**oq_params)
         ff = oq_results.facets['facet_fields']
         ofl = ff.get(object_field)

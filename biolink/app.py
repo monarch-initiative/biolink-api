@@ -22,6 +22,7 @@ from biolink.api.identifier.endpoints.prefixes import ns as identifier_prefixes_
 from biolink.api.identifier.endpoints.mapper import ns as identifier_prefixes_mapper
 
 from biolink.api.genome.endpoints.region import ns as genome_region_namespace
+from biolink.api.pair.endpoints.pairsim import ns as pair_pairsim_namespace
 
 from biolink.api.evidence.endpoints.graph import ns as evidence_graph_namespace
 from biolink.api.relations.endpoints.relation_usage import ns as relation_usage_namespace
