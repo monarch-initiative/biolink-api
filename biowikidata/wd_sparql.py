@@ -18,11 +18,14 @@ class PrefixMap:
     p = 'http://www.wikidata.org/prop/'
     DiseaseOntologyID = 'http://www.wikidata.org/prop/direct/P699'
     ChebiID = 'http://www.wikidata.org/prop/direct/P683'
+    UniProtID = 'http://www.wikidata.org/prop/direct/P352'
     treated_by_drug = 'http://www.wikidata.org/prop/direct/P2176'
+    physically_interacts_with = 'http://www.wikidata.org/prop/direct/P129'
 
     def dbprefix2prop(self):
         return {
-            'DOID': self.DiseaseOntologyID
+            'DOID': (True, self.DiseaseOntologyID),
+            'UniProtKB': (False, self.UniProtID)
         }
 
 prefix_map = PrefixMap()
@@ -58,11 +61,17 @@ def resolve_to_wikidata(id):
     if len(s) != 2:
         raise InvalidIdentifierException(id)
     [prefix, localid] = s
-    p = prefix_map.dbprefix2prop()[prefix]
+
+    # in WD, some IDs are stored as localids only (e.g. P34995 in UniProt)
+    # other IDs are stored as full CURIEs (e.g. DOID)
+    (is_curie,p) = prefix_map.dbprefix2prop()[prefix]
+    q = id
+    if not is_curie:
+        q = localid
     results = run_sparql_query("""
     SELECT ?c WHERE {{?c <{p}> ?id .
-    FILTER (?id="{doid}") }}
-    """.format(p=p, doid=id))
+    FILTER (?id="{q}") }}
+    """.format(p=p, q=q))
     return [b['c']['value'] for b in results['results']['bindings']]
     
 # @Deprecated
