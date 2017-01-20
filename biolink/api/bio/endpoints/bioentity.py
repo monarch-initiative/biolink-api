@@ -672,6 +672,19 @@ class SubstanceExposures(Resource):
         """
         return { 'foo' : 'bar' }
     
+@ns.route('/substance/<id>/treats/')
+class DiseaseSubstanceAssociations(Resource):
+
+    @api.expect(core_parser)
+    #TODO: @api.marshal_list_with(association)
+    def get(self, id):
+        """
+        Returns substances associated with a disease.
+
+        e.g. drugs or small molecules used to treat
+
+        """
+        return condition_to_drug(id)
     
 
 @ns.route('/genotype/<id>')
