@@ -8,7 +8,7 @@ from biolink.api.restplus import api
 from obographs.obograph_util import convert_json_object
 import tempfile
 import pysolr
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import networkx as nx
 
 log = logging.getLogger(__name__)
@@ -44,6 +44,8 @@ class AssociationObject(Resource):
     def get(self,id):
         """
         Returns evidence graph as a png
+
+        TODO - requires matplotlib which is hard to install
         """
         args = parser.parse_args()
 
