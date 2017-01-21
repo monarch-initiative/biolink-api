@@ -1,1 +1,1 @@
-web: python biolink/app.py
+web: env PYTHONPATH=$PYTHONPATH:$PWD python biolink/app.py
