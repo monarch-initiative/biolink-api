@@ -24,6 +24,9 @@ abstract_property_value = api.model('AbstractPropertyValue', {
 synonym_property_value = api.inherit('SynonymPropertyValue', abstract_property_value, {
 })
 
+summary_property_value = api.inherit('SummaryPropertyValue', abstract_property_value, {
+})
+
 association_property_value = api.inherit('AssociationPropertyValue', abstract_property_value, {
 })
 
@@ -51,6 +54,12 @@ named_object = api.model('NamedObject', {
     'synonyms': fields.List(fields.Nested(synonym_property_value), description='list of synonyms or alternate labels')
 })
 
+entity_reference = api.model('NamedObject', {
+    'id': fields.String(readOnly=True, description='ID or CURIE e.g. MGI:1201606'),
+    'label': fields.String(readOnly=True, description='RDFS Label'),
+    'categories': fields.List(fields.String(readOnly=True, description='Type of object')),
+})
+
 relation = api.inherit('Relation', named_object, {
 })
 
@@ -66,7 +75,9 @@ taxon = api.model('Taxon', {
 })
 
 bio_object = api.inherit('BioObject', named_object, {
-    'taxon': fields.Nested(taxon, description='Taxon to which the object belongs')
+    'taxon': fields.Nested(taxon, description='Taxon to which the object belongs'),
+    'xrefs': fields.List(fields.String, description='Database cross-references. These are usually CURIEs, but may also be URLs. E.g. ENSEMBL:ENSG00000099940 '),
+    
 })
 
 # Assoc
@@ -136,26 +147,49 @@ sequence_feature = api.inherit('SequenceFeature', bio_object, {
     'homology_associations': fields.List(fields.Nested(association)),
 })
 
+chromosome = api.inherit('Chromosome', bio_object, {
+})
+
+gene_product = api.inherit('GeneProduct', bio_object, {
+    'sequence_features' : fields.List(fields.Nested(sequence_feature), description='Sequence feature representing this particular instance on a genome'),
+    'genes': fields.List(fields.Nested(entity_reference), description='References to any gene objects that have this as product')
+})
+
+exon = api.inherit('Exon', bio_object, {
+    'sequence_features' : fields.List(fields.Nested(sequence_feature), description='Sequence feature representing this particular instance on a genome'),
+    'genes': fields.List(fields.Nested(entity_reference), description='References to any gene objects that have this exon in any of their transcripts')
+})
+
+regulatory_element = api.inherit('RegulatoryElement', bio_object, {
+    'sequence_features' : fields.List(fields.Nested(sequence_feature), description='Sequence feature representing this particular instance on a genome'),
+    'targets': fields.List(fields.Nested(entity_reference), description='References to any gene objects whose expression is regulated by this element')
+})
+
+transcript = api.inherit('Transcript', bio_object, {
+    'sequence_features' : fields.List(fields.Nested(sequence_feature), description='Sequence feature representing this particular instance on a genome'),
+    'exons' : fields.List(fields.Nested(exon), description='All exons used in this transcript'),
+    'genes': fields.List(fields.Nested(entity_reference), description='References to any gene objects that have this transcript. This may not be populated if this is contained in a gene object'),
+})
+
 gene = api.inherit('Gene', bio_object, {
+    'full_name': fields.String(description='full name, e.g. Synaptosome Associated Protein 29'),
     'description': fields.String(description='full text description'),
+    'summaries' : fields.List(fields.Nested(summary_property_value), description='Attributed textual summaries'),
+    'chromosome': fields.Nested(chromosome, description='chromosome on which this gene is located. This may be redundant with information in sequence_feature objects but is included here for convenience'),
     'sequence_features' : fields.List(fields.Nested(sequence_feature), description='Sequence feature representing particular instance on a genome'),
+    'transcripts' : fields.List(fields.Nested(transcript), description='All transcripts belonging to this gene'),
     'families' : fields.List(fields.Nested(named_object), description='Families, superfamilies etc to which these gene belongs'),
     'phenotype_associations': fields.List(fields.Nested(association), description='phenotypes associated with alterations of gene'),
     'disease_associations': fields.List(fields.Nested(association), description='diseases associated with alterations of gene'),
     'homology_associations': fields.List(fields.Nested(association), description='orthology and paralogy assocations for this gene'),
     'function_associations': fields.List(fields.Nested(association), description='GO assocations for wild type gene'),
-    'genotype_associations': fields.List(fields.Nested(association), description='genotypes in which this gene is altered'),
+    'pathway_associations': fields.List(fields.Nested(association), description='Assocations to pathways in which this gene is involved, including LEGO models'),
+    'genotype_associations': fields.List(fields.Nested(association), description='associations to genotypes in which this gene is altered'),
+    'interaction_associations': fields.List(fields.Nested(association), description='associations to genes that interact (may be physical or genetic)'),
+    'literature_associations': fields.List(fields.Nested(association), description='publications for this gene'),
     #'genotypes': fields.List(fields.Nested(bio_object), desc='List of references to genotype objects')
 })
 
-gene_product = api.inherit('GeneProduct', bio_object, {
-    'genes': fields.List(fields.Nested(gene))
-})
-
-transcript = api.inherit('Transcript', bio_object, {
-    'sequence_features' : fields.List(fields.Nested(sequence_feature), description='Sequence feature representing particular instance on a genome'),
-    'genes': fields.List(fields.Nested(gene))
-})
 
 # in GENO, this corresponds to (genotype OR part-of some genotype)
 genotype = api.inherit('Genotype', bio_object, {
