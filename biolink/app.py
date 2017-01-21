@@ -3,10 +3,10 @@ import logging.config
 from flask import Flask, Blueprint
 from flask_cors import CORS, cross_origin
 from biolink import settings
+from biolink.api.bio.endpoints.bioentity import ns as bio_objects_namespace
 from biolink.api.link.endpoints.associations_from import ns as associations_from_namespace
 from biolink.api.link.endpoints.find_associations import ns as find_associations_namespace
 from biolink.api.search.endpoints.entitysearch import ns as entity_search_namespace
-from biolink.api.bio.endpoints.bioentity import ns as bio_objects_namespace
 from biolink.api.entityset.endpoints.summary import ns as entityset_summary_namespace
 from biolink.api.entityset.endpoints.geneset_homologs import ns as geneset_homologs_namespace
 from biolink.api.nlp.endpoints.annotate import ns as nlp_annotate_namespace
