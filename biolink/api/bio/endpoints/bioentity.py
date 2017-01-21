@@ -305,9 +305,8 @@ class DiseaseModelTaxonAssociations(Resource):
         Same as `/disease/<id>/models` but constrain models by taxon
 
         """
-
         # TODO: invert
-        return search_associations('disease', 'model', None, id, invert_subject_object=True, subject_taxon=taxon, **core_parser.parse_args())
+        return search_associations('disease', 'model', None, id, invert_subject_object=True, object_taxon=taxon, **core_parser.parse_args())
 
 @ns.route('/phenotype/<id>')
 class PhenotypeObject(Resource):

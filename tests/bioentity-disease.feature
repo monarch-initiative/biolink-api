@@ -27,7 +27,5 @@ TODO - consider swapping subject/object
 ### Genes
 
  Scenario: User queries for genes associated with lipid storage diseases (e.g. gangliosidosis)
-    Given a path "/bioentity/disease/DOID:9455/genes?subject_taxon=NCBITaxon:9606"
-     then the content should contain "GM11474"
-      and the content should contain "Canis lupus"
-      and the content should contain "Gangliosidosis"
+    Given a path "/bioentity/disease/DOID:9455/genes?rows=0&fetch_objects=true"
+     then the content should contain "NCBIGene:1051"
