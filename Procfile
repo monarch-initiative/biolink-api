@@ -1,1 +1,1 @@
-web: gunicorn wsgi:app
+web: python biolink/app.py
