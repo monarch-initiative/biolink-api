@@ -21,7 +21,6 @@ parser.add_argument('fl_excludes_evidence', type=bool, help='If set, excludes ev
 parser.add_argument('page', type=int, required=False, default=1, help='Page number')
 parser.add_argument('rows', type=int, required=False, default=10, help='number of rows')
 parser.add_argument('map_identifiers', help='Prefix to map all IDs to. E.g. NCBIGene')
-
 parser.add_argument('subject_category', help='e.g. gene, genotype, disease')
 parser.add_argument('object_category', help='e.g. disease, phenotype, gene')
 
