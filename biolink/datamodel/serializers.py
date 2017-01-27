@@ -50,7 +50,8 @@ bbop_graph = api.model('Graph', {
 named_object = api.model('NamedObject', {
     'id': fields.String(readOnly=True, description='ID or CURIE e.g. MGI:1201606'),
     'label': fields.String(readOnly=True, description='RDFS Label'),
-    'categories': fields.List(fields.String(readOnly=True, description='Type of object')),
+    'categories': fields.List(fields.String(readOnly=True, description='Type of object (inferred)')),
+    'types': fields.List(fields.String(readOnly=True, description='Type of object (direct)')),
     'synonyms': fields.List(fields.Nested(synonym_property_value), description='list of synonyms or alternate labels')
 })
 
@@ -173,6 +174,7 @@ transcript = api.inherit('Transcript', bio_object, {
 
 gene = api.inherit('Gene', bio_object, {
     'full_name': fields.String(description='full name, e.g. Synaptosome Associated Protein 29'),
+    'systematic_name': fields.String(description='E.g. SPBC428.08c for clr4 in PomBase'),
     'description': fields.String(description='full text description'),
     'summaries' : fields.List(fields.Nested(summary_property_value), description='Attributed textual summaries'),
     'chromosome': fields.Nested(chromosome, description='chromosome on which this gene is located. This may be redundant with information in sequence_feature objects but is included here for convenience'),
