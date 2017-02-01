@@ -13,7 +13,7 @@ ns = api.namespace('genome/features/', description='Operations to retrieve seque
 parser = api.parser()
 
 @ns.route('/within/<build>/<reference>/<begin>/<end>')
-class Foo(Resource):
+class FeaturesWithinResource(Resource):
 
     
     @api.marshal_list_with(sequence_feature)
