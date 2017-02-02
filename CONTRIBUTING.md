@@ -6,7 +6,7 @@ These guidelines are for developers of Monarch software, whether internal or in 
 ## Basic principles of the Monarch-flavored [GitHub Workflow](http://guides.github.com/overviews/flow/)
 
 ##### Principle 1: Work from a personal fork 
-* Prior to adopting the workflow, a developer will perform a *one-time setup* to create a personal Fork of the appropriate shared repo (e.g., `monarch-app`) and will subsequently perform their development and testing on a task-specific branch within their forked repo. This forked repo will be associated with that developer's GitHub account, and is distinct from the shared repo managed by the Monarch Initiative.
+* Prior to adopting the workflow, a developer will perform a *one-time setup* to create a personal Fork of the appropriate shared repo (e.g., `biolink-api`) and will subsequently perform their development and testing on a task-specific branch within their forked repo. This forked repo will be associated with that developer's GitHub account, and is distinct from the shared repo managed by the Monarch Initiative.
 
 ##### Principle 2: Commit to personal branches of that fork
 * Changes will never be committed directly to the master branch on the shared repo. Rather, they will be composed as branches within the developer's forked repo, where the developer can iterate and refine their code prior to submitting it for review.
@@ -24,7 +24,7 @@ These guidelines are for developers of Monarch software, whether internal or in 
 
 - [One Time Setup - Forking a Shared Repo](#one-time-setup---forking-a-shared-repo)
     - [Step 1 - Backup your existing repo (optional)](#step-1---backup-your-existing-repo-optional)
-    - [Step 2 - Fork `monarch-app` via the Web](#step-2---fork-monarch-app-via-the-web)
+    - [Step 2 - Fork `biolink-api` via the Web](#step-2---fork-biolink-api-via-the-web)
     - [Step 3 - Clone the Fork Locally](#step-3---clone-the-fork-locally)
     - [Step 4 - Configure the local forked repo](#step-4---configure-the-local-forked-repo)
     - [Step 5 - Configure  `.bashrc` to show current branch (optional)](#step-5---configure--bashrc-to-show-current-branch-optional)
@@ -55,69 +55,56 @@ These guidelines are for developers of Monarch software, whether internal or in 
 
 ## One Time Setup - Forking a Shared Repo
 
-The official shared Monarch repositories (e.g., `monarch-app`, `phenogrid`) are intended to be modified solely via pull requests that are reviewed and merged by a set of responsible 'gatekeeper' developers within the Monarch development team. These pull requests are initially created as task-specific named branches within a developer's personal forked repo.
+The official shared Monarch repositories (e.g., `biolink-api`, `phenogrid`) are intended to be modified solely via pull requests that are reviewed and merged by a set of responsible 'gatekeeper' developers within the Monarch development team. These pull requests are initially created as task-specific named branches within a developer's personal forked repo.
 
 Typically, a developer will fork a shared repo once, which creates a personal copy of the repo that is associated with the developer's GitHub account. Subsequent pull requests are developed as branches within this personal forked repo. The repo need never be forked again, although each pull request will be based upon a new named branch within this forked repo.
 
-### Step 1 - Backup your existing repo (optional)
 
-The Monarch team has recently adopted the workflow described in this document. Many developers will have an existing clone of the shared repo that they have been using for development. This cloned local directory must be *moved aside* so that a proper clone of the forked repo can be used instead.
+### Step 1 - Fork `biolink-api` via the Web
 
-*If you do not have an existing local copy of the shared repo, then skip to [Step 2](#step-2---fork-monarch-app-via-the-web) below.*
-
-Because there may be valuable files stored in the developer's local directory but not stored in GitHub, we recommend that the developer keep this copy around for a few weeks until they are confident any useful information has been migrated. The following instructions should be effective at moving your existing `monarch-app` directory aside. Adapt these for use with `phenogrid` and other Monarch repos.
-
-    > cd .../monarch-app                # Your local copy of the shared repo.
-    > rm -rf ./node_modules             # You won't need this anymore. Free up disk
-    > cd ..
-    > mv monarch-app monarch-app.old    # Keep dir around, but avoid accidental use
-
-
-### Step 2 - Fork `monarch-app` via the Web
-
-The easiest way to fork the `monarch-app` repository is via the GitHub web interface:
+The easiest way to fork the `biolink-api` repository is via the GitHub web interface:
 
 - Ensure you are logged into GitHub as your GitHub user.
-- Navigate to the monarch-app shared repo at [https://github.com/monarch-initiative/monarch-app](https://github.com/monarch-initiative/monarch-app).
+- Navigate to the biolink-api shared repo at [https://github.com/biolink/biolink-api](https://github.com/biolink/biolink-api).
 - Notice the 'Fork' button in the upper right corner. It has a number to the right of the button.
 ![](docs/images/githubForkButton.png)
 - Click the Fork button. The resulting behavior will depend upon whether your GitHub user is a member of a GitHub organization. If not a member of an organization, then the fork operation will be performed and the forked repo will be created in the user's account.
-- If your user is a member of an organization (e.g., monarch-initiative or acme-incorporated), then GitHub will present a dialog for the user to choose where to place the forked repo. The user should click on the icon corresponding to their username.
+- If your user is a member of an organization (e.g., biolink or acme-incorporated), then GitHub will present a dialog for the user to choose where to place the forked repo. The user should click on the icon corresponding to their username.
 ![](docs/images/githubForkTarget.png)
 - *If you accidentally click the number, you will be on the Network Graphs page and should go back.*
 
-### Step 3 - Clone the Fork Locally
+### Step 2 - Clone the Fork Locally
 
-At this point, you will have a fork of the shared repo (e.g., monarch-app) stored within GitHub, but it is not yet available on your local development machine. This is done as follows:
+At this point, you will have a fork of the shared repo (e.g., biolink-api) stored within GitHub, but it is not yet available on your local development machine. This is done as follows:
 
     # Assumes that directory ~/MI/ will contain your Monarch repos.
     # Assumes that your username is MarieCurie.
     # Adapt these instructions to suit your environment
     > cd ~/MI
-    > git clone git@github.com:MarieCurie/monarch-app.git
-    > cd monarch-app
+    > git clone git@github.com:MarieCurie/biolink-api.git
+    > cd biolink-api
 
 Notice that we are using the SSH transport to clone this repo, rather than the HTTPS transport. The telltale indicator of this is the `git@github.com:MarieCurie...` rather than the alternative `https://github.com/MarieCurie...`.
 
 *Note: If you encounter difficulties with the above `git clone`, you may need to associate your local public SSH key with your GitHub account. See [Which remote URL should I use?](https://help.github.com/articles/which-remote-url-should-i-use/) for information.*
 
-### Step 4 - Configure the local forked repo
+### Step 3 - Configure the local forked repo
 
 The `git clone` above copied the forked repo locally, and configured the symbolic name 'origin' to point back to the *remote* GitHub fork. We will need to create an additional *remote* name to point back to the shared version of the repo (the one that we forked in Step 2). The following should work:
 
-    # Assumes that you are already in the local monarch-app directory
-    > git remote add upstream https://github.com/monarch-initiative/monarch-app.git
+    # Assumes that you are already in the local biolink-api directory
+    > git remote add upstream https://github.com/biolink/biolink-api.git
 
 Verify that remotes are configured correctly by using the command `git remote -v`. The output should resemble:
 
 
-    upstream    https://github.com/monarch-initiative/monarch-app.git (fetch)
-    upstream    https://github.com/monarch-initiative/monarch-app.git (push)
-    origin  git@github.com:MarieCurie/monarch-app.git (fetch)
-    origin  git@github.com:MarieCurie/monarch-app.git (push)
+    upstream    https://github.com/biolink/biolink-api.git (fetch)
+    upstream    https://github.com/biolink/biolink-api.git (push)
+    origin  git@github.com:MarieCurie/biolink-api.git (fetch)
+    origin  git@github.com:MarieCurie/biolink-api.git (push)
 
 
-### Step 5 - Configure  `.bashrc` to show current branch (optional)
+### Step 4 - Configure  `.bashrc` to show current branch (optional)
 
 One of the important things when using Git is to know what branch your working directory is tracking. This can be easily done with the `git status` command, but checking your branch periodically can get tedious. It is easy to configure your `bash` environment so that your current git branch is always displayed in your bash prompt.
 
@@ -143,11 +130,11 @@ If you cd to a git working directory, the branch will be displayed in the prompt
     /tmp $
     /tmp $ # This isn't a git directory, so no branch is shown
     /tmp $
-    /tmp $ cd ~/MI/monarch-app/
-    ~/MI/monarch-app fix-feedback-button $
-    ~/MI/monarch-app fix-feedback-button $ # The current branch is shown
-    ~/MI/monarch-app fix-feedback-button $
-    ~/MI/monarch-app fix-feedback-button $ git status
+    /tmp $ cd ~/MI/biolink-api/
+    ~/MI/biolink-api fix-feedback-button $
+    ~/MI/biolink-api fix-feedback-button $ # The current branch is shown
+    ~/MI/biolink-api fix-feedback-button $
+    ~/MI/biolink-api fix-feedback-button $ git status
     On branch fix-feedback-button
     Changes not staged for commit:
       (use "git add <file>..." to update what will be committed)
@@ -175,7 +162,7 @@ Git will not automatically sync your Forked repo with the original shared repo, 
 
 #### Step 1 - Fetch remotes
 
-In the (likely) event that the *upstream* repo (the monarch-app shared repo) has changed since the developer last began a task, it is important to update the local copy of the upstream repo so that its changes can be incorporated into subsequent development.
+In the (likely) event that the *upstream* repo (the biolink-api shared repo) has changed since the developer last began a task, it is important to update the local copy of the upstream repo so that its changes can be incorporated into subsequent development.
 
     > git fetch upstream        # Updates the local copy of shared repo BUT does not affect the working directory, it simply makes the upstream code available locally for subsequent Git operations. See step 2.
 
@@ -203,7 +190,7 @@ You may now freely make modifications and improvements and these changes will be
 
 If you followed the instructions in [Step 5 - Configure  `.bashrc` to show current branch (optional)](#step-5---configure--bashrc-to-show-current-branch-optional), your shell prompt should look something like this:
 
-    ~/MI/monarch-app fix-feedback-button $
+    ~/MI/biolink-api fix-feedback-button $
 
 ### Changes, Commits and Pushes
 
@@ -266,7 +253,7 @@ See [submitting a pull request](https://help.github.com/articles/creating-a-pull
 
 ### Reviewing a pull request
 
-The set of open PRs for the monarch-app can be viewed by first visiting the shared monarch-app GitHub page at [https://github.com/monarch-initiative/monarch-app](https://github.com/monarch-initiative/monarch-app).
+The set of open PRs for the biolink-api can be viewed by first visiting the shared biolink-api GitHub page at [https://github.com/biolink/biolink-api](https://github.com/biolink/biolink-api).
 
 Click on the 'Pull Requests' link on the right-side of the page:
 ![](docs/images/githubPullRequest.png)
@@ -275,7 +262,7 @@ Note that the Pull Request you created from your forked repo shows up in the sha
 
 ### Respond to TravisCI tests
 
-The GitHub Pull Request mechanism is designed to allow review and refinement of code prior to its final merge to the shared repo. After creating your Pull Request, the TravisCI tests for monarch-app will be executed automatically, ensuring that the code that 'worked fine' on your development machine also works in the production-like environment provided by TravisCI. The current status of the tests can be found near the bottom of the individual PR page, to the right of the Merge Request symbol:
+The GitHub Pull Request mechanism is designed to allow review and refinement of code prior to its final merge to the shared repo. After creating your Pull Request, the TravisCI tests for biolink-api will be executed automatically, ensuring that the code that 'worked fine' on your development machine also works in the production-like environment provided by TravisCI. The current status of the tests can be found near the bottom of the individual PR page, to the right of the Merge Request symbol:
 ![](docs/images/githubTestProgress.png)
 ![](docs/images/githubTestStatus.png)
 
@@ -284,7 +271,7 @@ TBD - Something should be written about developers running tests PRIOR to Travis
 
 ### Respond to peer review
 
-The GitHub Pull Request mechanism is designed to allow review and refinement of code prior to its final merge to the shared repo. After creating your Pull Request, the TravisCI tests for monarch-app will be executed automatically, ensuring that the code that 'worked fine' on your development machine also works in the production-like environment provided by TravisCI. The current status of the tests can be found
+The GitHub Pull Request mechanism is designed to allow review and refinement of code prior to its final merge to the shared repo. After creating your Pull Request, the TravisCI tests for biolink-api will be executed automatically, ensuring that the code that 'worked fine' on your development machine also works in the production-like environment provided by TravisCI. The current status of the tests can be found
 
 ### Repushing to a PR branch
 
@@ -317,4 +304,4 @@ You have successfully gotten your code improvements into the shared repository. 
 
 ## Notes
 
-The process described below is initially intended to be used in the `monarch-app` repository, although it may later be adopted by the other Monarch-related source code repositories, such as `phenogrid`.
+The process described below is initially intended to be used in the `biolink-api` repository, although it may later be adopted by the other Monarch-related source code repositories, such as `phenogrid`.
