@@ -182,6 +182,8 @@ def translate_doc(d, field_mapping=None, **kwargs):
              'relation': translate_obj(d,M.RELATION),
              'publications': translate_objs(d,M.SOURCE),  # note 'source' is used in the golr schema
     }
+    if M.OBJECT_CLOSURE in d:
+        assoc['object_closure'] = d.get(M.OBJECT_CLOSURE)
     if M.IS_DEFINED_BY in d:
         if isinstance(d[M.IS_DEFINED_BY],list):
             assoc['provided_by'] = d[M.IS_DEFINED_BY]
@@ -253,6 +255,7 @@ def search_associations(subject_category=None,
                         solr=monarch_solr,
                         select_fields=None,
                         fetch_objects=False,
+                        slim=[],
                         json_facet=None,
                         facet_fields = [
                             M.SUBJECT_TAXON_LABEL,
@@ -280,6 +283,14 @@ def search_associations(subject_category=None,
         to obtain all associations. 
 
         Results are in the 'objects' field
+
+    slim : List
+
+        a list of either class ids (or in future subset ids), used to
+        map up (slim) objects in associations. This will populate
+        an additional 'slim' field in each association object corresponding
+        to the slimmed-up value(s) from the direct objects.
+        If fetch_objects is passed, this will be populated with slimmed IDs.
 
     use_compact_associations : bool
 
@@ -377,7 +388,7 @@ def search_associations(subject_category=None,
             M.OBJECT,
             M.OBJECT_LABEL,
         ]
-        if 'fl_excludes_evidence' not in kwargs or not kwargs['fl_excludes_evidence']:
+        if 'unselect_evidence' not in kwargs or not kwargs['unselect_evidence']:
             select_fields += [
                 M.EVIDENCE_OBJECT,
                 M.EVIDENCE_GRAPH
@@ -386,6 +397,9 @@ def search_associations(subject_category=None,
     if field_mapping is not None:
         select_fields = [ map_field(fn, field_mapping) for fn in select_fields ]    
 
+    if slim is not None and len(slim)>0:
+        select_fields.append(M.OBJECT_CLOSURE)
+        
     facet_fields = [ map_field(fn, field_mapping) for fn in facet_fields ]    
         
     #print('FL'+str(select_fields))
@@ -445,7 +459,10 @@ def search_associations(subject_category=None,
     # For solr, we implement this by finding all facets
     # TODO: no need to do 2nd query, see https://wiki.apache.org/solr/SimpleFacetParameters#Parameters
     if fetch_objects:
-        object_field = map_field(M.OBJECT, field_mapping)
+        core_object_field = M.OBJECT
+        if slim is not None and len(slim)>0:
+            core_object_field = M.OBJECT_CLOSURE
+        object_field = map_field(core_object_field, field_mapping)
         if invert_subject_object:
             object_field = map_field(M.SUBJECT, field_mapping)
         oq_params = params.copy()
@@ -459,6 +476,14 @@ def search_associations(subject_category=None,
         ofl = ff.get(object_field)
         # solr returns facets counts as list, every 2nd element is number, we don't need the numbers here
         payload['objects'] = ofl[0::2]
+        
+    if slim is not None and len(slim)>0:
+        if 'objects' in payload:
+            payload['objects'] = [x for x in payload['objects'] if x in slim]
+        for a in payload['associations']:
+            a['slim'] = [x for x in a['object_closure'] if x in slim]
+            del a['object_closure']
+        
     
     return payload
 

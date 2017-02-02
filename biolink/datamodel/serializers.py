@@ -96,6 +96,7 @@ association = api.model('Association', {
     'object': fields.Nested(bio_object, description='Object (sensu RDF), aka target, e.g. HP:0000448, MP:0002109, DOID:14330'),
     'object_extension': fields.List(fields.Nested(annotation_extension, description='Additional properties of the object in the context of this association')),
     'relation': fields.Nested(relation, description='Relationship type connecting subject and object'),
+    'slim': fields.List(fields.String, description='Objects mapped to a slim'),
     'qualifiers': fields.List(fields.Nested(association_property_value, description='Qualifier on the association')),
     'evidence_graph': fields.Nested(bbop_graph, description='An indirect association is a join between two or more direct assocations, e.g. gene to disease via ortholog. We record the full set of associations as a graph object'),
     'evidence_types': fields.List(fields.Nested(named_object), description='Evidence types (ECO classes) extracted from evidence graph'),

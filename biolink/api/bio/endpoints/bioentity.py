@@ -21,6 +21,7 @@ core_parser.add_argument('unselect_evidence', type=bool, help='If set, excludes 
 core_parser.add_argument('exclude_automatic_assertions', default=False, type=bool, help='If set, excludes associations that involve IEAs (ECO:0000501)')
 core_parser.add_argument('fetch_objects', type=bool, default=True, help='If true, returns a distinct set of association.objects (typically ontology terms). This appears at the top level of the results payload')
 core_parser.add_argument('use_compact_associations', type=bool, default=False, help='If true, returns results in compact associations format')
+core_parser.add_argument('slim', action='append', help='Map objects up (slim) to a higher level category. Value can be ontology class ID or subset ID')
 
 scigraph = SciGraph('https://scigraph-data.monarchinitiative.org/scigraph/')
 
