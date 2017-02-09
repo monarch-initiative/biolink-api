@@ -7,10 +7,20 @@ test: behave-tests subpackage_tests
 behave-tests:
 	cd tests && behave
 
-clients: biolink-javascript-client
+CLIENT_LANGS = javascript java python
+CLIENT_TARGETS = $(patsubst %, biolink-%-client, $(CLIENT_LANGS))
 
+clients: $(CLIENT_TARGETS)
+
+# generate client code for javascript, python etc
+# after making this, copy to separate repo
 biolink-%-client:
 	swagger-codegen generate -i $(SWAGGER) -l $* -o $@
+
+deploy-%-client: biolink-%-client
+	cp -pr $</* ../$<
+
+deploy-clients: $(patsubst %, deploy-%-client, $(CLIENT_LANGS))
 
 datamodel: biomodel/core.py
 

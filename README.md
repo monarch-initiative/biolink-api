@@ -109,47 +109,13 @@ implementation will do the right thing - for example, using Solr for
 searches but injecting results with fast in-memory traversal of
 ontology graphs.
 
-This is a proof of concept implementation. May be implemented using a JVM language, e.g. scala in future.
+## Client API Libraries
 
+A service implementing the Biolink API can be accessed through
+standard http libraries. We also provide client language bindings,
+generated through swagger-codegen. For more information, see:
 
-
-### Example API calls (OLD)
-
-All assocations, first 10:
-
-http://localhost:5000/api/link/search/
-
-All mouse gene-phenotype associations:
-
-http://localhost:5000/api/link/search/gene/phenotype/?map_identifiers=MGI&subject_taxon=NCBITaxon:10090
-
-Same but with IDs mapped from NCBIGene to MGI (see #5):
-
-http://localhost:5000/api/link/search/gene/phenotype/?subject_taxon=NCBITaxon:10090
-
-phenotypes for a given gene
-
-http://localhost:5000/api/bio/gene/ZFIN:ZDB-GENE-050417-357/phenotypes/
-
-GO terms for a given gene (uses GO golr)
-
-http://localhost:5000/api/bio/gene/ZFIN:ZDB-GENE-050417-357/function/
-
-Query association by ID:
-
-http://localhost:5000/api/link/cfef92b7-bfa3-44c2-a537-579078d2de37
-
-Evidence graph as bbop-graph:
-
-http://localhost:5000/api/evidence/graph/cfef92b7-bfa3-44c2-a537-579078d2de37
-
-Evidence graph as image:
-
-http://localhost:5000/api/evidence/graph/cfef92b7-bfa3-44c2-a537-579078d2de37/image
-
-Anatomical entities for a given phenotype:
-
-http://localhost:5000/api/bioentity/phenotype/ZP:0004204/anatomy/
+[ClientAPIs](/biolink/biolink-api/wiki/ClientAPIs)
 
 ## Implementation and Project Organization
 
