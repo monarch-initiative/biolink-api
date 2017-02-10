@@ -84,7 +84,7 @@ python biolink/app.py
 
 Then look at:
 
-http://localhost:5000/api/
+http://localhost:8888/api/
 
 For the swagger docs
 
