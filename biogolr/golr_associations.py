@@ -157,18 +157,21 @@ def translate_obj(d,fname):
     
     return obj
 
+def map_doc(d, field_mapping):
+    for (k,v) in field_mapping.items():
+        if v is not None and k is not None:
+            print("TESTING FOR:"+v+" IN "+str(d))
+            if v in d:
+                print("Setting field {} to {} // was in {}".format(k,d[v],v))
+                d[k] = d[v]
+    return d
 
 def translate_doc(d, field_mapping=None, **kwargs):
     """
     Translate a solr document (i.e. a single result row)
     """
     if field_mapping is not None:
-        for (k,v) in field_mapping.items():
-            if v is not None and k is not None:
-                print("TESTING FOR:"+v+" IN "+str(d))
-                if v in d:
-                    print("Setting field {} to {} // was in {}".format(k,d[v],v))
-                    d[k] = d[v]
+        map_doc(d, field_mapping)
     subject = translate_obj(d,M.SUBJECT)
     map_identifiers_to = kwargs.get('map_identifiers')
     if map_identifiers_to:
@@ -206,12 +209,14 @@ def translate_docs(ds, **kwargs):
     return [translate_doc(d, **kwargs) for d in ds]
 
 
-def translate_docs_compact(ds, **kwargs):
+def translate_docs_compact(ds, field_mapping=None, **kwargs):
     """
     Translate golr association documents to a compact representation
     """
     amap = {}
     for d in ds:
+        if field_mapping is not None:
+            map_doc(d, field_mapping)
         rel = d.get(M.RELATION)
         k = (d[M.SUBJECT],rel)
         if k not in amap:
@@ -531,7 +536,7 @@ def get_objects_for_subject(subject=None,
                             relation=None,
                             **kwargs):
     """
-    Given a subject (e.g. gene, disease, variant), return all associated objects (phenotypes, functions, interacting genes, etc)
+    Convenience method: Given a subject (e.g. gene, disease, variant), return all associated objects (phenotypes, functions, interacting genes, etc)
     """
     searchresult = search_associations(subject=subject,
                                        fetch_objects=True,
@@ -549,7 +554,7 @@ def get_subjects_for_object(object=None,
                             relation=None,
                             **kwargs):
     """
-    Given a object (e.g. ontology term like phenotype or GO; interacting gene; disease; pathway etc), return all associated subjects (genes, variants, pubs, etc)
+    Convenience method: Given a object (e.g. ontology term like phenotype or GO; interacting gene; disease; pathway etc), return all associated subjects (genes, variants, pubs, etc)
     """
     searchresult = search_associations(object=object,
                                        fetch_subjects=True,
@@ -561,6 +566,15 @@ def get_subjects_for_object(object=None,
     )
     subjs = searchresult['subjects']
     return subjs
+
+def search_associations_compact(**kwargs):
+    """
+    Convenience method: as for search associations, use compact
+    """
+    searchresult = search_associations(use_compact_associations=True,
+                                       **kwargs
+    )
+    return searchresult['compact_associations']
 
 def solr_quotify(v):
     if isinstance(v, list):

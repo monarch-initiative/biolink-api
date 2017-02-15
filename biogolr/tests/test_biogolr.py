@@ -1,4 +1,4 @@
-from biogolr.golr_associations import search_associations, GolrFields, select_distinct_subjects, get_objects_for_subject, get_subjects_for_object
+from biogolr.golr_associations import search_associations, search_associations_compact, GolrFields, select_distinct_subjects, get_objects_for_subject, get_subjects_for_object
 
 M=GolrFields()
 
@@ -19,12 +19,25 @@ def test_go_assocs():
     )
     assert len(results) > 0
 
+def test_go_assocs_compact():
+    assocs = search_associations_compact(subject=TWIST_ZFIN,
+                                          object_category='function'
+    )
+    assert len(assocs) == 1
+    
+    
 def test_pheno_assocs():
     results = search_associations(subject=TWIST_ZFIN,
                                   object_category='phenotype'
     )
     assert len(results) > 0
 
+def test_pheno_assocs_compact():
+    assocs = search_associations_compact(subject=TWIST_ZFIN,
+                                          object_category='phenotype'
+    )
+    assert len(assocs) == 1
+    
 def test_pheno_objects():
     results = search_associations(subject=TWIST_ZFIN,
                                   fetch_objects=True,
