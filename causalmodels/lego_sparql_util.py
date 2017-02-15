@@ -103,3 +103,21 @@ class ModelQuery():
         
         return sparql
     
+def entity_search(searchterm,
+                  subclass_of=[],
+                  limit=10):
+
+    filters = []
+    filters.append("FILTER regex(str(?label),'{}','i'".format(searchterm))
+    for c in subclass_of:
+        filters.append("FILTER ?iri rdfs:subClassOf+ {}')".format(c))
+
+        sparql_filter= "\n".join(filters)
+    sparql = """
+    SELECT ?id ?label
+    WHERE {{
+      ?iri rdfs:label ?label
+      {filters}
+    }}
+    """.format(filters=sparql_filter)
+    return lego_query(sparql,limit)

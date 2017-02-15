@@ -50,6 +50,7 @@ bbop_graph = api.model('Graph', {
 named_object = api.model('NamedObject', {
     'id': fields.String(readOnly=True, description='ID or CURIE e.g. MGI:1201606'),
     'label': fields.String(readOnly=True, description='RDFS Label'),
+    'description': fields.String(readOnly=True, description='Descriptive text for the entity. For ontology classes, this will be a definition.'),
     'categories': fields.List(fields.String(readOnly=True, description='Type of object (inferred)')),
     'types': fields.List(fields.String(readOnly=True, description='Type of object (direct)')),
     'synonyms': fields.List(fields.Nested(synonym_property_value), description='list of synonyms or alternate labels')
@@ -232,3 +233,11 @@ phylogenetic_tree = api.inherit('PhylogeneticTree', named_object, {
 # clinical
 clinical_individual = api.inherit('ClinicalIndividual', named_object, {
 })
+
+
+# SEARCH
+
+search_result = api.inherit('SearchResult', named_object, {
+    'score': fields.Float(description='accuracy of match')
+})
+

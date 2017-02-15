@@ -303,7 +303,7 @@ def search_associations(subject_category=None,
 
     # temporary: for querying go solr, map fields
     if object_category is not None and object_category == 'function':
-        go_golr_url = "http://golr.geneontology.org/solr/"
+        go_golr_url = "http://golr.berkeleybop.org/solr/"
         solr = pysolr.Solr(go_golr_url, timeout=5)
         field_mapping=goassoc_fieldmap()
         fq['document_category'] = 'annotation'

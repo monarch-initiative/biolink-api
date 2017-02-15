@@ -63,9 +63,8 @@ def find_enriched(sample_entities=[],
                   **kwargs):
 
     """
-    Given a sample set of entities (e.g. overexpressed genes) and a background set (e.g. all genes assayed), and a category of descriptor,
-    return enriched descriptors
-
+    Given a sample set of sample_entities (e.g. overexpressed genes) and a background set (e.g. all genes assayed), and a category of descriptor (e.g. phenotype, function),
+    return enriched descriptors/classes
     """
 
     (sample_counts, sample_results) = get_counts(entities=sample_entities,
