@@ -1,4 +1,4 @@
-from biogolr.golr_associations import search_associations, GolrFields, select_distinct_subjects
+from biogolr.golr_associations import search_associations, GolrFields, select_distinct_subjects, get_objects_for_subject, get_subjects_for_object
 
 M=GolrFields()
 
@@ -41,19 +41,31 @@ def test_func_objects():
                                   object_category='function'
     )
     objs = results['objects']
+    print(objs)
     assert DVPF in objs
     assert len(objs) > 1
     
-def test_pheno_objects_shh():
-    results = search_associations(subject=HUMAN_SHH,
-                                  fetch_objects=True,
-                                  rows=0,
-                                  object_category='phenotype'
-    )
-    objs = results['objects']
+def test_pheno_objects_shh_2():
+    """
+    Equivalent to above, using convenience method
+    """
+    objs = get_objects_for_subject(subject=HUMAN_SHH,
+                                   object_category='phenotype')
     print(objs)
     assert HOLOPROSENCEPHALY in objs
     assert len(objs) > 50
+
+def test_pheno2gene():
+    """
+    given a phenotype term, find genes
+    """
+    subjs = get_subjects_for_object(object=HOLOPROSENCEPHALY,
+                                    subject_category='gene',
+                                    subject_taxon='NCBITaxon:9606')
+    print(subjs)
+    print(len(subjs))
+    assert HUMAN_SHH in subjs
+    assert len(subjs) > 50
     
 def test_disease_assocs():
     results = search_associations(subject=TWIST_ZFIN,

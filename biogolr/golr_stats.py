@@ -16,9 +16,12 @@ M=GolrFields()
 
 def get_counts(entities=[],
                object_category=None,
+               min_count=1,
                **kwargs):
     """
-    given a set of entities (genes, diseases, etc) returns the number of entities associated with each descriptor in a given category
+    given a set of entities (genes, diseases, etc), finds the number of entities associated with each descriptor in a given category.
+
+    The result is a tuple (cmap, results), where cmap is a dict of TERM:COUNT
 
     """
     results = search_associations(subjects=entities,
@@ -42,7 +45,8 @@ def get_counts(entities=[],
     buckets = results['facets']['categories']['buckets']
     cmap = {}
     for bucket in buckets:
-        cmap[bucket['val']] = bucket['uniq_subject']
+        if bucket['uniq_subject'] >= min_count:
+            cmap[bucket['val']] = bucket['uniq_subject']
     return (cmap, results)
 
 def get_background(objects, taxon, object_category, **kwargs):
@@ -69,6 +73,7 @@ def find_enriched(sample_entities=[],
 
     (sample_counts, sample_results) = get_counts(entities=sample_entities,
                                                  object_category=object_category,
+                                                 min_count=2,
                                                  **kwargs)
     print(str(sample_counts))
 
