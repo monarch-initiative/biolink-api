@@ -487,6 +487,41 @@ def search_associations(subject_category=None,
     
     return payload
 
+def get_objects_for_subject(subject=None,
+                            object_category=None,
+                            relation=None,
+                            **kwargs):
+    """
+    Given a subject (e.g. gene, disease, variant), return all associated objects (phenotypes, functions, interacting genes, etc)
+    """
+    searchresult = search_associations(subject=subjects,
+                                       fetch_objects=True,
+                                       rows=0,
+                                       object_category=object_category,
+                                       relation=relation,
+                                       **kwargs
+    )
+    objs = searchresult['objects']
+    return objs
+
+def get_subjects_for_object(object=None,
+                            subject_category=None,
+                            subject_taxon=None,
+                            relation=None,
+                            **kwargs):
+    """
+    Given a subject (e.g. gene, disease, variant), return all associated objects (phenotypes, functions, interacting genes, etc)
+    """
+    searchresult = search_associations(object=object,
+                                       fetch_subjects=True,
+                                       rows=0,
+                                       subject_category=None,
+                                       relation=relation,
+                                       **kwargs
+    )
+    subjs = searchresult['subjects']
+    return objs
+
 def solr_quotify(v):
     if isinstance(v, list):
         return '({})'.format(" OR ".join([solr_quotify(x) for x in v]))
