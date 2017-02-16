@@ -25,7 +25,7 @@ def fetchall_isa(ont):
     query = """
     SELECT * WHERE {{
     GRAPH <{g}>  {{ ?c rdfs:subClassOf ?d }}
-    }} LIMIT 10
+    }} LIMIT 50000
     """.format(g=namedGraph)
     print(query)
     results = run_sparql(query)
