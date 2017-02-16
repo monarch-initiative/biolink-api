@@ -6,16 +6,14 @@ driver = GraphDatabase.driver("bolt://neo4j.monarchinitiative.org:443")
 session = driver.session()
 
 def get_node(iri):
-    results = session.run("MATCH (a {iri:{iri}}) RETURN a",
+    results = session.run("MATCH (a:Node {iri:{iri}}) RETURN a",
                          {'iri':iri})
-    print(results)
-    for r in results:
-        print(str(r))
-    return results
 
-                         
-def get_genes():
-    result = session.run("MATCH (a:gene) RETURN a LIMIT 5")
-    return result
+    print("RESULTS="+str(results))
+    n = None
+    for r in results:
+        print("R="+str(r))
+        n = r
+    return n
 
                          

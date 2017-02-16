@@ -1,10 +1,11 @@
 from obographs.sparql2ontology import *
 
-def test_isa():
+def test_edges():
     """
-    reciprocal test
+    reconstitution test
     """
-    r = fetchall_isa('pato')
+    #r = fetchall_svf('pato')
+    r = get_digraph('pato')
     print(r)
     
 

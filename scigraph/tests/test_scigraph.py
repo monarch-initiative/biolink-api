@@ -5,6 +5,7 @@ sg = SciGraph()
 
 def test_node():
     n = sg.node(id="MP:0000272")
+    print(str(n))
     assert n.lbl == "abnormal aorta morphology"
 
 def test_bio_operations():
