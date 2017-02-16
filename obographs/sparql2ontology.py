@@ -25,6 +25,8 @@ def fetchall_isa(ont):
     query = """
     SELECT * WHERE {{
     GRAPH <{g}>  {{ ?c rdfs:subClassOf ?d }}
+    FILTER (!isBlank(?c))
+    FILTER (!isBlank(?d))
     }} LIMIT 50000
     """.format(g=namedGraph)
     print(query)
