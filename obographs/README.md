@@ -54,3 +54,17 @@ Descendants of neuron, parts and subtypes
 ```
 ./obographs/bin/ogr.py -r cl -p subClassOf -p BFO:0000050 -t tree a neuron
 ```
+
+### Visualization using obographviz
+
+Requires js lib:
+
+```
+ogr -p subClassOf BFO:0000050 -r go -t png   a nucleus
+```
+
+This proceeds by:
+
+ 1. Using the python obographs library to extract a networkx subgraph around the specified node
+ 2. Write as obographs-json
+ 3. Calls og2dot.js
