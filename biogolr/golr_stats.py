@@ -60,7 +60,7 @@ def get_background(objects, taxon, object_category, **kwargs):
                                   **kwargs)
     return results['facet_counts'][M.SUBJECT].keys()
 
-
+# TODO: refactor this - fetch compact associations
 def find_enriched(sample_entities=[],
                   background_entities=None,
                   object_category=None,
@@ -92,8 +92,8 @@ def find_enriched(sample_entities=[],
 
     # TODO: consider caching
     (bg_counts,_) = get_counts(entities=background_entities,
-                            object_category=object_category,
-                            **kwargs)
+                               object_category=object_category,
+                               **kwargs)
 
     sample_n = len(sample_entities) # TODO - annotated only?
     pop_n = len(background_entities)

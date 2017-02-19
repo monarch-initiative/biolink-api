@@ -65,3 +65,6 @@ ENV/
 
 # Editors
 .idea/
+
+# old stuff
+*.old

@@ -11,6 +11,7 @@ from biolink.api.entityset.endpoints.summary import ns as entityset_summary_name
 from biolink.api.entityset.endpoints.geneset_homologs import ns as geneset_homologs_namespace
 from biolink.api.nlp.endpoints.annotate import ns as nlp_annotate_namespace
 from biolink.api.ontol.endpoints.slimmer import ns as ontol_slimmer_namespace
+from biolink.api.ontol.endpoints.subgraph import ns as ontol_subgraph_namespace
 from biolink.api.ontol.endpoints.termstats import ns as ontol_termstats_namespace
 #from biolink.api.ontol.endpoints.enrichment import ns as ontol_enrichment_namespace
 from biolink.api.graph.endpoints.node import ns as graph_node_namespace
