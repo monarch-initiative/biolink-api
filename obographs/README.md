@@ -93,4 +93,4 @@ This proceeds by:
 
 Output:
 
-![img](https://github.com/biolink/biolink-api/raw/master/docs/nucleus.png)
+![img](https://github.com/biolink/biolink-api/raw/master/obographs/docs/nucleus.png)
