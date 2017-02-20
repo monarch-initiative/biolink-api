@@ -5,7 +5,7 @@ Command line wrapper to biogolr library.
 
 Type:
 
-    biogorl -h
+    qbiogorl -h
 
 For instructions
 
@@ -15,6 +15,7 @@ import argparse
 from biogolr.golr_associations import search_associations_compact
 from obographs.sparql2ontology import *
 from obographs.graph_io import *
+from obographs.graph_manager import retrieve_filtered_graph
 import networkx as nx
 from networkx.algorithms.dag import ancestors, descendants
 from networkx.drawing.nx_pydot import write_dot
@@ -70,8 +71,10 @@ def get_digraph_wrap(ont, args):
     return g
     
 def cmd_query(ont, args):
-    g = get_digraph_wrap(ont, args)
+    g = retrieve_filtered_graph(ont, predicates=args.properties)
 
+    w = GraphRenderer.create(args.to)
+    
     nodes = set()
     for id in resolve_ids(g, args.ids, args):
         nodes.add(id)
@@ -79,10 +82,14 @@ def cmd_query(ont, args):
                                              subject_taxon=args.species,
                                              rows=1000,
                                              subject_category=args.category)
+        assocs += search_associations_compact(subject=id,
+                                              object_taxon=args.species,
+                                              rows=1000,
+                                              object_category=args.category)
         for a in assocs:
             print(a)
             for x in a['objects']:
-                print('  '+pp_node(g,x,args))
+                print('  '+w.render_noderef(g,x))
 
 def cmd_map2slim(ont, args):
     g = get_digraph_wrap(ont, args)

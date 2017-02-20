@@ -7,32 +7,50 @@ import re
 import json
 
 import networkx
+import logging
+from prefixcommons.curie_util import contract_uri
 
-def add_obograph_digraph(og, digraph, opts):
+def contract_uri_wrap(uri):
+    curies = contract_uri(uri)
+    if len(curies) > 0:
+        return curies[0]
+    else:
+        return uri
+
+def add_obograph_digraph(og, digraph, node_type=None, predicates=None, **args):
     """
     Converts a single obograph to Digraph edges and adds to an existing networkx DiGraph
     """
+    logging.info("NODES: {}".format(len(og['nodes'])))
     for n in og['nodes']:
         is_obsolete =  'is_obsolete' in n and n['is_obsolete'] == 'true'
         if is_obsolete:
             continue
-        if 'type' in opts and ('type' not in n or n['type'] != opts['type']):
+        if node_type is not None and ('type' not in n or n['type'] != node_type):
             continue
-        digraph.add_node(n['id'], attr_dict=n)
+        id = contract_uri_wrap(n['id'])
+        digraph.add_node(id, attr_dict=n)
         if 'lbl' in n:
-            digraph.node[n['id']]['label'] = n['lbl']
+            digraph.node[id]['label'] = n['lbl']
+    logging.info("EDGES: {}".format(len(og['edges'])))
     for e in og['edges']:
-        digraph.add_edge(e['sub'], e['obj'], pred=e['pred'])
+        sub = contract_uri_wrap(e['sub'])
+        obj = contract_uri_wrap(e['obj'])
+        pred = contract_uri_wrap(e['pred'])
+        if pred == 'is_a':
+            pred = 'subClassOf'
+        if predicates is None or pred in predicates:
+            digraph.add_edge(obj, sub, pred=pred)
 
 
-def convert_json_string(obographstr, opts):
+def convert_json_string(obographstr, **args):
     """
     Return a networkx MultiDiGraph of the ontologies
     serialized as a json string
     """
-    return convert_json_object(json.loads(obographstr), opts)
+    return convert_json_object(json.loads(obographstr), **args)
 
-def convert_json_file(obographfile, opts):
+def convert_json_file(obographfile, **args):
     """
     Return a networkx MultiDiGraph of the ontologies
     serialized as a json string
@@ -41,9 +59,9 @@ def convert_json_file(obographfile, opts):
     f = open(obographfile, 'r')
     jsonstr = f.read()
     f.close()
-    return convert_json_string(jsonstr, opts)
+    return convert_json_string(jsonstr, **args)
 
-def convert_json_object(obographdoc, opts={}):
+def convert_json_object(obographdoc, **args):
     """
     Return a networkx MultiDiGraph of the ontologies
     serialized as a json object
@@ -51,7 +69,7 @@ def convert_json_object(obographdoc, opts={}):
     """
     digraph = networkx.MultiDiGraph()
     for og in obographdoc['graphs']:
-        add_obograph_digraph(og, digraph, opts)
+        add_obograph_digraph(og, digraph, **args)
 
     return digraph
 

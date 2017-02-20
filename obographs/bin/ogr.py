@@ -18,7 +18,11 @@ import networkx as nx
 from networkx.algorithms.dag import ancestors, descendants
 from networkx.drawing.nx_pydot import write_dot
 from prefixcommons.curie_util import expand_uri
+import obographs.obograph_util as obograph_util
+from obographs.graph_manager import retrieve_filtered_graph
 import logging
+import os
+import subprocess
 
 def main():
     """
@@ -40,8 +44,8 @@ def main():
                         help='Output to (tree, dot, ...)')
     parser.add_argument('-p', '--properties', nargs='*', type=str, required=False,
                         help='Properties')
-    parser.add_argument('-n', '--no-cache', type=bool, required=False,
-                        help='Do not cache')
+    parser.add_argument('-c', '--container_properties', nargs='*', type=str, required=False,
+                        help='Properties to nest in graph')
 
     subparsers = parser.add_subparsers(dest='subcommand', help='sub-command help')
     
@@ -70,45 +74,43 @@ def main():
     
     func = args.function
     func(ont, args)
-
-def get_digraph_wrap(ont, args):
-    props = []
-    if args.properties is not None:
-        for p in args.properties:
-            props.append(p)
-    g = get_digraph(ont, props, True)
-    return g
     
 def cmd_ancestors(ont, args):
-    g = get_digraph_wrap(ont, args)
+    g = retrieve_filtered_graph(ont, predicates=args.properties)
 
+    qids = []
     nodes = set()
     for id in resolve_ids(g, args.ids, args):
+        qids.append(id)
         nodes.update(ancestors(g,id))
         nodes.add(id)
-    show_subgraph(g, nodes, args)
+    show_subgraph(g, nodes, qids, args)
 
 def cmd_descendants(ont, args):
-    g = get_digraph_wrap(ont, args)
+    g = retrieve_filtered_graph(ont, predicates=args.properties)
 
+    qids = []
     nodes = set()
     for id in resolve_ids(g, args.ids, args):
+        qids.append(id)
         nodes.update(descendants(g,id))
         nodes.add(id)
-    show_subgraph(g, nodes, args)
+    show_subgraph(g, nodes, qids, args)
 
 def cmd_graph(ont, args):
-    g = get_digraph_wrap(ont, args)
+    g = retrieve_filtered_graph(ont, predicates=args.properties)
 
+    qids = []
     nodes = set()
     for id in resolve_ids(g, args.ids, args):
+        qids.append(id)
         nodes.update(ancestors(g,id))
         nodes.update(descendants(g,id))
         nodes.add(id)
-    show_subgraph(g, nodes, args)
+    show_subgraph(g, nodes, qids, args)
 
 def cmd_cycles(ont, args):
-    g = get_digraph_wrap(ont, args)
+    g = retrieve_filtered_graph(ont, args)
 
     cycles = nx.simple_cycles(g)
     print(list(cycles))
@@ -119,14 +121,14 @@ def cmd_search(ont, args):
         for r in results:
             print(r)
 
-def show_subgraph(g, nodes, args):
+def show_subgraph(g, nodes, query_ids, args):
     """
     Writes graph
     """
     w = GraphRenderer.create(args.to)
     if args.outfile is not None:
         w.outfile = args.outfile
-    w.write_subgraph(g, nodes)
+    w.write_subgraph(g, nodes, query_ids=query_ids, container_predicates=args.container_properties)
             
 def resolve_ids(g, ids, args):
     r_ids = []

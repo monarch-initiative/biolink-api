@@ -1,5 +1,11 @@
 """
 Reconsitutes an ontology from SPARQL queries over a remote SPARQL server
+
+ * the first time an ontology is referenced, basic axioms will be fetched via SPARQL
+ * these will be cached in `/tmp/.cache/`
+ * the second time the same ontology is referenced, the disk cache will be used
+ * if an ontology is referenced a second time in the same in-memory session, the disk cache is bypassed and in-memory (lru) cache is used
+
 """
 
 from SPARQLWrapper import SPARQLWrapper, JSON
@@ -34,13 +40,13 @@ ontol_sources = {
 
     
 
-def get_digraph(ont, relations=[], writecache=False):
+def get_digraph(ont, relations=None, writecache=False):
     """
     Creates a basic graph object corresponding to a remote ontology
     """
     digraph = networkx.MultiDiGraph()
     for (s,p,o) in get_edges(ont):
-        if relations==[] or p in relations:
+        if relations is None or p in relations:
             digraph.add_edge(o,s,pred=p)
     for (n,label) in fetchall_labels(ont):
         digraph.add_node(n, attr_dict={'label':label})

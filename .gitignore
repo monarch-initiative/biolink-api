@@ -68,3 +68,10 @@ ENV/
 
 # old stuff
 *.old
+
+# swagger generated code
+biolink-java-client/
+biolink-javascript-client/
+
+# transient cache
+cache/ontologies/

@@ -1,5 +1,5 @@
 """
-Rendering of ontology nodes, trees and graphs
+Various classes for rendering of networkx ontology graphs
 """
 
 import networkx as nx
@@ -74,18 +74,23 @@ class GraphRenderer():
         Render an object property
         """
         if r is None:
-            return ""
+            return "."
         m = self.config.relsymbolmap
         if r in m:
             return m[r]
         return r
     
-    def render_noderef(self, g, n, **args):
+    def render_noderef(self, g, n, query_ids=[], **args):
         """
         Render a node object
         """
-        if 'label' in g.node[n]:
-            return '{} ! {}'.format(str(n), g.node[n]['label'])
+        marker = ""
+        if n in query_ids:
+            marker = " * "
+        if n in g.node and 'label' in g.node[n]:
+            return '{} ! {}{}'.format(str(n),
+                                      g.node[n]['label'],
+                                      marker)
         else:
             return str(n)
         
@@ -141,7 +146,7 @@ class DotGraphRenderer(GraphRenderer):
     """
     uses js lib to generate png from dot
 
-    This requires you install the node package obographsviz
+    This requires you install the node package [obographsviz](https://github.com/cmungall/obographviz)
     """
     def __init__(self,
                  image_format='png',
@@ -151,7 +156,7 @@ class DotGraphRenderer(GraphRenderer):
         self.ojgr = OboJsonGraphRenderer(**args)
 
     # TODO: currently render and write are equivalent
-    def render(self, g, **args):
+    def render(self, g, query_ids=[], container_predicates=[], **args):
         # create json object to pass to og2dot
         _, fn = tempfile.mkstemp(suffix='.json')
         self.ojgr.outfile = fn
@@ -159,9 +164,17 @@ class DotGraphRenderer(GraphRenderer):
 
         # call og2dot
         cmdtoks = ['og2dot.js']
+        if query_ids is not None:
+            for q in query_ids:
+                cmdtoks.append('-H')
+                cmdtoks.append(q)
         cmdtoks.append('-t')
         cmdtoks.append(self.image_format)
-        if (self.outfile is not None):
+        if container_predicates is not None and len(container_predicates)>0:
+            for p in container_predicates:
+                cmdtoks.append('-c')
+                cmdtoks.append(p)
+        if self.outfile is not None:
             cmdtoks.append('-o')
             cmdtoks.append(self.outfile)
         cmdtoks.append(fn)
@@ -175,7 +188,7 @@ class DotGraphRenderer(GraphRenderer):
 
 class SimpleListGraphRenderer(GraphRenderer):
     """
-    writes a graph as a simple flat list of nodes
+    renders a graph as a simple flat list of nodes
     """
     def __init__(self, **args):
         super().__init__(**args)
@@ -192,7 +205,7 @@ class SimpleListGraphRenderer(GraphRenderer):
         
 class AsciiTreeGraphRenderer(GraphRenderer):
     """
-    Denormalized indented-text tree view
+    Denormalized indented-text tree rendering
     """
     def __init__(self, **args):
         super().__init__(**args)
@@ -216,7 +229,7 @@ class AsciiTreeGraphRenderer(GraphRenderer):
 
 class OboFormatGraphRenderer(GraphRenderer):
     """
-    Write as obo format
+    Render as obo format
     """
     def __init__(self, **args):
         super().__init__(**args)
@@ -256,7 +269,7 @@ class OboFormatGraphRenderer(GraphRenderer):
     
 class OboJsonGraphRenderer(GraphRenderer):
     """
-    Write as obo json
+    Render as obographs json
     """
     def __init__(self, **args):
         super().__init__(**args)
