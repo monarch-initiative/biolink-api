@@ -1,4 +1,4 @@
-from biomodel.obograph import *
+#from biomodel.obograph import *
 from obographs.obograph_util import *
 from obographs.cgraph import *
 from obographs.graph_io import *

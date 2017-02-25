@@ -41,6 +41,15 @@ def add_obograph_digraph(og, digraph, node_type=None, predicates=None, **args):
             pred = 'subClassOf'
         if predicates is None or pred in predicates:
             digraph.add_edge(obj, sub, pred=pred)
+    for ns in og['equivalentNodesSets']:
+        print("NS="+str(ns))
+        equivNodeIds = ns['nodeIds']
+        for i in ns['nodeIds']:
+            ix = contract_uri_wrap(i)
+            for j in ns['nodeIds']:
+                if i != j:
+                    jx = contract_uri_wrap(j)
+                    digraph.add_edge(ix, jx, pred='equivalentTo')
 
 
 def convert_json_string(obographstr, **args):

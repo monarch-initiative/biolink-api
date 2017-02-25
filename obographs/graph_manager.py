@@ -34,10 +34,10 @@ def retrieve_graph(ont):
     g = None
     logging.info("Determining strategy to load '{}' into memory...".format(ont))
     if ont.find(".") > 0 and os.path.isfile(ont):
-        logging.info("Fetching from filesystem")
+        logging.info("Fetching obograph-json file from filesystem")
         g = obograph_util.convert_json_file(ont)
     elif ont.startswith("obo:"):
-        logging.info("Fetching from OBO")
+        logging.info("Fetching from OBO PURL")
         if ont.find(".") == -1:
             ont += '.owl'
         fn = '/tmp/'+ont
