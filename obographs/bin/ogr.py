@@ -20,6 +20,7 @@ from networkx.drawing.nx_pydot import write_dot
 from prefixcommons.curie_util import expand_uri
 import obographs.obograph_util as obograph_util
 from obographs.graph_manager import retrieve_filtered_graph
+from obographs.ontol_factory import OntologyFactory
 import logging
 import os
 import subprocess
@@ -42,52 +43,34 @@ def main():
                         help='Path to output file')
     parser.add_argument('-t', '--to', type=str, required=False,
                         help='Output to (tree, dot, ...)')
+    parser.add_argument('-d', '--direction', type=str, default='u', required=False,
+                        help='u = up, d = down, ud = up and down')
     parser.add_argument('-p', '--properties', nargs='*', type=str, required=False,
                         help='Properties')
     parser.add_argument('-c', '--container_properties', nargs='*', type=str, required=False,
                         help='Properties to nest in graph')
 
-    subparsers = parser.add_subparsers(dest='subcommand', help='sub-command help')
-    
-    # SUBCOMMAND
-    parser_n = subparsers.add_parser('search', aliases='s', help='search by label')
-    parser_n.set_defaults(function=cmd_search)
-    parser_n.add_argument('terms',nargs='*')
-    
-    parser_n = subparsers.add_parser('ancestors', aliases='a', help='Checks URLs')
-    parser_n.set_defaults(function=cmd_ancestors)
-    parser_n.add_argument('ids',nargs='*')
-
-    parser_n = subparsers.add_parser('descendants', aliases='d', help='Checks URLs')
-    parser_n.set_defaults(function=cmd_descendants)
-    parser_n.add_argument('ids',nargs='*')
-
-    parser_n = subparsers.add_parser('graph', aliases='g', help='Checks URLs')
-    parser_n.set_defaults(function=cmd_graph)
-    parser_n.add_argument('ids',nargs='*')
-
-    parser_n = subparsers.add_parser('cycles', help='Checks URLs')
-    parser_n.set_defaults(function=cmd_cycles)
-    
     args = parser.parse_args()
-    ont = args.resource
+    handle = args.resource
     
-    func = args.function
-    func(ont, args)
-    
-def cmd_ancestors(ont, args):
-    g = retrieve_filtered_graph(ont, predicates=args.properties)
+    factory = OntologyFactory()
+    ont = factory.create(handle)
+    g = ont.get_filtered_graph(relations=args.properties)
 
     qids = []
     nodes = set()
+    dirn = args.direction
     for id in resolve_ids(g, args.ids, args):
         qids.append(id)
-        nodes.update(ancestors(g,id))
         nodes.add(id)
+        if dirn.find("u") > -1:
+            nodes.update(ancestors(g,id))
+        if dirn.find("d") > -1:
+            nodes.update(descendants(g,id))
     show_subgraph(g, nodes, qids, args)
 
-def cmd_descendants(ont, args):
-    g = retrieve_filtered_graph(ont, predicates=args.properties)
+def cmd_descendants(handle, args):
+    g = retrieve_filtered_graph(handle, predicates=args.properties)
 
     qids = []
     nodes = set()
@@ -97,8 +80,8 @@ def cmd_descendants(ont, args):
         nodes.add(id)
     show_subgraph(g, nodes, qids, args)
 
-def cmd_graph(ont, args):
-    g = retrieve_filtered_graph(ont, predicates=args.properties)
+def cmd_graph(handle, args):
+    g = retrieve_filtered_graph(handle, predicates=args.properties)
 
     qids = []
     nodes = set()
@@ -109,15 +92,15 @@ def cmd_graph(ont, args):
         nodes.add(id)
     show_subgraph(g, nodes, qids, args)
 
-def cmd_cycles(ont, args):
-    g = retrieve_filtered_graph(ont, args)
+def cmd_cycles(handle, args):
+    g = retrieve_filtered_graph(handle, args)
 
     cycles = nx.simple_cycles(g)
     print(list(cycles))
     
-def cmd_search(ont, args):
+def cmd_search(handle, args):
     for t in args.terms:
-        results = search(ont, t)
+        results = search(handle, t)
         for r in results:
             print(r)
 
