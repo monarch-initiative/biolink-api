@@ -65,6 +65,7 @@ def extract_prefixmap(obj):
     else:
         return obj
         
+@cachier(stale_after=SHELF_LIFE)
 def read_biocontext(name):
     """
     Uses prefixcommons registry
