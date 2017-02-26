@@ -10,6 +10,7 @@ from obographs.ontol import Ontology
 from obographs.sparql.sparql_ontology import EagerRemoteSparqlOntology
 import os
 import subprocess
+import hashlib
 
 class OntologyFactory():
     """
@@ -37,6 +38,21 @@ class OntologyFactory():
             if not os.path.isfile(fn):
                 url = handle.replace("obo:","http://purl.obolibrary.org/obo/")
                 cmd = ['owltools',url,'-o','-f','json',fn]
+                cp = subprocess.run(cmd, check=True)
+                logging.info(cp)
+            else:
+                logging.info("using cached file: "+fn)
+            g = obograph_util.convert_json_file(fn)
+            ont = Ontology(handle=handle, graph=g)
+        elif handle.startswith("http:"):
+            logging.info("Fetching from Web PURL: "+handle)
+            encoded = hashlib.sha256(handle.encode()).hexdigest()
+            #encoded = binascii.hexlify(bytes(handle, 'utf-8'))
+            #base64.b64encode(bytes(handle, 'utf-8'))
+            logging.info(" encoded: "+str(encoded))
+            fn = '/tmp/'+encoded
+            if not os.path.isfile(fn):
+                cmd = ['owltools',handle,'-o','-f','json',fn]
                 cp = subprocess.run(cmd, check=True)
                 logging.info(cp)
             else:

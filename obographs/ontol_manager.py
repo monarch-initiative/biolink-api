@@ -11,7 +11,6 @@ Implements various levels of caching
 
 """
 
-from obographs.sparql2ontology import *
 from obographs.graph_io import *
 import networkx as nx
 from networkx.algorithms.dag import ancestors, descendants
@@ -27,7 +26,7 @@ import datetime
 SHELF_LIFE = datetime.timedelta(days=3)
 
 @cachier(stale_after=SHELF_LIFE)
-def retrieve_graph(ont):
+def retrieve_ontology(ont):
     """
     Create a networkx graph
     """

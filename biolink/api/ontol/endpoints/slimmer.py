@@ -4,7 +4,6 @@ from flask import request
 from flask_restplus import Resource
 from biolink.datamodel.serializers import association
 from biolink.api.restplus import api
-from obographs.sparql2ontology import *
 
 import pysolr
 
@@ -27,16 +26,6 @@ class MapToSlimResource(Resource):
         args = parser.parse_args()
 
         return []
-
-@ns.route('/test/<ont>')
-class TestOnt(Resource):
-    @api.expect(parser)
-    def get(self, ont):
-        """
-        Test
-        """
-        g = get_digraph(ont)
-        return {'size':len(g.nodes())}
 
     
 

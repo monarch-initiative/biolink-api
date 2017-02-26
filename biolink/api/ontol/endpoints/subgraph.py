@@ -2,14 +2,10 @@ import logging
 
 from flask import request
 from flask_restplus import Resource
-#from biolink.datamodel.serializers import association
 from biolink.api.restplus import api
-from obographs.sparql2ontology import *
+from obographs.ontol_factory import OntologyFactory
 from obographs.graph_io import OboJsonGraphRenderer
-from obographs.graph_manager import retrieve_filtered_graph
-
-# TODO - use separate library
-from networkx.algorithms.dag import ancestors, descendants
+import networkx as nx
 
 import pysolr
 
@@ -21,11 +17,9 @@ parser = api.parser()
 parser.add_argument('cnode', action='append', help='Additional classes')
 parser.add_argument('relation', action='append', default=['subClassOf', 'BFO:0000050'], help='Additional classes')
 
-def get_digraph_wrap(ont, properties=['subClassOf']):
-    return g
 
 @ns.route('/<ontology>/<node>')
-#@api.doc(params={'ontology': 'ontology id, e.g. go, uberon, mp, hp)'})
+@api.doc(params={'ontology': 'ontology id, e.g. go, uberon, mp, hp)'})
 @api.doc(params={'node': 'class id. E.g. UBERON:0002102'})
 class ExtractOntologySubgraphResource(Resource):
 
@@ -39,14 +33,22 @@ class ExtractOntologySubgraphResource(Resource):
         ids = [node]
         if args.cnode is not None:
             ids += args.cnode
-            
-        g = retrieve_filtered_graph(ontology, predicates=args.relation)
+
+        factory = OntologyFactory()
+        ont = factory.create(ontology)
+        g = ont.get_filtered_graph(relations=args.relation)
         
         nodes = set()
+
+        dirn = 'du'
         for id in ids:
-            nodes.update(ancestors(g,id))
-            nodes.update(descendants(g,id))
             nodes.add(id)
+            # NOTE: we use direct networkx methods as we have already extracted
+            # the subgraph we want
+            if dirn.find("u") > -1:
+                nodes.update(nx.ancestors(g, id))
+            if dirn.find("d") > -1:
+                nodes.update(nx.descendants(g, id))
         subg = g.subgraph(nodes)
         ojr = OboJsonGraphRenderer()
         json_obj = ojr.to_json(subg)

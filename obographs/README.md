@@ -4,11 +4,12 @@ NOTE: This is a standalone module currently in the biolink-api
 repo. It does not depend on any other module in this repo (other than
 prefixcommons), and will be moved to its own repo.
 
-This module maps (local or remote) ontologies to networkx
-MultiDiGraphs, and provides useful convenience methods over these,
-including display as graphs and trees.
+Thhis module provides a general purpose Ontology object that is bound
+to either remote services, PURLs or a local file, and provides various
+operations on these objects, including extraction to trees and
+subgraphs. See the command line examples below for a general picture.
 
-There are two ways of initiating a networkx graph:
+There are two ways of initiating an ontology object:
 
  * via a local obo-json file
  * via remote connections to OBO PURLs
@@ -16,7 +17,14 @@ There are two ways of initiating a networkx graph:
 
 Persistent caching is used (currently cachier) to avoid repeated expensive I/O connections
 
-This is handled via the graph_manager.py module
+This is handled via the [ontol_manager.py](ontol_manager.py)
+module. This creates an ontology object (see [ontol.py](ontol.py) ).
+
+Note that object modeling is lightweight - we use the python networkx
+package for representing the basic graph portion of an ontology. See
+also the [obographs](https://github.com/geneontology/obographs) spec.
+
+
 
 # Command Line Usage
 

@@ -40,7 +40,7 @@ class Ontology():
             logging.info("No filtering on "+str(self))
             return srcg
         logging.info("Filtering {} for {}".format(self, relations))
-        g = networkx.MultiDiGraph()
+        g = nx.MultiDiGraph()
     
         logging.info("copying nodes")
         for n,d in srcg.nodes_iter(data=True):
@@ -111,10 +111,12 @@ class Ontology():
                 r_ids += matches
         return r_ids
 
-    def is_match(self, node, term, is_partial_match=False, is_regex=False):
+    def is_match(self, node, term, is_partial_match=False, is_regex=False, **args):
         label = node.get('label')
         if term == '%':
             return True
+        if label is None:
+            label = ''
         if term.find('%') > -1:
             term = term.replace('%','.*')
             is_regex = True
@@ -125,10 +127,8 @@ class Ontology():
         else:
             return label == term
     
-    def search(self, searchterm):
+    def search(self, searchterm, **args):
         """
         Simple search
         """
-        g = self.get_graph()
-        matches = [n for n in g.nodes() if g.node[n].get('label').find(searchterm) > -1]
-        return matches
+        return self.resolve_names([searchterm], **args)

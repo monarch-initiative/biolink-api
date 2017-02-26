@@ -293,7 +293,7 @@ class OboJsonGraphRenderer(GraphRenderer):
     def node_to_json(self, nid, g, **args):
         n = g.node[nid]
         return {'id' : nid,
-                'lbl' : n['label']}
+                'lbl' : n.get('label')}
     
     def edge_to_json(self, e, g, **args):
         (obj,sub,meta) = e

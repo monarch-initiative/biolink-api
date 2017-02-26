@@ -13,9 +13,8 @@ For instructions
 
 import argparse
 from biogolr.golr_associations import search_associations_compact
-from obographs.sparql2ontology import *
+from obographs.ontol_factory import OntologyFactory
 from obographs.graph_io import *
-from obographs.graph_manager import retrieve_filtered_graph
 import networkx as nx
 from networkx.algorithms.dag import ancestors, descendants
 from networkx.drawing.nx_pydot import write_dot
@@ -37,6 +36,8 @@ def main():
                         help='Name of ontology')
     parser.add_argument('-d', '--dotfile', type=str, required=False,
                         help='Path to dot file to output')
+    parser.add_argument('-o', '--outfile', type=str, required=False,
+                        help='Path to output file')
     parser.add_argument('-t', '--to', type=str, required=False,
                         help='Output to (tree, dot, ...)')
     parser.add_argument('-c', '--category', type=str, required=False,
@@ -45,8 +46,6 @@ def main():
                         help='NCBITaxon ID')
     parser.add_argument('-p', '--properties', nargs='*', type=str, required=False,
                         help='Properties')
-    parser.add_argument('-n', '--no-cache', type=bool, required=False,
-                        help='Properties')
 
     subparsers = parser.add_subparsers(dest='subcommand', help='sub-command help')
     
@@ -54,30 +53,25 @@ def main():
     parser_n = subparsers.add_parser('query', aliases='q', help='search by label')
     parser_n.set_defaults(function=cmd_query)
     parser_n.add_argument('ids',nargs='*')
-        
+
+    # ontology
     args = parser.parse_args()
-    ont = args.resource
+    handle = args.resource
+    factory = OntologyFactory()
+    ont = factory.create(handle)
     
-    ont = args.resource
     func = args.function
     func(ont, args)
-
-def get_digraph_wrap(ont, args):
-    props = []
-    if args.properties is not None:
-        for p in args.properties:
-            props.append(p)
-    g = get_digraph(ont, props, True)
-    return g
     
 def cmd_query(ont, args):
-    g = retrieve_filtered_graph(ont, predicates=args.properties)
+    """
+    Main query command
+    """
+    g = ont.get_filtered_graph(relations=args.properties)
 
     w = GraphRenderer.create(args.to)
     
-    nodes = set()
-    for id in resolve_ids(g, args.ids, args):
-        nodes.add(id)
+    for id in ont.resolve_names(args.ids):
         assocs = search_associations_compact(object=id,
                                              subject_taxon=args.species,
                                              rows=1000,
@@ -88,13 +82,19 @@ def cmd_query(ont, args):
                                               object_category=args.category)
         for a in assocs:
             print(a)
-            for x in a['objects']:
-                print('  '+w.render_noderef(g,x))
+            objs = a['objects']
+            nodes = set()
+            #nodes.update([ a['subject'] ])
+            for obj in objs:
+                nodes.add(obj)
+                nodes.update(nx.ancestors(g, obj))
+            show_subgraph(g, nodes, objs, args)
+            #for x in objs:
+            #    print('  '+w.render_noderef(g,x))
 
 def cmd_map2slim(ont, args):
-    g = get_digraph_wrap(ont, args)
 
-    subset_term_ids = get_terms_in_subset(ont, args.slim)
+    subset_term_ids = ont.extract_subset(args.slim)
     nodes = set()
     for id in resolve_ids(g, args.ids, args):
         nodes.add(id)
@@ -109,15 +109,14 @@ def cmd_map2slim(ont, args):
                 print('  '+pp_node(g,x,args))
                 
 
-def resolve_ids(g, ids, args):
-    r_ids = []
-    for id in ids:
-        if len(id.split(":")) ==2:
-            r_ids.append(id)
-        else:
-            matches = [n for n in g.nodes() if g.node[n].get('label') == id]
-            r_ids += matches
-    return r_ids
+def show_subgraph(g, nodes, query_ids, args):
+    """
+    Writes graph
+    """
+    w = GraphRenderer.create(args.to)
+    if args.outfile is not None:
+        w.outfile = args.outfile
+    w.write_subgraph(g, nodes, query_ids=query_ids, container_predicates=None)
 
     
 if __name__ == "__main__":

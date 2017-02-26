@@ -6,7 +6,8 @@ import networkx as nx
 import logging
 import obographs.ontol
 from obographs.ontol import Ontology
-from obographs.sparql2ontology import get_digraph, get_named_graph
+from obographs.sparql.sparql_ontol_utils import get_digraph, get_named_graph, run_sparql
+
 
 class RemoteSparqlOntology(Ontology):
     """
@@ -35,14 +36,25 @@ class RemoteSparqlOntology(Ontology):
         bindings = run_sparql(query)
         return [(r['c']['value'],r['l']['value']) for r in bindings]
 
-    def xxsearch(self, searchterm):
+    def resolve_names(self, names, is_remote=False, **args):
+        if not is_remote:
+            return super().resolve_names(names, **args)
+        else:
+            results = []
+            for name in names:
+                results += self._search(name)
+            logging.info("REMOT RESULTS="+str(results))
+            return results
+        
+    def _search(self, searchterm):
         """
         Search for things using labels
         """
-        # TODO: DRY with sparql2ontology
-        namedGraph = get_named_graph(ont)
+        # TODO: DRY with sparql_ontol_utils
+        searchterm = searchterm.replace('%','.*')
+        namedGraph = get_named_graph(self.handle)
         query = """
-        SELECT ?c ?l WHERE {{
+        SELECT ?c WHERE {{
         GRAPH <{g}>  {{
         ?c rdfs:label ?l
         FILTER regex(?l,'{s}','i')
@@ -50,7 +62,7 @@ class RemoteSparqlOntology(Ontology):
         }}
         """.format(s=searchterm, g=namedGraph)
         bindings = run_sparql(query)
-        return [(r['c']['value'],r['l']['value']) for r in bindings]
+        return [r['c']['value'] for r in bindings]
             
     
 class EagerRemoteSparqlOntology(RemoteSparqlOntology):

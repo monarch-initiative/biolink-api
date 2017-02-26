@@ -12,7 +12,6 @@ For instructions
 """
 
 import argparse
-from obographs.sparql2ontology import *
 import networkx as nx
 from networkx.algorithms.dag import ancestors, descendants
 from obographs.ontol_factory import OntologyFactory
@@ -60,14 +59,17 @@ def main():
     dirn = args.direction
     searchp = args.search
     for id in ont.resolve_names(args.ids,
+                                is_remote = searchp.find('x') > -1,
                                 is_partial_match = searchp.find('p') > -1,
                                 is_regex = searchp.find('r') > -1):
         qids.append(id)
         nodes.add(id)
+        # NOTE: we use direct networkx methods as we have already extracted
+        # the subgraph we want
         if dirn.find("u") > -1:
-            nodes.update(ancestors(g,id))
+            nodes.update(nx.ancestors(g, id))
         if dirn.find("d") > -1:
-            nodes.update(descendants(g,id))
+            nodes.update(nx.descendants(g, id))
     show_subgraph(g, nodes, qids, args)
 
 
