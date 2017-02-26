@@ -113,6 +113,8 @@ class Ontology():
 
     def is_match(self, node, term, is_partial_match=False, is_regex=False):
         label = node.get('label')
+        if term == '%':
+            return True
         if term.find('%') > -1:
             term = term.replace('%','.*')
             is_regex = True

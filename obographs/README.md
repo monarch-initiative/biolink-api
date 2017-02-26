@@ -135,3 +135,14 @@ ogr -r cl -s r neuron
 
 Note: any of the above can be fed into other renderers, e.g. trees, graphs
 
+E.g. terms containing neuron, to obo
+
+```
+ogr -r cl %neuron% -t obo
+```
+
+E.g. terms ending neuron, to tree
+
+```
+ogr -r cl %neuron -t tree
+```
