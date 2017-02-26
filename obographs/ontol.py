@@ -5,6 +5,7 @@ Represents an ontology
 import networkx as nx
 import logging
 import obographs.obograph_util as obograph_util
+import re
 
 class Ontology():
     """
@@ -87,4 +88,45 @@ class Ontology():
         else:
             g = self.get_filtered_graph(relations)
         return nx.ancestors(g, node)
+
+    def descendants(self, node, relations=None):
+        """
+        Wraps networkx by default
+        """
+        g = None
+        if relations is None:
+            g = self.get_graph()
+        else:
+            g = self.get_filtered_graph(relations)
+        return nx.descendants(g, node)
     
+    def resolve_names(self, names, **args):
+        g = self.get_graph()
+        r_ids = []
+        for n in names:
+            if len(n.split(":")) ==2:
+                r_ids.append(n)
+            else:
+                matches = [nid for nid in g.nodes() if self.is_match(g.node[nid], n, **args)]
+                r_ids += matches
+        return r_ids
+
+    def is_match(self, node, term, is_partial_match=False, is_regex=False):
+        label = node.get('label')
+        if term.find('%') > -1:
+            term = term.replace('%','.*')
+            is_regex = True
+        if is_regex:
+            return re.search(term, label) is not None
+        if is_partial_match:
+            return label.find(term) > -1
+        else:
+            return label == term
+    
+    def search(self, searchterm):
+        """
+        Simple search
+        """
+        g = self.get_graph()
+        matches = [n for n in g.nodes() if g.node[n].get('label').find(searchterm) > -1]
+        return matches

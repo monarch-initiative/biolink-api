@@ -46,13 +46,13 @@ In the following we assume default method, but can be substituted.
 List all ancestors:
 
 ```
-ogr -r cl a neuron
+ogr -r cl neuron
 ```
 
 Show ancestors as tree, following only subclass:
 
 ```
-ogr -r cl -p subClassOf -t tree a neuron
+ogr -r cl -p subClassOf -t tree neuron
 ```
 
 generates:
@@ -72,7 +72,13 @@ generates:
 Descendants of neuron, parts and subtypes
 
 ```
-ogr -r cl -p subClassOf -p BFO:0000050 -t tree a neuron
+ogr -r cl -p subClassOf -p BFO:0000050 -t tree -d d neuron
+```
+
+Descendants and ancestors of neuron, parts and subtypes
+
+```
+ogr -r cl -p subClassOf -p BFO:0000050 -t tree -d du neuron
 ```
 
 ## Visualization using obographviz
@@ -94,3 +100,38 @@ This proceeds by:
 Output:
 
 ![img](https://github.com/biolink/biolink-api/raw/master/obographs/docs/nucleus.png)
+
+## Search
+
+List exact matches to neuron
+
+```
+ogr -r cl neuron
+```
+
+Terms starting with neuron, SQL style
+
+```
+ogr -r cl neuron%
+```
+
+Terms starting with neuron, regex (equivalent to above)
+
+```
+ogr -r cl -s r ^neuron
+```
+
+Terms ending with neuron
+
+```
+ogr -r cl -s r neuron$
+```
+
+Terms containing the string neuron
+
+```
+ogr -r cl -s r neuron
+```
+
+Note: any of the above can be fed into other renderers, e.g. trees, graphs
+

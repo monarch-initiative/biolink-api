@@ -13,17 +13,11 @@ For instructions
 
 import argparse
 from obographs.sparql2ontology import *
-from obographs.graph_io import *
 import networkx as nx
 from networkx.algorithms.dag import ancestors, descendants
-from networkx.drawing.nx_pydot import write_dot
-from prefixcommons.curie_util import expand_uri
-import obographs.obograph_util as obograph_util
-from obographs.graph_manager import retrieve_filtered_graph
 from obographs.ontol_factory import OntologyFactory
+from obographs.graph_io import GraphRenderer
 import logging
-import os
-import subprocess
 
 def main():
     """
@@ -47,8 +41,12 @@ def main():
                         help='u = up, d = down, ud = up and down')
     parser.add_argument('-p', '--properties', nargs='*', type=str, required=False,
                         help='Properties')
+    parser.add_argument('-s', '--search', type=str, default='', required=False,
+                        help='Search type. p=partial, r=regex')
     parser.add_argument('-c', '--container_properties', nargs='*', type=str, required=False,
                         help='Properties to nest in graph')
+
+    parser.add_argument('ids',nargs='*')
 
     args = parser.parse_args()
     handle = args.resource
@@ -60,7 +58,10 @@ def main():
     qids = []
     nodes = set()
     dirn = args.direction
-    for id in resolve_ids(g, args.ids, args):
+    searchp = args.search
+    for id in ont.resolve_names(args.ids,
+                                is_partial_match = searchp.find('p') > -1,
+                                is_regex = searchp.find('r') > -1):
         qids.append(id)
         nodes.add(id)
         if dirn.find("u") > -1:
@@ -69,28 +70,6 @@ def main():
             nodes.update(descendants(g,id))
     show_subgraph(g, nodes, qids, args)
 
-def cmd_descendants(handle, args):
-    g = retrieve_filtered_graph(handle, predicates=args.properties)
-
-    qids = []
-    nodes = set()
-    for id in resolve_ids(g, args.ids, args):
-        qids.append(id)
-        nodes.update(descendants(g,id))
-        nodes.add(id)
-    show_subgraph(g, nodes, qids, args)
-
-def cmd_graph(handle, args):
-    g = retrieve_filtered_graph(handle, predicates=args.properties)
-
-    qids = []
-    nodes = set()
-    for id in resolve_ids(g, args.ids, args):
-        qids.append(id)
-        nodes.update(ancestors(g,id))
-        nodes.update(descendants(g,id))
-        nodes.add(id)
-    show_subgraph(g, nodes, qids, args)
 
 def cmd_cycles(handle, args):
     g = retrieve_filtered_graph(handle, args)
@@ -113,7 +92,7 @@ def show_subgraph(g, nodes, query_ids, args):
         w.outfile = args.outfile
     w.write_subgraph(g, nodes, query_ids=query_ids, container_predicates=args.container_properties)
             
-def resolve_ids(g, ids, args):
+def resolve_ids(ont, ids, args):
     r_ids = []
     for id in ids:
         if len(id.split(":")) ==2:

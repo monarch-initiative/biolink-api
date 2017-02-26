@@ -35,6 +35,24 @@ class RemoteSparqlOntology(Ontology):
         bindings = run_sparql(query)
         return [(r['c']['value'],r['l']['value']) for r in bindings]
 
+    def xxsearch(self, searchterm):
+        """
+        Search for things using labels
+        """
+        # TODO: DRY with sparql2ontology
+        namedGraph = get_named_graph(ont)
+        query = """
+        SELECT ?c ?l WHERE {{
+        GRAPH <{g}>  {{
+        ?c rdfs:label ?l
+        FILTER regex(?l,'{s}','i')
+        }}
+        }}
+        """.format(s=searchterm, g=namedGraph)
+        bindings = run_sparql(query)
+        return [(r['c']['value'],r['l']['value']) for r in bindings]
+            
+    
 class EagerRemoteSparqlOntology(RemoteSparqlOntology):
     """
     Local or remote ontology
