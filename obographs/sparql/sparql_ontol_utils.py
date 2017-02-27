@@ -13,7 +13,6 @@ from prefixcommons.curie_util import contract_uri
 from functools import lru_cache
 import percache
 import networkx
-from obographs.tuple_cache import store_object, fetch_object
 from cachier import cachier
 import datetime
 import logging
@@ -155,28 +154,6 @@ def fetchall_svf(ont):
     """.format(q=queryBody, g=namedGraph)
     bindings = run_sparql(query)
     return [(r['c']['value'], r['p']['value'], r['d']['value']) for r in bindings]
-
-#@cache
-def old_fetchall_labels(ont,writecache=False):
-    """
-    fetch all rdfs:label assertions for an ontology
-    """
-    k=('fetchall_labels',ont)
-    rows = fetch_object(k)
-    if rows is not None:
-        return rows
-    namedGraph = get_named_graph(ont)
-    queryBody = querybody_label()
-    query = """
-    SELECT * WHERE {{
-    GRAPH <{g}>  {q}
-    }}
-    """.format(q=queryBody, g=namedGraph)
-    bindings = run_sparql(query)
-    rows = [(r['c']['value'], r['l']['value']) for r in bindings]
-    if writecache:
-        store_object(k,rows)
-    return rows
 
 @cachier(stale_after=SHELF_LIFE)
 def fetchall_labels(ont):
