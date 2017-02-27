@@ -71,28 +71,28 @@ class EntitySetAssociations(Resource):
                                       **args)
         return results
 
-@ns.route('/DEPRECATEDhomologs/')
-class EntitySetHomologsDEPRECATED(Resource):
-
-    @api.expect(parser)
-    @api.marshal_list_with(association_results)
-    #@api.marshal_list_with(compact_association_set)
-    def get(self):
-        """
-        Returns homology associations for a given input set of genes
-        """
-        args = parser.parse_args()
-
-        M=GolrFields()
-        rel = 'RO:0002434'  # TODO; allow other types
-        results = search_associations(subjects=args.get('subject'),
-                                      select_fields=[M.SUBJECT, M.RELATION, M.OBJECT],
-                                      use_compact_associations=True,
-                                      relation=rel,
-                                      rows=MAX_ROWS,
-                                      facet_fields=[],
-                                      **args)
-        return results
+#@ns.route('/DEPRECATEDhomologs/')
+#class EntitySetHomologsDEPRECATED(Resource):
+#
+#    @api.expect(parser)
+#    @api.marshal_list_with(association_results)
+#    #@api.marshal_list_with(compact_association_set)
+#    def get(self):
+#        """
+#        Returns homology associations for a given input set of genes
+#        """
+#        args = parser.parse_args()
+#
+#        M=GolrFields()
+#        rel = 'RO:0002434'  # TODO; allow other types
+#        results = search_associations(subjects=args.get('subject'),
+#                                      select_fields=[M.SUBJECT, M.RELATION, M.OBJECT],
+#                                      use_compact_associations=True,
+#                                      relation=rel,
+#                                      rows=MAX_ROWS,
+#                                      facet_fields=[],
+#                                      **args)
+#        return results
     
 
 @ns.route('/ora/')

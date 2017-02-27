@@ -16,6 +16,7 @@ import networkx as nx
 from networkx.algorithms.dag import ancestors, descendants
 from obographs.ontol_factory import OntologyFactory
 from obographs.graph_io import GraphRenderer
+from obographs.slimmer import get_minimal_subgraph
 import logging
 
 def main():
@@ -42,6 +43,8 @@ def main():
                         help='Properties')
     parser.add_argument('-s', '--search', type=str, default='', required=False,
                         help='Search type. p=partial, r=regex')
+    parser.add_argument('-S', '--slim', type=str, default='', required=False,
+                        help='Slim type. m=minimal')
     parser.add_argument('-c', '--container_properties', nargs='*', type=str, required=False,
                         help='Properties to nest in graph')
 
@@ -89,6 +92,9 @@ def show_subgraph(g, nodes, query_ids, args):
     """
     Writes graph
     """
+    if args.slim.find('m') > -1:
+        logging.info("SLIMMING")
+        g = get_minimal_subgraph(g, query_ids)
     w = GraphRenderer.create(args.to)
     if args.outfile is not None:
         w.outfile = args.outfile

@@ -53,3 +53,13 @@ between these entities
       then the JSON should have some JSONPath "associations[*].object.id" with "string" "MGI:88039"
       and the JSON should have some JSONPath "associations[*].object.label" with "string" "Apc"
 
+## Diseases
+
+ Scenario: User fetches all diseases for a gene using its orphanet ID
+    Given a path "/bioentity/gene/Orphanet:173505/diseases"
+     then the content should contain "http://data.monarchinitiative.org/ttl/omim.ttl"
+     then the content should contain "http://data.monarchinitiative.org/ttl/ctd.ttl"
+     then the content should contain "http://data.monarchinitiative.org/ttl/orphanet.ttl"
+    when the content is converted to JSON
+      then the JSON should have some JSONPath "associations[*].subject.label" with "string" "SLC6A20"
+      and the JSON should have some JSONPath "associations[*].object.id" with "string" "OMIM:138500"

@@ -128,6 +128,20 @@ class GenePhenotypeAssociations(Resource):
 
         return search_associations('gene', 'phenotype', None, id, **core_parser.parse_args())
 
+@ns.route('/gene/<id>/disease/')
+@api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:4750, Orphanet:173505. Equivalent IDs can be used with same results'})
+class GeneDiseaseAssociations(Resource):
+
+    @api.expect(core_parser)
+    def get(self, id):
+        """
+        Returns diseases associated with gene
+        """
+        args = core_parser.parse_args()
+        print(args)
+
+        return search_associations('gene', 'disease', None, id, **core_parser.parse_args())
+
 @ns.route('/gene/<id>/expressed/')
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:4750. Equivalent IDs can be used with same results'})
 class GeneExpressionAssociations(Resource):

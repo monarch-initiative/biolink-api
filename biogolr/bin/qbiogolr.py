@@ -19,12 +19,16 @@ import networkx as nx
 from networkx.algorithms.dag import ancestors, descendants
 from networkx.drawing.nx_pydot import write_dot
 from prefixcommons.curie_util import expand_uri
+from obographs.slimmer import get_minimal_subgraph
 #from biogolr.golr_associations import search_associations, search_associations_compact, GolrFields, select_distinct_subjects, get_objects_for_subject, get_subjects_for_object
+import logging
 
 def main():
     """
     Wrapper for OGR
     """
+    logging.basicConfig(level=logging.INFO)
+    logging.info("Welcome!")
 
     parser = argparse.ArgumentParser(description='Wrapper for obographs library'
                                                  """
@@ -34,16 +38,20 @@ def main():
 
     parser.add_argument('-r', '--resource', type=str, required=False,
                         help='Name of ontology')
-    parser.add_argument('-d', '--dotfile', type=str, required=False,
-                        help='Path to dot file to output')
+    parser.add_argument('-d', '--display', type=str, default='o', required=False,
+                        help='What to display: some combination of o, s, r. o=object ancestors, s=subject ancestors. If r present, draws s<->o relations ')
     parser.add_argument('-o', '--outfile', type=str, required=False,
                         help='Path to output file')
     parser.add_argument('-t', '--to', type=str, required=False,
                         help='Output to (tree, dot, ...)')
-    parser.add_argument('-c', '--category', type=str, required=False,
+    parser.add_argument('-C', '--category', type=str, required=False,
                         help='Category')
+    parser.add_argument('-c', '--container_properties', nargs='*', type=str, required=False,
+                        help='Properties to nest in graph')
     parser.add_argument('-s', '--species', type=str, required=False,
                         help='NCBITaxon ID')
+    parser.add_argument('-S', '--slim', type=str, default='', required=False,
+                        help='Slim type. m=minimal')
     parser.add_argument('-p', '--properties', nargs='*', type=str, required=False,
                         help='Properties')
 
@@ -71,6 +79,9 @@ def cmd_query(ont, args):
 
     w = GraphRenderer.create(args.to)
     
+    nodes = set()
+
+    display = args.display
     for id in ont.resolve_names(args.ids):
         assocs = search_associations_compact(object=id,
                                              subject_taxon=args.species,
@@ -83,15 +94,38 @@ def cmd_query(ont, args):
         for a in assocs:
             print(a)
             objs = a['objects']
-            nodes = set()
-            #nodes.update([ a['subject'] ])
+
+            if display.find('r') > -1:
+                pass
+            
+            if display.find('o') > -1:
+                for obj in objs:
+                    nodes.add(obj)
+                    nodes.update(nx.ancestors(g, obj))
+
+            if display.find('s') > -1:
+                sub = a['subject']
+                nodes.add(sub)
+                nodes.update(nx.ancestors(g, sub))
+                
+    subg = g.subgraph(nodes)
+    if display.find('r') > -1:
+        for a in assocs:
+            rel = a['relation']
+            sub = a['subject']
+            objs = a['objects']
+            if rel is None:
+                rel = 'rdfs:seeAlso'
             for obj in objs:
-                nodes.add(obj)
-                nodes.update(nx.ancestors(g, obj))
-            show_subgraph(g, nodes, objs, args)
+                logging.info("Adding assoc rel {} {} {}".format(sub,obj,rel))
+                subg.add_edge(obj,sub,pred=rel)
+            
+
+    show_graph(subg, nodes, objs, args)
             #for x in objs:
             #    print('  '+w.render_noderef(g,x))
-
+            
+# TODO
 def cmd_map2slim(ont, args):
 
     subset_term_ids = ont.extract_subset(args.slim)
@@ -109,14 +143,18 @@ def cmd_map2slim(ont, args):
                 print('  '+pp_node(g,x,args))
                 
 
-def show_subgraph(g, nodes, query_ids, args):
+def show_graph(g, nodes, query_ids, args):
     """
     Writes graph
     """
+    if args.slim.find('m') > -1:
+        logging.info("SLIMMING")
+        g = get_minimal_subgraph(g, query_ids)
     w = GraphRenderer.create(args.to)
     if args.outfile is not None:
         w.outfile = args.outfile
-    w.write_subgraph(g, nodes, query_ids=query_ids, container_predicates=None)
+    logging.info("Writing subg from "+str(g))
+    w.write(g, query_ids=query_ids, container_predicates=args.container_properties)
 
     
 if __name__ == "__main__":
