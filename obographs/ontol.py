@@ -12,12 +12,17 @@ class Ontology():
     Local or remote ontology
     """
 
-    def __init__(self, handle=None, graph=None):
+    def __init__(self, handle=None, graph=None, graphdoc=None):
         """
         initializes based on an ontology name
         """
         self.handle = handle
+
+        # networkx object
         self.graph = graph
+
+        # obograph
+        self.graphdoc = graphdoc
 
     def get_graph(self):
         """
@@ -99,6 +104,12 @@ class Ontology():
         else:
             g = self.get_filtered_graph(relations)
         return nx.descendants(g, node)
+
+    def logical_definitions(self, node, relations=None):
+        """
+        Retrieves logical definitions for a class
+        """
+        pass
     
     def resolve_names(self, names, **args):
         g = self.get_graph()
