@@ -102,17 +102,19 @@ def get_terms_in_subset(ont, subset):
 
 
 def run_sparql(q):
-    # TODO: select based on ontology
+    # TODO: select endpoint based on ontology
     #sparql = SPARQLWrapper("http://rdf.geneontology.org/sparql")
     logging.info("Connecting to sparql endpoint...")
     sparql = SPARQLWrapper("http://sparql.hegroup.org/sparql")
-
+    logging.info("Made wrapper: {}".format(sparql))
     # TODO: iterate over large sets?
     full_q = q + ' LIMIT 250000'
     sparql.setQuery(q)
     sparql.setReturnFormat(JSON)
+    logging.info("Query: {}".format(q))
     results = sparql.query().convert()
     bindings = results['results']['bindings']
+    logging.info("Rows: {}".format(len(bindings)))
     for r in bindings:
         curiefy(r)
     return bindings

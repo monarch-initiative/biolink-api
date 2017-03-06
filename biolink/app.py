@@ -16,6 +16,8 @@ from biolink.api.ontol.endpoints.termstats import ns as ontol_termstats_namespac
 #from biolink.api.ontol.endpoints.enrichment import ns as ontol_enrichment_namespace
 from biolink.api.graph.endpoints.node import ns as graph_node_namespace
 
+from biolink.api.mart.endpoints.mart import ns as mart_namespace
+
 from biolink.api.cam.endpoints.cam_endpoint import ns as cam_namespace
 from biolink.api.owl.endpoints.ontology import ns as owl_ontology_namespace
 from biolink.api.patient.endpoints.individual import ns as patient_individual_namespace
@@ -31,6 +33,7 @@ from biolink.api.relations.endpoints.relation_usage import ns as relation_usage_
 from biolink.api.variation.endpoints.variantset import ns as variation_variantset_namespace
 
 from biolink.api.pub.endpoints.pubs import ns as pubs_namespace
+
 
 from biolink.api.restplus import api
 

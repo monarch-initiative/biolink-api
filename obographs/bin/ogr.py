@@ -23,8 +23,6 @@ def main():
     """
     Wrapper for OGR
     """
-    logging.basicConfig(level=logging.INFO)
-    logging.info("Welcome!")
     parser = argparse.ArgumentParser(description='Wrapper for obographs library'
                                                  """
                                                  By default, ontologies are cached locally and synced from a remote sparql endpoint
@@ -47,14 +45,25 @@ def main():
                         help='Slim type. m=minimal')
     parser.add_argument('-c', '--container_properties', nargs='*', type=str, required=False,
                         help='Properties to nest in graph')
+    parser.add_argument('-v', '--verbosity', default=0, action='count',
+                        help='Increase output verbosity')
 
     parser.add_argument('ids',nargs='*')
 
     args = parser.parse_args()
+
+    if args.verbosity >= 2:
+        logging.basicConfig(level=logging.DEBUG)
+    if args.verbosity == 1:
+        logging.basicConfig(level=logging.INFO)
+    logging.info("Welcome!")
+    
     handle = args.resource
     
     factory = OntologyFactory()
+    logging.info("Creating ont object from: {} {}".format(handle, factory))
     ont = factory.create(handle)
+    logging.info("ont: {}".format(ont))
     g = ont.get_filtered_graph(relations=args.properties)
 
     qids = []
@@ -70,9 +79,9 @@ def main():
         # NOTE: we use direct networkx methods as we have already extracted
         # the subgraph we want
         if dirn.find("u") > -1:
-            nodes.update(nx.ancestors(g, id))
+            nodes.update(ont.ancestors(id))
         if dirn.find("d") > -1:
-            nodes.update(nx.descendants(g, id))
+            nodes.update(ont.descendants(id))
     show_subgraph(g, nodes, qids, args)
 
 

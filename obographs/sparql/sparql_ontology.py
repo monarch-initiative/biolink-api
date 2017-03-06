@@ -76,11 +76,10 @@ class EagerRemoteSparqlOntology(RemoteSparqlOntology):
         """
         self.handle = handle
         logging.info("Creating eager-remote-sparql from "+str(handle))
-        print("Creating eager-remote-sparql from "+str(handle))
         g = get_digraph(handle, None, True)
         logging.info("Graph:"+str(g))
         self.graph = g
-        print("Graph "+str(self.graph))
+        logging.info("Graph "+str(self.graph))
 
     def __str__(self):
         return "h:{} g:{}".format(self.handle, self.graph)

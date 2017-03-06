@@ -37,6 +37,8 @@ import logging
 
 import pysolr
 import json
+import logging
+import time
 
 import math ### TODO - move?
 
@@ -160,25 +162,27 @@ def translate_obj(d,fname):
 def map_doc(d, field_mapping):
     for (k,v) in field_mapping.items():
         if v is not None and k is not None:
-            print("TESTING FOR:"+v+" IN "+str(d))
+            logging.debug("TESTING FOR:"+v+" IN "+str(d))
             if v in d:
-                print("Setting field {} to {} // was in {}".format(k,d[v],v))
+                logging.debug("Setting field {} to {} // was in {}".format(k,d[v],v))
                 d[k] = d[v]
     return d
 
-def translate_doc(d, field_mapping=None, **kwargs):
+def translate_doc(d, field_mapping=None, map_identifiers=None, **kwargs):
     """
     Translate a solr document (i.e. a single result row)
     """
     if field_mapping is not None:
         map_doc(d, field_mapping)
     subject = translate_obj(d,M.SUBJECT)
-    map_identifiers_to = kwargs.get('map_identifiers')
-    if map_identifiers_to:
+
+    # TODO: use a more robust method; we need equivalence as separate field in solr
+    if map_identifiers is not None:
         if M.SUBJECT_CLOSURE in d:
-            subject['id'] = map_id(subject, map_identifiers_to, d[M.SUBJECT_CLOSURE])
+            subject['id'] = map_id(subject, map_identifiers, d[M.SUBJECT_CLOSURE])
         else:
-            print("NO SUBJECT CLOSURE IN: "+str(d))
+            logging.info("NO SUBJECT CLOSURE IN: "+str(d))
+            
     if M.SUBJECT_TAXON in d:
         subject['taxon'] = translate_obj(d,M.SUBJECT_TAXON)
     assoc = {'id':d.get(M.ID),
@@ -209,21 +213,41 @@ def translate_docs(ds, **kwargs):
     return [translate_doc(d, **kwargs) for d in ds]
 
 
-def translate_docs_compact(ds, field_mapping=None, **kwargs):
+def translate_docs_compact(ds, field_mapping=None, slim=None, map_identifiers=None, **kwargs):
     """
     Translate golr association documents to a compact representation
     """
     amap = {}
+    logging.info("Translating docs to compact form. Slim={}".format(slim))
     for d in ds:
+        #logging.debug("DOC={}".format(d))
         if field_mapping is not None:
             map_doc(d, field_mapping)
+
+        subject = d[M.SUBJECT]
+        
+        # TODO: use a more robust method; we need equivalence as separate field in solr
+        if map_identifiers is not None:
+            if M.SUBJECT_CLOSURE in d:
+                subject = map_id(subject, map_identifiers, d[M.SUBJECT_CLOSURE])
+            else:
+                logging.debug("NO SUBJECT CLOSURE IN: "+str(d))
+            
         rel = d.get(M.RELATION)
-        k = (d[M.SUBJECT],rel)
+        k = (subject,rel)
         if k not in amap:
-            amap[k] = {'subject':d[M.SUBJECT],
+            amap[k] = {'subject':subject,
                        'relation':rel,
                        'objects': []}
-        amap[k]['objects'].append(d[M.OBJECT])
+        if slim is not None and len(slim)>0:
+            mapped_objects = [x for x in d[M.OBJECT_CLOSURE] if x in slim]
+            logging.debug("Mapped objects: {}".format(mapped_objects))
+            amap[k]['objects'] += mapped_objects
+        else:
+            amap[k]['objects'].append(d[M.OBJECT])
+    for k in amap.keys():
+        amap[k]['objects'] = list(set(amap[k]['objects']))
+        
     return list(amap.values())
 
 def map_id(id, prefix, closure_list):
@@ -265,6 +289,8 @@ def search_associations(subject_category=None,
                         fetch_subjects=False,
                         slim=[],
                         json_facet=None,
+                        iterate=False,
+                        map_identifiers=None,
                         facet_fields = [
                             M.SUBJECT_TAXON_LABEL,
                             M.OBJECT_CLOSURE
@@ -319,19 +345,22 @@ def search_associations(subject_category=None,
     """
     fq = {}
 
+    facet_on = 'on'
+
     # canonical form for MGI is a CURIE MGI:nnnn
     if subject is not None and subject.startswith('MGI:MGI:'):
-        print('Unhacking MGI ID presumably from GO:'+str(subject))
+        logging.info('Unhacking MGI ID presumably from GO:'+str(subject))
         subject = subject.replace("MGI:MGI:","MGI")
     
-    # temporary: for querying go solr, map fields
+    # temporary: for querying go solr, map fields. TODO
+    logging.info("Object category: {}".format(object_category))
     if object_category is not None and object_category == 'function':
         go_golr_url = "http://golr.berkeleybop.org/solr/"
         solr = pysolr.Solr(go_golr_url, timeout=5)
         field_mapping=goassoc_fieldmap()
         fq['document_category'] = 'annotation'
         if subject is not None and subject.startswith('MGI:'):
-            print('MGI hack for GO: '+str(subject))
+            logging.info('MGI hack for GO: '+str(subject))
             subject = 'MGI:' + subject
     
     # typically information is stored one-way, e.g. model-disease;
@@ -341,6 +370,14 @@ def search_associations(subject_category=None,
         (subject_category,object_category) = (object_category,subject_category)
         (subject_taxon,object_taxon) = (object_taxon,subject_taxon)
 
+    if use_compact_associations:
+        facet_fields = []
+        facet_on = 'off'
+        facet_limit = 0
+        select_fields = [
+            M.SUBJECT,
+            M.RELATION,
+            M.OBJECT]
         
     if subject_category is not None:
         fq['subject_category'] = subject_category
@@ -389,7 +426,6 @@ def search_associations(subject_category=None,
                 else:
                     fq[v] = fq[k]
                     del fq[k]
-    
 
     filter_queries = []
     qstr = "*:*"
@@ -403,7 +439,6 @@ def search_associations(subject_category=None,
             M.SOURCE,
             M.SUBJECT,
             M.SUBJECT_LABEL,
-            M.SUBJECT_CLOSURE,  # TODO - only required if map_identifiers set
             M.SUBJECT_TAXON,
             M.SUBJECT_TAXON_LABEL,
             M.RELATION,
@@ -416,24 +451,30 @@ def search_associations(subject_category=None,
                 M.EVIDENCE_OBJECT,
                 M.EVIDENCE_GRAPH
             ]
-        
-    if field_mapping is not None:
-        select_fields = [ map_field(fn, field_mapping) for fn in select_fields ]    
 
+    if map_identifiers is not None:
+        select_fields.append(M.SUBJECT_CLOSURE)
+        
     if slim is not None and len(slim)>0:
         select_fields.append(M.OBJECT_CLOSURE)
         
-    facet_fields = [ map_field(fn, field_mapping) for fn in facet_fields ]    
+    if field_mapping is not None:
+        logging.info("Applying field mapping to SELECT: {}".format(field_mapping))
+        select_fields = [ map_field(fn, field_mapping) for fn in select_fields ]    
+
         
-    #print('FL'+str(select_fields))
+    facet_fields = [ map_field(fn, field_mapping) for fn in facet_fields ]
+        
+    #logging.info('FL'+str(select_fields))
     is_unlimited = False
     if rows < 0:
         is_unlimited = True
+        iterate = True
         rows = MAX_ROWS
     params = {
         'q': qstr,
         'fq': filter_queries,
-        'facet': 'on',
+        'facet': facet_on,
         'facet.field': facet_fields,
         'facet.limit': facet_limit,
         'facet.mincount': facet_mincount,
@@ -451,10 +492,27 @@ def search_associations(subject_category=None,
     if len(facet_pivot_fields) > 0:
         params['facet.pivot'] = ",".join(facet_pivot_fields)
         params['facet.pivot.mincount'] = 1
-    print("PARAMS="+str(params))
-    results = solr.search(**params)
-    fcs = results.facets
 
+    logging.info("PARAMS="+str(params))
+    results = solr.search(**params)
+    n_docs = len(results.docs)
+    logging.info("Num_docs: {}".format(n_docs))
+
+    if iterate:
+        docs = results.docs
+        start = n_docs
+        while n_docs >= rows:
+            logging.info("Iterating; start={}".format(start))
+            next_results = solr.search(**params, start=start)
+            next_docs = next_results.docs
+            n_docs = len(next_docs)
+            docs += next_docs
+            start += rows
+        results.docs = docs
+
+            
+    
+    fcs = results.facets
     
     payload = {
         'facet_counts': translate_facet_field(fcs),
@@ -467,17 +525,16 @@ def search_associations(subject_category=None,
 
     # TODO - check if truncated
 
-    print("COMPACT="+str(use_compact_associations))
+    logging.info("COMPACT="+str(use_compact_associations))
     if use_compact_associations:
-        payload['compact_associations'] = translate_docs_compact(results.docs, field_mapping=field_mapping, **kwargs)
+        payload['compact_associations'] = translate_docs_compact(results.docs, field_mapping=field_mapping, slim=slim, map_identifiers=map_identifiers, **kwargs)
     else:
-        payload['associations'] = translate_docs(results.docs, field_mapping=field_mapping, **kwargs)
+        payload['associations'] = translate_docs(results.docs, field_mapping=field_mapping, map_identifiers=map_identifiers, **kwargs)
 
     if 'facet_pivot' in fcs:
         payload['facet_pivot'] = fcs['facet_pivot']
     if 'facets' in results.raw_response:
         payload['facets'] = results.raw_response['facets']
-    #print("FCS="+str(payload['facets']))
         
     # For solr, we implement this by finding all facets
     # TODO: no need to do 2nd query, see https://wiki.apache.org/solr/SimpleFacetParameters#Parameters
@@ -524,9 +581,10 @@ def search_associations(subject_category=None,
     if slim is not None and len(slim)>0:
         if 'objects' in payload:
             payload['objects'] = [x for x in payload['objects'] if x in slim]
-        for a in payload['associations']:
-            a['slim'] = [x for x in a['object_closure'] if x in slim]
-            del a['object_closure']
+        if 'associations' in payload:
+            for a in payload['associations']:
+                a['slim'] = [x for x in a['object_closure'] if x in slim]
+                del a['object_closure']
         
     
     return payload
@@ -572,9 +630,23 @@ def search_associations_compact(**kwargs):
     Convenience method: as for search associations, use compact
     """
     searchresult = search_associations(use_compact_associations=True,
+                                       facet_fields=[],
                                        **kwargs
     )
     return searchresult['compact_associations']
+
+def bulk_fetch(subject_category, object_category, taxon, rows=MAX_ROWS, **kwargs):
+    """
+    Fetch associations for a species and pair of categories in bulk
+    """
+    time.sleep(1)
+    return search_associations_compact(subject_category=subject_category,
+                                       object_category=object_category,
+                                       subject_taxon=taxon,
+                                       rows=rows,
+                                       iterative=True,
+                                       **kwargs)
+
 
 def solr_quotify(v):
     if isinstance(v, list):
@@ -593,6 +665,8 @@ def translate_facet_field(fcs):
 
     This has slightly higher overhead for sending over the wire, but is easier to use
     """
+    if 'facet_fields' not in fcs:
+        return {}
     ffs = fcs['facet_fields']
     rs={}
     for (facet, facetresults) in ffs.items():
@@ -676,6 +750,8 @@ def goassoc_fieldmap():
         M.SUBJECT_LABEL: 'bioentity_label',
         M.SUBJECT_TAXON: 'taxon',
         M.SUBJECT_TAXON_LABEL: 'taxon_label',
+        M.SUBJECT_TAXON_CLOSURE: 'taxon_closure',
+        M.RELATION: 'qualifier',
         M.OBJECT: 'annotation_class',
         M.OBJECT_CLOSURE: 'isa_partof_closure',
         M.OBJECT_LABEL: 'annotation_class_label',

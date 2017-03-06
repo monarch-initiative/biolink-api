@@ -3,6 +3,7 @@ from biolink.api.restplus import api
 
 
 # todo: split this into modules
+# TODO: convert to marshmallow
 
 # Solr
 

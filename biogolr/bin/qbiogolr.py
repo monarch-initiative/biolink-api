@@ -27,14 +27,15 @@ def main():
     """
     Wrapper for OGR
     """
-    logging.basicConfig(level=logging.INFO)
-    logging.info("Welcome!")
 
-    parser = argparse.ArgumentParser(description='Wrapper for obographs library'
-                                                 """
-                                                 By default, ontologies are cached locally and synced from a remote sparql endpoint
-                                                 """,
-                                     formatter_class=argparse.RawTextHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description='Command line interface to python-biogolr library'
+        """
+
+        Provides command line interface onto the biogolr python library, a high level 
+        abstraction layer over Monarch and GO solr indices.
+        """,
+        formatter_class=argparse.RawTextHelpFormatter)
 
     parser.add_argument('-r', '--resource', type=str, required=False,
                         help='Name of ontology')
@@ -50,49 +51,67 @@ def main():
                         help='Properties to nest in graph')
     parser.add_argument('-s', '--species', type=str, required=False,
                         help='NCBITaxon ID')
-    parser.add_argument('-S', '--slim', type=str, default='', required=False,
-                        help='Slim type. m=minimal')
+    parser.add_argument('-G', '--graph', type=str, default='', required=False,
+                        help='Graph type. m=minimal')
+    parser.add_argument('-S', '--slim', nargs='*', type=str, required=False,
+                        help='Slim IDs')
+    parser.add_argument('-M', '--mapids', type=str, required=False,
+                        help='Map identifiers to this ID space, e.g. ENSEMBL')
     parser.add_argument('-p', '--properties', nargs='*', type=str, required=False,
                         help='Properties')
+    parser.add_argument('-v', '--verbosity', default=0, action='count',
+                        help='Increase output verbosity')
 
-    subparsers = parser.add_subparsers(dest='subcommand', help='sub-command help')
-    
-    # SUBCOMMAND
-    parser_n = subparsers.add_parser('query', aliases='q', help='search by label')
-    parser_n.set_defaults(function=cmd_query)
-    parser_n.add_argument('ids',nargs='*')
+    parser.add_argument('ids',nargs='*')
 
     # ontology
     args = parser.parse_args()
+
+    if args.verbosity >= 2:
+        logging.basicConfig(level=logging.DEBUG)
+    if args.verbosity == 1:
+        logging.basicConfig(level=logging.INFO)
+    logging.info("Welcome!")
+
+    ont = None
+    g = None
     handle = args.resource
-    factory = OntologyFactory()
-    ont = factory.create(handle)
-    
-    func = args.function
-    func(ont, args)
-    
-def cmd_query(ont, args):
-    """
-    Main query command
-    """
-    g = ont.get_filtered_graph(relations=args.properties)
+    if handle is not None:
+        logging.info("Handle: {}".format(handle))
+        factory = OntologyFactory()
+        logging.info("Factory: {}".format(factory))
+        ont = factory.create(handle)
+        logging.info("Created ont: {}".format(ont))    
+        g = ont.get_filtered_graph(relations=args.properties)
 
     w = GraphRenderer.create(args.to)
     
     nodes = set()
 
     display = args.display
-    for id in ont.resolve_names(args.ids):
-        assocs = search_associations_compact(object=id,
-                                             subject_taxon=args.species,
-                                             rows=1000,
-                                             subject_category=args.category)
-        assocs += search_associations_compact(subject=id,
-                                              object_taxon=args.species,
-                                              rows=1000,
-                                              object_category=args.category)
+
+    # query all IDs, gathering associations
+    assocs = []
+    for id in args.ids:
+        this_assocs = search_biogolr_wrap(id,
+                                          args.category,
+                                          subject_taxon=args.species,
+                                          rows=1000,
+                                          slim=args.slim,
+                                          map_identifiers=args.mapids)
+
+        assocs += this_assocs
+
+    logging.info("Num assocs: {}".format(len(assocs)))
+    
+    for a in assocs:
+        print("{}\t{}\t{}".format(a['subject'],
+                                    a['relation'],
+                                    ";".join(a['objects'])))
+
+    if ont is not None:
+        # gather all ontology classes used
         for a in assocs:
-            print(a)
             objs = a['objects']
 
             if display.find('r') > -1:
@@ -101,29 +120,32 @@ def cmd_query(ont, args):
             if display.find('o') > -1:
                 for obj in objs:
                     nodes.add(obj)
-                    nodes.update(nx.ancestors(g, obj))
+                    if ont is not None:
+                        nodes.update(ont.ancestors(obj))
 
             if display.find('s') > -1:
                 sub = a['subject']
                 nodes.add(sub)
-                nodes.update(nx.ancestors(g, sub))
-                
-    subg = g.subgraph(nodes)
-    if display.find('r') > -1:
-        for a in assocs:
-            rel = a['relation']
-            sub = a['subject']
-            objs = a['objects']
-            if rel is None:
-                rel = 'rdfs:seeAlso'
-            for obj in objs:
-                logging.info("Adding assoc rel {} {} {}".format(sub,obj,rel))
-                subg.add_edge(obj,sub,pred=rel)
-            
+                if ont is not None:
+                    nodes.update(ont.ancestors(sub))
 
-    show_graph(subg, nodes, objs, args)
-            #for x in objs:
-            #    print('  '+w.render_noderef(g,x))
+        # create a subgraph
+        subg = g.subgraph(nodes)
+
+        # optionally add edges between subj and obj nodes
+        if display.find('r') > -1:
+            for a in assocs:
+                rel = a['relation']
+                sub = a['subject']
+                objs = a['objects']
+                if rel is None:
+                    rel = 'rdfs:seeAlso'
+                for obj in objs:
+                    logging.info("Adding assoc rel {} {} {}".format(sub,obj,rel))
+                    subg.add_edge(obj,sub,pred=rel)
+
+        # display tree/graph
+        show_graph(subg, nodes, objs, args)
             
 # TODO
 def cmd_map2slim(ont, args):
@@ -147,7 +169,7 @@ def show_graph(g, nodes, query_ids, args):
     """
     Writes graph
     """
-    if args.slim.find('m') > -1:
+    if args.graph.find('m') > -1:
         logging.info("SLIMMING")
         g = get_minimal_subgraph(g, query_ids)
     w = GraphRenderer.create(args.to)
@@ -156,6 +178,10 @@ def show_graph(g, nodes, query_ids, args):
     logging.info("Writing subg from "+str(g))
     w.write(g, query_ids=query_ids, container_predicates=args.container_properties)
 
+def search_biogolr_wrap(id, category, **args):
+    assocs = search_associations_compact(object=id, subject_category=category, **args)
+    assocs += search_associations_compact(subject=id, object_category=category, **args)
+    return assocs
     
 if __name__ == "__main__":
     main()

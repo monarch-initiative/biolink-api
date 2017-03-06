@@ -1,5 +1,10 @@
 """
-Represents an ontology
+A module for representing simple graph-oriented views of an ontology
+
+See also:
+
+ - ontol_factory.py
+
 """
 
 import networkx as nx
@@ -8,13 +13,20 @@ import obographs.obograph_util as obograph_util
 import re
 
 class Ontology():
-    """
-    Local or remote ontology
+    """An object that represents a basic graph-oriented view over an ontology.
+
+    The ontology may be represented in memory, or it may be located
+    remotely. See subclasses for details.
+
+    The default implementation is an in-memory wrapper onto the python networkx library
+
     """
 
     def __init__(self, handle=None, graph=None, graphdoc=None):
         """
-        initializes based on an ontology name
+        initializes based on an ontology name.
+
+        Note: do not call this directly, use OntologyFactory instead
         """
         self.handle = handle
 
@@ -28,7 +40,7 @@ class Ontology():
         """
         Returns a networkx graph for the whole ontology.
 
-        Only implemented for eager methods
+        Only implemented for 'eager' implementations 
         """
         return self.graph
 
@@ -37,7 +49,9 @@ class Ontology():
         """
         Returns a networkx graph for the whole ontology, for a subset of relations
 
-        Only implemented for eager methods
+        Only implemented for eager methods.
+
+        Implementation notes: currently this is not cached
         """
         # default method - wrap get_graph
         srcg = self.get_graph()
@@ -62,10 +76,10 @@ class Ontology():
     
     def subgraph(self, nodes=[]):
         """
-        Returns an induced subgraphs
+        Returns an induced subgraph
 
         By default this wraps networkx subgraph,
-        but may be overridden 
+        but this may be overridden in specific implementations
         """
         return self.get_graph().subgraph(nodes)
                 
@@ -79,32 +93,72 @@ class Ontology():
 
     def nodes(self):
         """
+        Returns all nodes in ontology
+
         Wraps networkx by default
         """
         return self.get_graph().nodes()
 
     def ancestors(self, node, relations=None):
         """
-        Wraps networkx by default
+        Returns all ancestors of specified node.
+
+        Wraps networkx by default.
+
+        Arguments
+        ---------
+
+        node: string
+
+           identifier for node in ontology
+
+        relations: list of strings
+
+           list of relation (object property) IDs used to filter
+
         """
         g = None
         if relations is None:
             g = self.get_graph()
         else:
             g = self.get_filtered_graph(relations)
-        return nx.ancestors(g, node)
+        if node in g:
+            return nx.ancestors(g, node)
+        else:
+            return []
 
     def descendants(self, node, relations=None):
         """
-        Wraps networkx by default
+        Returns all ancestors of specified node.
+
+        Wraps networkx by default.
+
+        Arguments as for ancestors
         """
         g = None
         if relations is None:
             g = self.get_graph()
         else:
             g = self.get_filtered_graph(relations)
-        return nx.descendants(g, node)
+        if node in g:
+            return nx.descendants(g, node)
+        else:
+            return []
 
+    def parent_index(self, relations=None):
+        """
+        Returns a list of lists, where the inner list is [CHILD, PARENT1, ..., PARENT2]
+        """
+        g = None
+        if relations is None:
+            g = self.get_graph()
+        else:
+            g = self.get_filtered_graph(relations)
+        l = []
+        for n in g:
+            l.append([n] ++ g.predecessors(b))
+        return l
+        
     def logical_definitions(self, node, relations=None):
         """
         Retrieves logical definitions for a class
@@ -112,6 +166,21 @@ class Ontology():
         pass
     
     def resolve_names(self, names, **args):
+        """
+        returns a list of identifiers based on an input list of labels and identifiers.
+
+        Arguments
+        ---------
+
+        is_regex : boolean
+
+           if true, treats each name as a regular expression
+
+        is_partial_match : boolean
+
+           if true, treats each name as a regular expression .*name.*
+
+        """
         g = self.get_graph()
         r_ids = []
         for n in names:
@@ -140,6 +209,9 @@ class Ontology():
     
     def search(self, searchterm, **args):
         """
-        Simple search
+        Simple search. Returns list of IDs.
+
+        Arguments: as for resolve_names
         """
         return self.resolve_names([searchterm], **args)
+
