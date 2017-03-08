@@ -162,9 +162,9 @@ def translate_obj(d,fname):
 def map_doc(d, field_mapping):
     for (k,v) in field_mapping.items():
         if v is not None and k is not None:
-            logging.debug("TESTING FOR:"+v+" IN "+str(d))
+            #logging.debug("TESTING FOR:"+v+" IN "+str(d))
             if v in d:
-                logging.debug("Setting field {} to {} // was in {}".format(k,d[v],v))
+                #logging.debug("Setting field {} to {} // was in {}".format(k,d[v],v))
                 d[k] = d[v]
     return d
 
@@ -197,7 +197,7 @@ def translate_doc(d, field_mapping=None, map_identifiers=None, **kwargs):
         if isinstance(d[M.IS_DEFINED_BY],list):
             assoc['provided_by'] = d[M.IS_DEFINED_BY]
         else:
-            # hack for GO instance
+            # hack for GO Golr instance
             assoc['provided_by'] = [d[M.IS_DEFINED_BY]]
     if M.EVIDENCE_OBJECT in d:
         assoc['evidence'] = d[M.EVIDENCE_OBJECT]
@@ -220,7 +220,6 @@ def translate_docs_compact(ds, field_mapping=None, slim=None, map_identifiers=No
     amap = {}
     logging.info("Translating docs to compact form. Slim={}".format(slim))
     for d in ds:
-        #logging.debug("DOC={}".format(d))
         if field_mapping is not None:
             map_doc(d, field_mapping)
 
@@ -234,6 +233,13 @@ def translate_docs_compact(ds, field_mapping=None, slim=None, map_identifiers=No
                 logging.debug("NO SUBJECT CLOSURE IN: "+str(d))
             
         rel = d.get(M.RELATION)
+
+        # this is a list in GO
+        if isinstance(rel,list):
+            if len(rel) > 1:
+                logging.warn(">1 relation: {}".format(rel))
+            rel = ";".join(rel)
+        
         k = (subject,rel)
         if k not in amap:
             amap[k] = {'subject':subject,
