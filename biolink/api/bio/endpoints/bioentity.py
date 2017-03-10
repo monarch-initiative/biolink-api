@@ -529,6 +529,7 @@ class LiteratureGenotypeAssociations(Resource):
         return search_associations('literature', 'genotype', None, id, **core_parser.parse_args())
 
 @ns.route('/anatomy/<id>')
+@api.doc(params={'id': 'CURIE identifier of anatomical entity, e.g. GO:0005634 (nucleus), UBERON:0002037 (cerebellum), CL:0000540 (neuron). Equivalent IDs can be used with same results'})
 class AnatomyObject(Resource):
 
     @api.expect(core_parser)
@@ -538,8 +539,11 @@ class AnatomyObject(Resource):
         TODO Returns anatomical entity
 
         Anatomical entities span ranges from the subcellular (e.g. nucleus) through cells to tissues, organs and organ systems.
+
+        When returning associations, inference over the appropriate relation will be used. For example, for gene expression, part-of will be used.
         """
-        return { 'foo' : 'bar' }
+        obj = scigraph.bioobject(id)
+        return obj
 
 @ns.route('/anatomy/<id>/genes/')
 class AnatomyGeneAssociations(Resource):
@@ -551,6 +555,8 @@ class AnatomyGeneAssociations(Resource):
         TODO Returns associations between anatomical entity and genes
 
         Typically encompasses genes expressed in a particular location.
+
+        INFERENCE: part-of
         """
         return { 'foo' : 'bar' }
 
