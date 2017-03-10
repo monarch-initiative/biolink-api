@@ -1,5 +1,5 @@
 """
-Represents an ontology
+Classes for representing ontologies backed by a SPARQL endpoint
 """
 
 import networkx as nx

@@ -9,7 +9,7 @@ import pysolr
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('ontol/slimmer', description='foo bar')
+ns = api.namespace('ontol/slimmer', description='Mapping to an ontology subset')
 
 parser = api.parser()
 #parser.add_argument('subject_taxon', help='SUBJECT TAXON id, e.g. NCBITaxon:9606. Includes inferred by default')
@@ -21,7 +21,7 @@ class MapToSlimResource(Resource):
     @api.expect(parser)
     def get(self, subset):
         """
-        Maps to slim
+        TODO Maps to slim
         """
         args = parser.parse_args()
 

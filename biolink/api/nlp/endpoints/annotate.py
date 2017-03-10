@@ -8,7 +8,7 @@ import pysolr
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('nlp/annotate', description='foo bar')
+ns = api.namespace('nlp/annotate', description='annotate text using named entities')
 
 parser = api.parser()
 parser.add_argument('category', action='append', help='E.g. phenotype')
@@ -23,7 +23,7 @@ class Annotate(Resource):
     @api.marshal_list_with(association)
     def get(self, text):
         """
-        Returns list of matches
+        Not yet implemented. For now using scigraph annotator directly
         """
         args = parser.parse_args()
 

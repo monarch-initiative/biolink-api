@@ -8,7 +8,7 @@ import pysolr
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('owl/ontology', description='foo bar')
+ns = api.namespace('owl/ontology', description='OWL-level operations on an ontology')
 
 parser = api.parser()
 #parser.add_argument('subject_taxon', help='SUBJECT TAXON id, e.g. NCBITaxon:9606. Includes inferred by default')
@@ -23,7 +23,7 @@ class DLQuery(Resource):
     @api.marshal_list_with(association)
     def get(self, query):
         """
-        Returns list of matches
+        Placeholder - use OWLery for now
         """
         args = parser.parse_args()
 
@@ -39,7 +39,7 @@ class DLQuery(Resource):
     @api.marshal_list_with(association)
     def get(self, query):
         """
-        Returns list of matches
+        Placeholder - use direct SPARQL endpoint for now
         """
         args = parser.parse_args()
 

@@ -8,7 +8,7 @@ import pysolr
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('pub/pubs', description='foo bar')
+ns = api.namespace('pub/pubs', description='Operations on publication/literature')
 
 parser = api.parser()
 #parser.add_argument('subject_taxon', help='SUBJECT TAXON id, e.g. NCBITaxon:9606. Includes inferred by default')
@@ -23,7 +23,7 @@ class Foo(Resource):
     @api.marshal_list_with(association)
     def get(self, term):
         """
-        Returns list of matches
+        TODO Returns list of matches
         """
         args = parser.parse_args()
 

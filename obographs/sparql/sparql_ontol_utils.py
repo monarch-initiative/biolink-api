@@ -9,7 +9,7 @@ Reconsitutes an ontology from SPARQL queries over a remote SPARQL server
 """
 
 from SPARQLWrapper import SPARQLWrapper, JSON
-from prefixcommons.curie_util import contract_uri
+from prefixcommons.curie_util import contract_uri, expand_uri
 from functools import lru_cache
 import percache
 import networkx
@@ -127,6 +127,7 @@ def curiefy(r):
             if len(curies)>0:
                 r[k]['value'] = curies[0]
 
+                
 def get_named_graph(ont):
     """
     Ontobee uses NGs such as http://purl.obolibrary.org/obo/merged/CL
@@ -193,6 +194,31 @@ def querybody_label():
     return """
     { ?c rdfs:label ?l }
     """
+
+def anyont_fetch_label(id):
+    """
+    fetch all rdfs:label assertions for a URI
+    """
+    iri = expand_uri(id, strict=False)
+    query = """
+    SELECT ?label WHERE {{
+    <{iri}> rdfs:label ?label
+    }}
+    """.format(iri=iri)
+    bindings = run_sparql(query)
+    rows = [r['label']['value'] for r in bindings]
+    return rows[0]
+
+def batch_fetch_labels(ids):
+    """
+    fetch all rdfs:label assertions for a set of CURIEs
+    """
+    m = {}
+    for id in ids:
+        label = anyont_fetch_label(id)
+        if label is not None:
+            m[id] = label
+    return m
 
 ## -- PERSISTENCE --
 
