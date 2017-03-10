@@ -8,7 +8,7 @@ import pysolr
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('ontol', description='foo bar')
+ns = api.namespace('ontol', description='ontology operations')
 
 parser = api.parser()
 parser.add_argument('evidence', help="""Object id, e.g. ECO:0000501 (for IEA; Includes inferred by default)
@@ -21,7 +21,14 @@ class InformationContentResource(Resource):
     @api.expect(parser)
     def get(self, subject_category, object_category, subject_taxon):
         """
-        Calculates information content
+        Returns information content (IC) for a set of relevant ontology classes.
+
+        ```
+        IC = -log2( freq(t) / popSize )
+        ```
+
+        Here the frequency and population is calculated for a particular dataset:
+        e.g. all human disease-phenotype associations
         """
         args = parser.parse_args()
         return calculate_information_content(subject_category=subject_category,
