@@ -50,7 +50,7 @@ class AssociationSearch(Resource):
     @api.marshal_list_with(association_results)
     def get(self):
         """
-        Returns list of matching associations
+        Generalized search over complete corpus of associations
         """
         args = parser.parse_args()
 
