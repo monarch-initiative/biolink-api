@@ -54,10 +54,13 @@ named_object = api.model('NamedObject', {
     'description': fields.String(readOnly=True, description='Descriptive text for the entity. For ontology classes, this will be a definition.'),
     'categories': fields.List(fields.String(readOnly=True, description='Type of object (inferred)')),
     'types': fields.List(fields.String(readOnly=True, description='Type of object (direct)')),
-    'synonyms': fields.List(fields.Nested(synonym_property_value), description='list of synonyms or alternate labels')
+    'synonyms': fields.List(fields.Nested(synonym_property_value), description='list of synonyms or alternate labels'),
+    'deprecated': fields.Boolean(description='True if the node is deprecated/obsoleted.'),
+    'replaced_by': fields.List(fields.String(readOnly=True, description='Direct 1:1 replacement (if named object is obsoleted)')),
+    'consider': fields.List(fields.String(readOnly=True, description='Potential replacement object (if named object is obsoleted)')),
 })
 
-entity_reference = api.model('NamedObject', {
+entity_reference = api.model('EntityReference', {
     'id': fields.String(readOnly=True, description='ID or CURIE e.g. MGI:1201606'),
     'label': fields.String(readOnly=True, description='RDFS Label'),
     'categories': fields.List(fields.String(readOnly=True, description='Type of object')),
