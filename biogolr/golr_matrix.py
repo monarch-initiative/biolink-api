@@ -12,14 +12,14 @@ from biogolr.golr_associations import search_associations, GolrFields
 import scipy.stats # TODO - move
 import scipy as sp # TODO - move
 
-M=GolrFields()  
+M=GolrFields()
 
 def term_matrix(idlist, subject_category, taxon, **kwargs):
     """
     Intersection between annotated objects
 
              P1  not(P1)
-    F1       0   5 
+    F1       0   5
     not(F1)  6   0
     """
     results = search_associations(objects=idlist,
@@ -53,7 +53,7 @@ def term_matrix(idlist, subject_category, taxon, **kwargs):
             c = len(dsubjs) - a
             d = pop_n - len(dsubjs) - b
             ctable = [[a, b], [c, d]]
-                
+
             _, p_under = sp.stats.fisher_exact(ctable, 'less')
             _, p_over = sp.stats.fisher_exact(ctable, 'greater')
 
