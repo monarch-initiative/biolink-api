@@ -94,7 +94,7 @@ class GolrFields:
     EVIDENCE_OBJECT_LABEL='evidence_object_label'
     _VERSION_='_version_'
     SUBJECT_GENE_CLOSURE_LABEL_SEARCHABLE='subject_gene_closure_label_searchable'
-    
+
     RELATION='relation'
     RELATION_LABEL='relation_label'
 
@@ -102,14 +102,14 @@ class GolrFields:
     # and the label FOO_label
     def label_field(self, f):
         return f + "_label"
-    
+
     # golr convention: for any class FOO, the id is denoted 'foo'
     # and the cosure FOO_closure. Other closures may exist
     def closure_field(self, f):
         return f + "_closure"
 
 # create an instance
-M=GolrFields()  
+M=GolrFields()
 
 # We take the monarch golr as default
 # TODO: config
@@ -123,7 +123,7 @@ def translate_objs(d,fname):
     if fname not in d:
         # TODO: consider adding arg for failure on null
         return None
-    
+
     #lf = M.label_field(fname)
 
     v = d[fname]
@@ -131,7 +131,7 @@ def translate_objs(d,fname):
         v = [v]
     objs = [{'id': idval} for idval in v]
     # todo - labels
-    
+
     return objs
 
 
@@ -145,18 +145,18 @@ def translate_obj(d,fname):
     if fname not in d:
         # TODO: consider adding arg for failure on null
         return None
-    
+
     lf = M.label_field(fname)
-    
+
     obj = {'id': d[fname]}
 
     if lf in d:
         obj['label'] = d[lf]
-    
+
     cf = fname + "_category"
     if cf in d:
         obj['categories'] = [d[cf]]
-    
+
     return obj
 
 def map_doc(d, field_mapping):
@@ -182,7 +182,7 @@ def translate_doc(d, field_mapping=None, map_identifiers=None, **kwargs):
             subject['id'] = map_id(subject, map_identifiers, d[M.SUBJECT_CLOSURE])
         else:
             logging.info("NO SUBJECT CLOSURE IN: "+str(d))
-            
+
     if M.SUBJECT_TAXON in d:
         subject['taxon'] = translate_obj(d,M.SUBJECT_TAXON)
     assoc = {'id':d.get(M.ID),
@@ -224,14 +224,14 @@ def translate_docs_compact(ds, field_mapping=None, slim=None, map_identifiers=No
             map_doc(d, field_mapping)
 
         subject = d[M.SUBJECT]
-        
+
         # TODO: use a more robust method; we need equivalence as separate field in solr
         if map_identifiers is not None:
             if M.SUBJECT_CLOSURE in d:
                 subject = map_id(subject, map_identifiers, d[M.SUBJECT_CLOSURE])
             else:
                 logging.debug("NO SUBJECT CLOSURE IN: "+str(d))
-            
+
         rel = d.get(M.RELATION)
 
         # this is a list in GO
@@ -239,7 +239,7 @@ def translate_docs_compact(ds, field_mapping=None, slim=None, map_identifiers=No
             if len(rel) > 1:
                 logging.warn(">1 relation: {}".format(rel))
             rel = ";".join(rel)
-        
+
         k = (subject,rel)
         if k not in amap:
             amap[k] = {'subject':subject,
@@ -253,7 +253,7 @@ def translate_docs_compact(ds, field_mapping=None, slim=None, map_identifiers=No
             amap[k]['objects'].append(d[M.OBJECT])
     for k in amap.keys():
         amap[k]['objects'] = list(set(amap[k]['objects']))
-        
+
     return list(amap.values())
 
 def map_id(id, prefix, closure_list):
@@ -267,7 +267,7 @@ def map_id(id, prefix, closure_list):
         # default to input
         return id
     return ids[0]
-               
+
 def get_association(id, **kwargs):
     """
     Fetch an association object by ID
@@ -305,9 +305,10 @@ def search_associations(subject_category=None,
                         facet_limit=25,
                         facet_mincount=1,
                         facet_pivot_fields = [],
+                        facet_on = 'on',
                         rows=10,
                         **kwargs):
-    
+
     """Fetch a set of association objects based on a query.
 
     Arguments
@@ -320,7 +321,7 @@ def search_associations(subject_category=None,
         associations for a gene, it is convenient to get a list of
         distinct phenotype terms. Although this can be obtained by
         iterating over the list of associations, it can be expensive
-        to obtain all associations. 
+        to obtain all associations.
 
         Results are in the 'objects' field
 
@@ -351,13 +352,11 @@ def search_associations(subject_category=None,
     """
     fq = {}
 
-    facet_on = 'on'
-
     # canonical form for MGI is a CURIE MGI:nnnn
     if subject is not None and subject.startswith('MGI:MGI:'):
         logging.info('Unhacking MGI ID presumably from GO:'+str(subject))
         subject = subject.replace("MGI:MGI:","MGI")
-    
+
     # temporary: for querying go solr, map fields. TODO
     logging.info("Object category: {}".format(object_category))
     if object_category is not None and object_category == 'function':
@@ -368,7 +367,7 @@ def search_associations(subject_category=None,
         if subject is not None and subject.startswith('MGI:'):
             logging.info('MGI hack for GO: '+str(subject))
             subject = 'MGI:' + subject
-    
+
     # typically information is stored one-way, e.g. model-disease;
     # sometimes we want associations from perspective of object
     if invert_subject_object:
@@ -384,13 +383,13 @@ def search_associations(subject_category=None,
             M.SUBJECT,
             M.RELATION,
             M.OBJECT]
-        
+
     if subject_category is not None:
         fq['subject_category'] = subject_category
     if object_category is not None:
         fq['object_category'] = object_category
 
-        
+
     if object is not None:
         # TODO: make configurable whether to use closure
         fq['object_closure'] = object
@@ -422,8 +421,8 @@ def search_associations(subject_category=None,
         fq['-evidence_object_closure'] = 'ECO:0000501'
     if 'pivot_subject_object' in kwargs and kwargs['pivot_subject_object']:
         facet_pivot_fields = [M.SUBJECT, M.OBJECT]
-    
-        
+
+
     if field_mapping is not None:
         for (k,v) in field_mapping.items():
             if k in fq:
@@ -460,17 +459,17 @@ def search_associations(subject_category=None,
 
     if map_identifiers is not None:
         select_fields.append(M.SUBJECT_CLOSURE)
-        
+
     if slim is not None and len(slim)>0:
         select_fields.append(M.OBJECT_CLOSURE)
-        
+
     if field_mapping is not None:
         logging.info("Applying field mapping to SELECT: {}".format(field_mapping))
-        select_fields = [ map_field(fn, field_mapping) for fn in select_fields ]    
+        select_fields = [ map_field(fn, field_mapping) for fn in select_fields ]
 
-        
+
     facet_fields = [ map_field(fn, field_mapping) for fn in facet_fields ]
-        
+
     #logging.info('FL'+str(select_fields))
     is_unlimited = False
     if rows < 0:
@@ -493,8 +492,8 @@ def search_associations(subject_category=None,
     if facet_field_limits is not None:
         for (f,flim) in facet_field_limits.items():
             params["f."+f+".facet.limit"] = flim
-            
-    
+
+
     if len(facet_pivot_fields) > 0:
         params['facet.pivot'] = ",".join(facet_pivot_fields)
         params['facet.pivot.mincount'] = 1
@@ -516,10 +515,10 @@ def search_associations(subject_category=None,
             start += rows
         results.docs = docs
 
-            
-    
+
+
     fcs = results.facets
-    
+
     payload = {
         'facet_counts': translate_facet_field(fcs),
         'pagination': {}
@@ -541,7 +540,7 @@ def search_associations(subject_category=None,
         payload['facet_pivot'] = fcs['facet_pivot']
     if 'facets' in results.raw_response:
         payload['facets'] = results.raw_response['facets']
-        
+
     # For solr, we implement this by finding all facets
     # TODO: no need to do 2nd query, see https://wiki.apache.org/solr/SimpleFacetParameters#Parameters
     if fetch_objects:
@@ -583,7 +582,7 @@ def search_associations(subject_category=None,
         payload['subjects'] = ofl[0::2]
         if len(payload['subjects']) == MAX_ROWS:
             payload['is_truncated'] = True
-        
+
     if slim is not None and len(slim)>0:
         if 'objects' in payload:
             payload['objects'] = [x for x in payload['objects'] if x in slim]
@@ -591,8 +590,8 @@ def search_associations(subject_category=None,
             for a in payload['associations']:
                 a['slim'] = [x for x in a['object_closure'] if x in slim]
                 del a['object_closure']
-        
-    
+
+
     return payload
 
 def get_objects_for_subject(subject=None,
@@ -697,7 +696,7 @@ def select_distinct(distinct_field=None, **kwargs):
     )
     return list(results['facet_counts'][distinct_field].keys())
 
-        
+
 def select_distinct_subjects(**kwargs):
     """
     select distinct subject IDs given a query
@@ -739,7 +738,7 @@ def calculate_information_content(**kwargs):
         icmap[f] = -math.log(freq, 2)
     return icmap
 
-    
+
 
 # GO-SPECIFIC CODE
 
@@ -748,7 +747,7 @@ def goassoc_fieldmap():
     Returns a mapping of canonical monarch fields to amigo-golr.
 
     See: https://github.com/geneontology/amigo/blob/master/metadata/ann-config.yaml
-    
+
     """
     return {
         M.SUBJECT: 'bioentity',
