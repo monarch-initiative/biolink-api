@@ -62,6 +62,11 @@ class MartCaseAssociationsResource(Resource):
 
         NOTE: this route has a limiter on it, you may be restricted in the number of downloads per hour. Use carefully.
         """
+
+        # TODO temporary workaround
+        if taxon == "NCBITaxon:9606":
+            taxon = None
+
         assocs = bulk_fetch(subject_category='case',
                             object_category=object_category,
                             taxon=taxon,
@@ -82,30 +87,13 @@ class MartDiseaseAssociationsResource(Resource):
 
         NOTE: this route has a limiter on it, you may be restricted in the number of downloads per hour. Use carefully.
         """
+
+        # TODO temporary workaround
+        if taxon == "NCBITaxon:9606":
+            taxon = None
+
         assocs = bulk_fetch(subject_category='disease',
                             object_category=object_category,
                             taxon=taxon,
                             iterate=True)
         return assocs
-
-@ns.route('/labels/<subject_category>/<objet_category>/<taxon>')
-@api.doc(params={'subject_category': 'CATEGORY of the subject entity, e.g. gene, phenotype, disease'})
-@api.doc(params={'objet_category': 'CATEGORY of the object entity, e.g. phenotype, disease'})
-@api.doc(params={'taxon': 'taxon of gene, must be of form NCBITaxon:9606'})
-class MartLabelsResource(Resource):
-    def get(self, subject_category, objet_category, taxon):
-        """
-        Bulk download of labels.
-
-        Retrieves the labels of the subjects.
-        """
-        myArgs = {
-            "subject_category": subject_category,
-            "object_category": objet_category,
-            "subject_taxon": taxon,
-            "rows": MAX_ROWS,
-            "facet_on": "off",
-            "select_fields": ["subject", "subject_label"],
-            "iterate": True
-        }
-        return search_associations(**myArgs)
