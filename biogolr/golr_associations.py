@@ -224,6 +224,7 @@ def translate_docs_compact(ds, field_mapping=None, slim=None, map_identifiers=No
             map_doc(d, field_mapping)
 
         subject = d[M.SUBJECT]
+        subject_label = d[M.SUBJECT_LABEL]
 
         # TODO: use a more robust method; we need equivalence as separate field in solr
         if map_identifiers is not None:
@@ -243,6 +244,7 @@ def translate_docs_compact(ds, field_mapping=None, slim=None, map_identifiers=No
         k = (subject,rel)
         if k not in amap:
             amap[k] = {'subject':subject,
+                       'subject_label':subject_label,
                        'relation':rel,
                        'objects': []}
         if slim is not None and len(slim)>0:
@@ -381,6 +383,7 @@ def search_associations(subject_category=None,
         facet_limit = 0
         select_fields = [
             M.SUBJECT,
+            M.SUBJECT_LABEL,
             M.RELATION,
             M.OBJECT]
 
@@ -501,7 +504,7 @@ def search_associations(subject_category=None,
     logging.info("PARAMS="+str(params))
     results = solr.search(**params)
     n_docs = len(results.docs)
-    logging.info("Num_docs: {}".format(n_docs))
+    logging.info("Docs found: {}".format(results.hits))
 
     if iterate:
         docs = results.docs
