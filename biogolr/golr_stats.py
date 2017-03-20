@@ -101,13 +101,16 @@ def find_enriched(sample_entities=[],
     for (sample_termid,sample_count) in sample_counts.items():
         pop_count = bg_counts[sample_termid]
 
+        # https://en.wikipedia.org/wiki/Fisher's_exact_test
+        #              Cls  NotCls
+        # study/sample [a,      b]
+        # rest of ref  [c,      d]
+        #              
         a = sample_count
         b = sample_n - sample_count
         c = pop_count - sample_count
         d = pop_n - pop_count - b
         print("ABCD="+str((sample_termid,a,b,c,d,sample_n)))
-        #p = fisher.pvalue_population(sample_count, sample_n,
-        #                             pop_count, pop_n)
         _, p_uncorrected = sp.stats.fisher_exact( [[a, b], [c, d]])
         print("P="+str(p_uncorrected))
         # TODO: construct into object

@@ -111,6 +111,28 @@ class GolrFields:
 # create an instance
 M=GolrFields()
 
+# normalize to what Monarch uses
+PREFIX_NORMALIZATION_MAP = {
+    'MGI:MGI' : 'MGI',
+    'FB' : 'FlyBase'
+}
+
+def make_canonical_identifier(id):
+    if id is not None:
+        for (k,v) in PREFIX_NORMALIZATION_MAP.items():
+            s = k+':'
+            if id.startswith(s):
+                return id.replace(s,v+':')
+    return id
+
+def make_gostyle_identifier(id):
+    if id is not None:
+        for (k,v) in PREFIX_NORMALIZATION_MAP.items():
+            s = v+':'
+            if id.startswith(s):
+                return id.replace(s,k+':')
+    return id
+
 # We take the monarch golr as default
 # TODO: config
 monarch_golr_url = "https://solr.monarchinitiative.org/solr/golr/"
@@ -148,7 +170,11 @@ def translate_obj(d,fname):
 
     lf = M.label_field(fname)
 
-    obj = {'id': d[fname]}
+    id = d[fname]
+    id = make_canonical_identifier(id)
+    #if id.startswith('MGI:MGI:'):
+    #    id = id.replace('MGI:MGI:','MGI:')
+    obj = {'id': id}
 
     if lf in d:
         obj['label'] = d[lf]
@@ -175,6 +201,7 @@ def translate_doc(d, field_mapping=None, map_identifiers=None, **kwargs):
     if field_mapping is not None:
         map_doc(d, field_mapping)
     subject = translate_obj(d,M.SUBJECT)
+
 
     # TODO: use a more robust method; we need equivalence as separate field in solr
     if map_identifiers is not None:
@@ -234,12 +261,27 @@ def translate_docs_compact(ds, field_mapping=None, slim=None, map_identifiers=No
                 logging.debug("NO SUBJECT CLOSURE IN: "+str(d))
 
         rel = d.get(M.RELATION)
+        skip = False
+
+        # TODO
+        if rel == 'not' or rel == 'NOT':
+            skip = True
 
         # this is a list in GO
         if isinstance(rel,list):
+            if 'not' in rel or 'NOT' in rel:
+                skip = True
             if len(rel) > 1:
                 logging.warn(">1 relation: {}".format(rel))
             rel = ";".join(rel)
+
+        if skip:
+            logging.debug("Skipping: {}".format(d))
+            continue
+
+        subject = make_canonical_identifier(subject)
+        #if subject.startswith('MGI:MGI:'):
+        #    subject = subject.replace('MGI:MGI:','MGI:')
 
         k = (subject,rel)
         if k not in amap:
@@ -355,20 +397,29 @@ def search_associations(subject_category=None,
     fq = {}
 
     # canonical form for MGI is a CURIE MGI:nnnn
-    if subject is not None and subject.startswith('MGI:MGI:'):
-        logging.info('Unhacking MGI ID presumably from GO:'+str(subject))
-        subject = subject.replace("MGI:MGI:","MGI")
+    #if subject is not None and subject.startswith('MGI:MGI:'):
+    #    logging.info('Unhacking MGI ID presumably from GO:'+str(subject))
+    #    subject = subject.replace("MGI:MGI:","MGI")
+    if subject is not None:
+        subject = make_canonical_identifier(subject)
 
     # temporary: for querying go solr, map fields. TODO
     logging.info("Object category: {}".format(object_category))
+    if object_category is None and object is not None and object.startswith('GO:'):
+        object_category = 'function'
+        logging.info("Inferring Object category: {}".format(object_category))
+        
     if object_category is not None and object_category == 'function':
         go_golr_url = "http://golr.berkeleybop.org/solr/"
         solr = pysolr.Solr(go_golr_url, timeout=5)
         field_mapping=goassoc_fieldmap()
         fq['document_category'] = 'annotation'
-        if subject is not None and subject.startswith('MGI:'):
-            logging.info('MGI hack for GO: '+str(subject))
-            subject = 'MGI:' + subject
+        # TODO: use map
+        #if subject is not None and subject.startswith('MGI:'):
+        #    logging.info('MGI hack for GO: '+str(subject))
+        #    subject = 'MGI:' + subject
+        if subject is not None:
+            subject = make_gostyle_identifier(subject)
 
     # typically information is stored one-way, e.g. model-disease;
     # sometimes we want associations from perspective of object
@@ -594,7 +645,6 @@ def search_associations(subject_category=None,
                 a['slim'] = [x for x in a['object_closure'] if x in slim]
                 del a['object_closure']
 
-
     return payload
 
 def get_objects_for_subject(subject=None,
@@ -765,6 +815,7 @@ def goassoc_fieldmap():
         M.OBJECT_LABEL: 'annotation_class_label',
         M.SUBJECT_CATEGORY: None,
         M.OBJECT_CATEGORY: None,
+        M.EVIDENCE_OBJECT_CLOSURE: 'evidence_subset_closure',
         M.IS_DEFINED_BY: 'assigned_by'
     }
 
