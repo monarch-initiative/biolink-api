@@ -13,6 +13,7 @@ jsonpickle>=0.0
 behave>=0.0
 jsonpath_rw>=0.0
 pytest>=0.0
+pytest_logging>=0.0
 percache>=0.0
 pydotplus>=0.0
 cachier>=0.1.26

@@ -21,8 +21,6 @@ all human gene-phenotype associations:
 
 import argparse
 from biogolr.golr_associations import bulk_fetch
-from obographs.ontol_factory import OntologyFactory
-from obographs.graph_io import *
 import networkx as nx
 from networkx.algorithms.dag import ancestors, descendants
 from networkx.drawing.nx_pydot import write_dot
@@ -59,7 +57,6 @@ def main():
 
     parser.add_argument('ids',nargs='*')
 
-    # ontology
     args = parser.parse_args()
 
     if args.verbosity >= 2:

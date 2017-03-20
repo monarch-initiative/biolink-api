@@ -51,6 +51,8 @@ def main():
                         help='Properties to nest in graph')
     parser.add_argument('-s', '--species', type=str, required=False,
                         help='NCBITaxon ID')
+    parser.add_argument('-e', '--evidence', type=str, required=False,
+                        help='ECO ID')
     parser.add_argument('-G', '--graph', type=str, default='', required=False,
                         help='Graph type. m=minimal')
     parser.add_argument('-S', '--slim', nargs='*', type=str, required=False,
@@ -98,6 +100,7 @@ def main():
                                           subject_taxon=args.species,
                                           rows=1000,
                                           slim=args.slim,
+                                          evidence=args.evidence,
                                           map_identifiers=args.mapids)
 
         assocs += this_assocs
@@ -179,6 +182,9 @@ def show_graph(g, nodes, query_ids, args):
     w.write(g, query_ids=query_ids, container_predicates=args.container_properties)
 
 def search_biogolr_wrap(id, category, **args):
+    """
+    performs searches in both directions
+    """
     assocs = search_associations_compact(object=id, subject_category=category, **args)
     assocs += search_associations_compact(subject=id, object_category=category, **args)
     return assocs

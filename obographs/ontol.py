@@ -164,6 +164,14 @@ class Ontology():
         Retrieves logical definitions for a class
         """
         pass
+
+    def label(self, nid):
+        """
+        Fetches label for a node
+        """
+        g = self.get_graph()
+        n = g.node[nid]
+        return n['label']
     
     def resolve_names(self, names, **args):
         """

@@ -1,5 +1,5 @@
 """
-Represents an ontology
+Factory class for generating ontology objects based on a variety of handle types
 """
 
 import networkx as nx
@@ -30,7 +30,7 @@ class OntologyFactory():
     def create(self, handle=None):
         return create_ontology(handle)
     
-@cachier(stale_after=SHELF_LIFE)
+#@cachier(stale_after=SHELF_LIFE)
 def create_ontology(handle=None):
     ont = None
     logging.info("Determining strategy to load '{}' into memory...".format(handle))
