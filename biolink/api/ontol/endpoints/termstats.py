@@ -29,6 +29,7 @@ class InformationContentResource(Resource):
 
         Here the frequency and population is calculated for a particular dataset:
         e.g. all human disease-phenotype associations
+
         """
         args = parser.parse_args()
         return calculate_information_content(subject_category=subject_category,
