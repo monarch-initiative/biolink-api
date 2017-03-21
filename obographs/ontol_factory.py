@@ -16,11 +16,23 @@ import datetime
 
 SHELF_LIFE = datetime.timedelta(days=3)
 
+# TODO
+default_ontology_handle = 'cache/ontologies/pato.json'
+#if not os.path.isfile(ontology_handle):
+#    ontology_handle = None
+
+global default_ontology
+default_ontology = None
+
 
 class OntologyFactory():
     """
     Creates an ontology
     """
+
+    # class variable - reuse the same object throughout
+    test = 0
+    
     def __init__(self, handle=None):
         """
         initializes based on an ontology name
@@ -28,6 +40,15 @@ class OntologyFactory():
         self.handle = handle
 
     def create(self, handle=None):
+        if handle == None:
+            self.test = self.test+1
+            logging.info("T: "+str(self.test))                
+            global default_ontology
+            if default_ontology == None:
+                logging.info("Creating new instance of default ontology")
+                default_ontology = create_ontology(default_ontology_handle)
+            logging.info("Using default_ontology")                
+            return default_ontology
         return create_ontology(handle)
     
 #@cachier(stale_after=SHELF_LIFE)

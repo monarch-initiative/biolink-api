@@ -54,8 +54,28 @@ class ExtractOntologySubgraphResource(Resource):
         json_obj = ojr.to_json(subg)
         return json_obj
 
+
+@ns.route('/testme')
+class TestMe(Resource):
+
+    @api.expect(parser)
+    def get(self):
+        """
+        Extract a subgraph from an ontology
+        """
+        factory = OntologyFactory()
+        ont = factory.create()
+        z = get_db()
+        return {'z': z,
+                'test': len(ont.nodes())}
     
 
     
     
-
+from flask import g
+def get_db():
+    db = getattr(g, '_database', None)
+    if db is None:
+        logging.info("INITIAL SETUP")
+        db = g._database = 10
+    return db

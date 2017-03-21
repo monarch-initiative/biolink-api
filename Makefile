@@ -36,7 +36,8 @@ biomodel/obograph.py: ./biolink/datamodel/obograph_serializers.py
 EXAMPLE-QUERIES.md:
 	./util/behave-to-markdown.pl tests/*.feature > $@
 
-PACKAGES = prefixcommons scigraph biogolr
+#PACKAGES = prefixcommons scigraph biogolr
+PACKAGES = prefixcommons biogolr
 subpackage_tests: $(patsubst %,test-%,$(PACKAGES))
 
 test-%:

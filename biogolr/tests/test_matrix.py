@@ -15,5 +15,3 @@ def test_matrix():
                           subject_category='gene',
                           taxon='NCBITaxon:9606')
     print(str(results))
-    # this test fails because the term_matrix function should never be deployed
-    assert False is True

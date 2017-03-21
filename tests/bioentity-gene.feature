@@ -46,6 +46,11 @@ between these entities
       then the JSON should have some JSONPath "associations[*].object.id" with "string" "GO:0030500"
       and the JSON should have some JSONPath "associations[*].object.label" with "string" "regulation of bone mineralization"
 
+ Scenario: Map functional assignments for a gene to a to a user-specified slim
+    Given a path "/bioentity/gene/ZFIN:ZDB-GENE-050417-357/function?slim=GO%3A0001525&slim=GO%3A0048731&slim=GO%3A0005634"
+    when the content is converted to JSON
+      then the JSON should have some JSONPath "associations[*].slim[*]" with "string" "GO:0048731"
+
  Scenario: User fetches all interactions for a mouse gene
     Given a path "/bioentity/gene/MGI:1342287/interactions"
      then the content should contain "http://data.monarchinitiative.org/ttl/biogrid.ttl"

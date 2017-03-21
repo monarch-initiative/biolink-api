@@ -1,5 +1,7 @@
 import logging.config
+import os
 
+import flask as f
 from flask import Flask, Blueprint
 from flask_cors import CORS, cross_origin
 from biolink import settings
@@ -64,6 +66,16 @@ api.init_app(blueprint)
 #api.add_namespace(link_search_namespace)
 app.register_blueprint(blueprint)
 db.init_app(app)
+
+with app.app_context():
+    f.g.foo = 99
+    print("FG={}".format(f.g.foo))
+
+# initial setup
+from obographs.ontol_factory import OntologyFactory
+factory = OntologyFactory()
+ont = factory.create()
+    
 
 @app.route("/")
 def hello():
