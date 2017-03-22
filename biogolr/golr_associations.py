@@ -477,8 +477,13 @@ def search_associations(subject_category=None,
         facet_pivot_fields = [M.SUBJECT, M.OBJECT]
 
 
+    # Map solr field names for fq. The generic Monarch schema is
+    # canonical, GO schema is mapped to this using
+    # field_mapping dictionary
     if field_mapping is not None:
         for (k,v) in field_mapping.items():
+
+            # map fq[k] -> fq[k]
             if k in fq:
                 if v is None:
                     del fq[k]
@@ -486,9 +491,22 @@ def search_associations(subject_category=None,
                     fq[v] = fq[k]
                     del fq[k]
 
+            # in solr, the fq field can be
+            # a negated expression, e.g. -evidence_object_closure:"ECO:0000501"
+            # ideally we would have a higher level representation rather than
+            # relying on string munging...
+            negk = '-' + k
+            if negk in fq:
+                if v is None:
+                    del fq[negk]
+                else:
+                    negv = '-' + v
+                    fq[negv] = fq[negk]
+                    del fq[negk]
+
     filter_queries = []
     qstr = "*:*"
-    filter_queries = [ '{}:{}'.format(k,solr_quotify(v))  for (k,v) in fq.items()]
+    filter_queries = [ '{}:{}'.format(k,solr_quotify(v)) for (k,v) in fq.items()]
 
     # unless caller specifies a field list, use default
     if select_fields is None:
@@ -781,8 +799,6 @@ def select_distinct_subjects(**kwargs):
     select distinct subject IDs given a query
     """
     return select_distinct(M.SUBJECT, **kwargs)
-
-
 
 def calculate_information_content(**kwargs):
     """
