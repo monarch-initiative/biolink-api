@@ -693,6 +693,32 @@ def search_associations_compact(**kwargs):
     )
     return searchresult['compact_associations']
 
+def map2slim(subjects, slim, **kwargs):
+    """
+    Maps a set of subjects (e.g. genes) to a set of slims
+
+    Result is a list of unique subject-class pairs, with
+    a list of source assocations
+    """
+    logging.info("SLIM SUBJECTS:{} SLIM:{} CAT:{}".format(subjects,slim,kwargs.get('category')))
+    searchresult = search_associations(subjects=subjects,
+                                       slim=slim,
+                                       facet_fields=[],
+                                       **kwargs
+    )
+    pmap = {}
+    for a in searchresult['associations']:
+        subj = a['subject']['id']
+        slimmed_terms = a['slim']
+        for t in slimmed_terms:
+            k = (subj,t)
+            if k not in pmap:
+                pmap[k] = []
+            pmap[k].append(a)
+    results = [ {'subject': subj, 'slim':t, 'assocs': assocs} for ((subj,t),assocs) in pmap.items()]
+    return results
+        
+
 def bulk_fetch(subject_category, object_category, taxon, rows=MAX_ROWS, **kwargs):
     """
     Fetch associations for a species and pair of categories in bulk

@@ -1,3 +1,6 @@
+"""
+@Deprecated
+"""
 import logging
 
 from flask import request
