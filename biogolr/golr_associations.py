@@ -387,6 +387,11 @@ def search_associations(subject_category=None,
         to the slimmed-up value(s) from the direct objects.
         If fetch_objects is passed, this will be populated with slimmed IDs.
 
+    exclude_automatic_annotations : bool
+
+        If true, then any annotations with evidence of ECO:0000501 or
+        subclasses will be excluded.
+
     use_compact_associations : bool
 
         If true, then the associations list will be false, instead
