@@ -17,7 +17,7 @@ ns = api.namespace('bioentityset/homologs', description='Map gene IDs to their h
 parser = api.parser()
 parser.add_argument('subject', action='append', help='Entity ids to be examined, e.g. NCBIGene:9342, NCBIGene:7227, NCBIGene:8131, NCBIGene:157570, NCBIGene:51164, NCBIGene:6689, NCBIGene:6387')
 
-@ns.route('/homologs/')
+@ns.route('/')
 class EntitySetHomologs(Resource):
 
     @api.expect(parser)

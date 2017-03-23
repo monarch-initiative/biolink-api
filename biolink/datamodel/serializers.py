@@ -115,6 +115,12 @@ chained_association = api.model('ChainedAssociation', {
     'distal_associations': fields.List(fields.Nested(association), description='Associations where the intermediate object is the subject')
 })
 
+slimmed_association = api.model('SlimmedAssociation', {
+    'associations': fields.List(fields.Nested(association, description='immediate association, between subject and intermediate object')),
+    'subject': fields.String(description='subject of association (e.g. gene)'),
+    'slim': fields.String(description='Slimmed term')
+})
+
 compact_association_set = api.model('CompactAssociationSet', {
     'subject': fields.String(description='Subject of association (what it is about), e.g. MGI:1201606'),
     'relation': fields.String(description='Relationship type connecting subject and object list'),
