@@ -1,3 +1,16 @@
+"""
+Provide a facade over Wikidata SPARQL queries.
+
+While this does not do anything significant beyond wrapping a SPARQL query, it provides certain conveniences:
+
+ - mapping to and from CURIEs used in Monarch
+ - providing simple to call methods for common queries
+
+TODO:
+
+Return objects following the biolink/OBAN association model
+
+"""
 from SPARQLWrapper import SPARQLWrapper, JSON
 import logging
 
@@ -5,7 +18,9 @@ sparql = SPARQLWrapper("http://query.wikidata.org/sparql")
 
 class PrefixMap:
     """
-    Common SPARQL prefixes
+    Common SPARQL prefixes used by wikidata.
+
+    Note we use the "trick" whereby an entire property URI can be encoded as a prefix.
     """
     def prefixes(self):
         return [attr for attr in dir(self) if not callable(getattr(self,attr)) and not attr.startswith("__")]
@@ -42,9 +57,10 @@ class PrefixMap:
 
 prefix_map = PrefixMap()
 
-
-
 def run_sparql_query(q,limit=10):
+    """
+    Run a given SPARQL query over the Wikidata SPARQL endpoint
+    """
     full_sparql = "{}\n{}\nLIMIT {}".format(prefix_map.gen_header(),q,limit)
     logging.info("FULL:"+full_sparql)
     sparql.setQuery(full_sparql)
@@ -56,7 +72,6 @@ class UnknownPrefixException(Exception):
     pass
 class InvalidIdentifierException(Exception):
     pass
-
 
 def resolve_to_wikidata(id):
     """
@@ -98,10 +113,20 @@ def flatten(l):
     return [item for sublist in l for item in sublist]
 
 def condition_to_drug(condition_id):
+    """
+    Given a condition (e.g. disease) return drug used to treat it.
+
+    Accepts CURIEs, eg. DOID:nnnn
+    """
     wdids = resolve_to_wikidata(condition_id)
     return flatten([wd_condition_to_drug(x) for x in wdids])
 
 def wd_condition_to_drug(condition_id):
+    """
+    Accepts WD URIs as args.
+
+    TODO: capture everything in http://tinyurl.com/knuzgt7
+    """
     results = run_sparql_query("""
     SELECT ?dc WHERE {{<{c}> treated_by_drug: ?d . ?d ChebiID: ?dc }}
     """.format(c=condition_id), limit=1000)
@@ -142,3 +167,6 @@ def wd_neighbors(id,subject_category=None,object_category=None):
                 
 
 
+# isn't there a standard python function for this?
+def flatten(l):
+    return [item for sublist in l for item in sublist]
