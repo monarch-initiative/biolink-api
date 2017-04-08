@@ -716,6 +716,22 @@ def search_associations_compact(**kwargs):
     )
     return searchresult['compact_associations']
 
+def fetch_bioentity(id,**kwargs):
+    """
+    fetches an object of type bioentity
+
+    NOTE: only populated for GO instance
+    """
+    qstr = "*:*"
+    fq = {'id':id, 'document_category':'bioentity'}
+    filter_queries = [ '{}:{}'.format(k,solr_quotify(v)) for (k,v) in fq.items()]
+    params = {
+        'q': qstr,
+        'fq': filter_queries
+    }
+    docs = solr.search(**params).docs
+    return translate_doc(docs[0], **kwargs)
+
 def map2slim(subjects, slim, **kwargs):
     """
     Maps a set of subjects (e.g. genes) to a set of slims
