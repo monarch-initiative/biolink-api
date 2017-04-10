@@ -326,6 +326,7 @@ def search_associations(subject_category=None,
                         subjects=None,
                         object=None,
                         objects=None,
+                        negative_objects=None,
                         subject_direct=False,
                         subject_taxon=None,
                         object_taxon=None,
@@ -378,6 +379,20 @@ def search_associations(subject_category=None,
         this with subject_category and subject_taxon filters
 
         Results are in the 'subjects' field
+
+    object: string
+
+        An association-object ID. Inference assumed by default.
+
+    objects: List
+
+        A list of association-object IDs (i.e. targets), interpreted as a
+        conjunctive query. Inference is assumed by default.
+
+        NOTE: recall the entities being returned are associations, and
+        associations are to a single object. This argument only makes sense
+        if the annotation-object is a descendant of all entities in objects
+
 
     slim : List
 
@@ -466,8 +481,10 @@ def search_associations(subject_category=None,
         else:
             fq['subject_closure'] = subjects
     if objects is not None:
-        # lists are assumed to be disjunctive
+        # lists are assumed to be conjunctive
         fq['object_closure'] = objects
+    if negative_objects is not None:
+        fq['-object_closure'] = negative_objects
     if relation is not None:
         fq['relation_closure'] = relation
     if subject_taxon is not None:
@@ -729,6 +746,9 @@ def fetch_bioentity(id,**kwargs):
         'q': qstr,
         'fq': filter_queries
     }
+    # TODO!!!
+    go_golr_url = "http://golr.geneontology.org/solr/"
+    solr = pysolr.Solr(go_golr_url, timeout=5)
     docs = solr.search(**params).docs
     return translate_doc(docs[0], **kwargs)
 
