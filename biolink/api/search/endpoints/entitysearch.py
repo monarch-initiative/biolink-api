@@ -47,22 +47,6 @@ class Authocomplete(Resource):
 
         return []
 
-@ns.route('/boolean/')
-class BooleanQuery(Resource):
-
-    @api.expect(parser)
-    @api.marshal_list_with(association_results)
-    def get(self, search_term):
-        """
-        Returns list of matches based on (positive) attributes and negative attributes.
-
-        Here attribute refers to ontology terms or other attributes (e.g. interacting gene)
-
-        TODO - this should return entities. Use /associations/find/ for association searches
-        """
-        args = parser.parse_args()
-
-        return search_associations(**parser.parse_args())
 
     
     
