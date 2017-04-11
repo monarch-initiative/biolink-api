@@ -407,6 +407,8 @@ def search_associations(subject_category=None,
     #    subject = subject.replace("MGI:MGI:","MGI")
     if subject is not None:
         subject = make_canonical_identifier(subject)
+    if subjects is not None:
+        subjects = [make_canonical_identifier(s) for s in subjects]
 
     # temporary: for querying go solr, map fields. TODO
     logging.info("Object category: {}".format(object_category))
@@ -419,12 +421,10 @@ def search_associations(subject_category=None,
         solr = pysolr.Solr(go_golr_url, timeout=5)
         field_mapping=goassoc_fieldmap()
         fq['document_category'] = 'annotation'
-        # TODO: use map
-        #if subject is not None and subject.startswith('MGI:'):
-        #    logging.info('MGI hack for GO: '+str(subject))
-        #    subject = 'MGI:' + subject
         if subject is not None:
             subject = make_gostyle_identifier(subject)
+        if subjects is not None:
+            subjects = [make_gostyle_identifier(s) for s in subjects]
 
     # typically information is stored one-way, e.g. model-disease;
     # sometimes we want associations from perspective of object
