@@ -265,6 +265,23 @@ class OboFormatGraphRenderer(GraphRenderer):
         s += "\n"
         return s
 
+    def render_xrefs(self, nid, g, **args):
+        n = g.node[nid]
+        s = "[Term]\n";
+        s += self.tag('id ! TODO', nid)
+        s += self.tag('name', n['label'])
+        for p in g.predecessors(nid):
+            for _,ea in g[p][nid].items():
+                pred = ea['pred']
+                if p in g and 'label' in g.node[p]:
+                    p = '{} ! {}'.format(p, g.node[p]['label'])
+                if pred == 'subClassOf':
+                    s += self.tag('is_a', p)
+                else:
+                    s += self.tag('relationship', pred, p)
+        s += "\n"
+        return s
+    
     def tag(self, t, *vs):
         v = " ".join(vs)
         return t + ': ' + v + "\n"

@@ -88,7 +88,7 @@ def get_terms_in_subset(ont, subset):
 
     # note subsets have an unusual encoding
     query = """
-    prefix oboInOwl: <http://www.geneontology.org/formats/oboInOwl>
+    prefix oboInOwl: <http://www.geneontology.org/formats/oboInOwl#>
     SELECT ?c ? WHERE {{
     GRAPH <{g}>  {{
     ?c oboInOwl:inSubset ?s ;
@@ -133,6 +133,8 @@ def get_named_graph(ont):
     Ontobee uses NGs such as http://purl.obolibrary.org/obo/merged/CL
     """
 
+    if ont.startswith('http://'):
+        return ont
     namedGraph = 'http://purl.obolibrary.org/obo/merged/' + ont.upper()
     return namedGraph
 
@@ -175,6 +177,24 @@ def fetchall_labels(ont):
     rows = [(r['c']['value'], r['l']['value']) for r in bindings]
     return rows
 
+@cachier(stale_after=SHELF_LIFE)
+def fetchall_syns(ont):
+    """
+    fetch all synonyms for an ontology
+    """
+    logging.info("fetching syns for: "+ont)
+    namedGraph = get_named_graph(ont)
+    queryBody = querybody_syns()
+    query = """
+    prefix oboInOwl: <http://www.geneontology.org/formats/oboInOwl#>
+    SELECT * WHERE {{
+    GRAPH <{g}>  {q}
+    }}
+    """.format(q=queryBody, g=namedGraph)
+    bindings = run_sparql(query)
+    rows = [(r['c']['value'], r['r']['value'], r['l']['value']) for r in bindings]
+    return rows
+
 def querybody_isa():
     return """
     { ?c rdfs:subClassOf ?d }
@@ -193,6 +213,17 @@ def querybody_svf():
 def querybody_label():
     return """
     { ?c rdfs:label ?l }
+    """
+
+def querybody_syns():
+    return """
+    { ?c ?r ?l }
+    FILTER (
+    ?r = oboInOwl:hasRelatedSynonym OR
+    ?r = oboInOwl:hasNarrowSynonym OR
+    ?r = oboInOwl:hasBroadSynonym OR
+    ?r = oboInOwl:hasExactSynonym
+    )
     """
 
 def anyont_fetch_label(id):

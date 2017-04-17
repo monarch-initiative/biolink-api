@@ -5,8 +5,8 @@ Classes for representing ontologies backed by a SPARQL endpoint
 import networkx as nx
 import logging
 import obographs.ontol
-from obographs.ontol import Ontology
-from obographs.sparql.sparql_ontol_utils import get_digraph, get_named_graph, run_sparql
+from obographs.ontol import Ontology, Synonym
+from obographs.sparql.sparql_ontol_utils import get_digraph, get_named_graph, run_sparql, fetchall_syns, fetchall_labels
 
 
 class RemoteSparqlOntology(Ontology):
@@ -20,22 +20,46 @@ class RemoteSparqlOntology(Ontology):
     
         We assume the oboInOwl encoding of subsets, and subset IDs are IRIs
         """
-        namedGraph = get_named_graph(ont)
     
         # note subsets have an unusual encoding
         query = """
-        prefix oboInOwl: <http://www.geneontology.org/formats/oboInOwl>
-        SELECT ?c ? WHERE {{
+        prefix oboInOwl: <http://www.geneontology.org/formats/oboInOwl#>
+        SELECT ?c WHERE {{
         GRAPH <{g}>  {{
-        ?c oboInOwl:inSubset ?s ;
-           rdfs:label ?l
+        ?c oboInOwl:inSubset ?s
         FILTER regex(?s,'#{s}$','i')
         }}
         }}
-        """.format(s=subset, g=namedGraph)
+        """.format(s=subset, g=self.graph_name)
         bindings = run_sparql(query)
-        return [(r['c']['value'],r['l']['value']) for r in bindings]
+        return [r['c']['value'] for r in bindings]
 
+    def subsets(self):
+        """
+        Find all subsets for an ontology
+        """
+    
+        # note subsets have an unusual encoding
+        query = """
+        prefix oboInOwl: <http://www.geneontology.org/formats/oboInOwl#>
+        SELECT DISTINCT ?s WHERE {{
+        GRAPH <{g}>  {{
+        ?c oboInOwl:inSubset ?s 
+        }}
+        }}
+        """.format(g=self.graph_name)
+        bindings = run_sparql(query)
+        return [r['s']['value'] for r in bindings]
+
+    def all_synonyms(self, include_label=False):
+        syntups = fetchall_syns(self.graph_name)
+        syns = [Synonym(t[0],pred=t[1], val=t[2]) for t in syntups]
+        if include_label:
+            #lsyns = [Synonym(t[0],pred='label', val=t[1]) for t in fetchall_labels(self.graph_name)]
+            lsyns = [Synonym(x, pred='label', val=self.label(x)) for x in self.nodes()]
+            syns = syns + lsyns
+        return syns
+    
     def resolve_names(self, names, is_remote=False, **args):
         if not is_remote:
             return super().resolve_names(names, **args)
@@ -79,6 +103,7 @@ class EagerRemoteSparqlOntology(RemoteSparqlOntology):
         g = get_digraph(handle, None, True)
         logging.info("Graph:"+str(g))
         self.graph = g
+        self.graph_name = get_named_graph(handle)
         logging.info("Graph "+str(self.graph))
 
     def __str__(self):

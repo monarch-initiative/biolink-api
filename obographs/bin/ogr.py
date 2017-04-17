@@ -39,10 +39,14 @@ def main():
                         help='u = up, d = down, ud = up and down')
     parser.add_argument('-p', '--properties', nargs='*', type=str, required=False,
                         help='Properties')
+    parser.add_argument('-P', '--prefix', type=str, required=False,
+                        help='Prefix to constrain traversal on, e.g. PATO, ENVO')
     parser.add_argument('-s', '--search', type=str, default='', required=False,
                         help='Search type. p=partial, r=regex')
     parser.add_argument('-S', '--slim', type=str, default='', required=False,
                         help='Slim type. m=minimal')
+    parser.add_argument('-L', '--level', type=int, required=False,
+                        help='Query all nodes at level L in graph')
     parser.add_argument('-c', '--container_properties', nargs='*', type=str, required=False,
                         help='Properties to nest in graph')
     parser.add_argument('-v', '--verbosity', default=0, action='count',
@@ -64,24 +68,24 @@ def main():
     logging.info("Creating ont object from: {} {}".format(handle, factory))
     ont = factory.create(handle)
     logging.info("ont: {}".format(ont))
-    g = ont.get_filtered_graph(relations=args.properties)
 
     qids = []
-    nodes = set()
     dirn = args.direction
     searchp = args.search
+    if args.level is not None:
+        logging.info("Query for level: {}".format(args.level))
+        qids = qids + ont.get_level(args.level, relations=args.properties, prefix=args.prefix)
     for id in ont.resolve_names(args.ids,
                                 is_remote = searchp.find('x') > -1,
                                 is_partial_match = searchp.find('p') > -1,
                                 is_regex = searchp.find('r') > -1):
         qids.append(id)
-        nodes.add(id)
-        # NOTE: we use direct networkx methods as we have already extracted
-        # the subgraph we want
-        if dirn.find("u") > -1:
-            nodes.update(ont.ancestors(id))
-        if dirn.find("d") > -1:
-            nodes.update(ont.descendants(id))
+    logging.info("Query IDs: {}".format(qids))
+
+    nodes = ont.traverse_nodes(qids, up=dirn.find("u") > -1, down=dirn.find("d") > -1,
+                               relations=args.properties)
+
+    g = ont.get_filtered_graph(relations=args.properties)
     show_subgraph(g, nodes, qids, args)
 
 
@@ -99,7 +103,7 @@ def cmd_search(handle, args):
 
 def show_subgraph(g, nodes, query_ids, args):
     """
-    Writes graph
+    Writes or displays graph
     """
     if args.slim.find('m') > -1:
         logging.info("SLIMMING")

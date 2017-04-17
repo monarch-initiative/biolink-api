@@ -40,6 +40,14 @@ class OntologyFactory():
         self.handle = handle
 
     def create(self, handle=None):
+        """
+        Creates an ontology based on a handle
+
+         - FILENAME.json : creates an ontology from an obographs json file
+         - obo:ONTID     : E.g. obo:pato - creates an ontology from obolibrary PURL (requires owltools)
+         - ONTID         : E.g. 'pato' - creates an ontology from a remote SPARQL query
+
+        """
         if handle == None:
             self.test = self.test+1
             logging.info("T: "+str(self.test))                
@@ -58,8 +66,8 @@ def create_ontology(handle=None):
     
     if handle.find(".") > 0 and os.path.isfile(handle):
         logging.info("Fetching obograph-json file from filesystem")
-        g = obograph_util.convert_json_file(handle)
-        ont = Ontology(handle=handle, graph=g)
+        g = translate_file(handle)
+        ont = Ontology(handle=handle, payload=g)
     elif handle.startswith("obo:"):
         logging.info("Fetching from OBO PURL")
         if handle.find(".") == -1:
@@ -73,7 +81,7 @@ def create_ontology(handle=None):
         else:
             logging.info("using cached file: "+fn)
         g = obograph_util.convert_json_file(fn)
-        ont = Ontology(handle=handle, graph=g)
+        ont = Ontology(handle=handle, payload=g)
     elif handle.startswith("http:"):
         logging.info("Fetching from Web PURL: "+handle)
         encoded = hashlib.sha256(handle.encode()).hexdigest()
@@ -88,9 +96,27 @@ def create_ontology(handle=None):
         else:
             logging.info("using cached file: "+fn)
         g = obograph_util.convert_json_file(fn)
-        ont = Ontology(handle=handle, graph=g)
+        ont = Ontology(handle=handle, payload=g)
     else:
         logging.info("Fetching from SPARQL")
         ont = EagerRemoteSparqlOntology(handle=handle)
         #g = get_digraph(handle, None, True)
     return ont
+
+def translate_file(handle, **args):
+    if handle.endswith(".json"):
+        return obograph_util.convert_json_file(handle, **args)
+    else:
+        if not (handle.endswith(".obo") or handle.endswith(".owl")):
+            logging.info("Attempting to parse non obo or owl file with owltools: "+handle)
+        encoded = hashlib.sha256(handle.encode()).hexdigest()
+        logging.info(" encoded: "+str(encoded))
+        fn = '/tmp/'+encoded
+        if not os.path.isfile(fn):
+            cmd = ['owltools',handle,'-o','-f','json',fn]
+            cp = subprocess.run(cmd, check=True)
+            logging.info(cp)
+        else:
+            logging.info("using cached file: "+fn)
+        return obograph_util.convert_json_file(fn, **args)
+    

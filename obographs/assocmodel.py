@@ -28,7 +28,7 @@ class AssociationSet():
 
     """
 
-    def __init__(self, ontology=None, association_map={}, meta=None):
+    def __init__(self, ontology=None, association_map={}, subject_label_map=None, meta=None):
         """
         NOTE: in general you do not need to call this yourself. See assoc_factory
 
@@ -40,6 +40,7 @@ class AssociationSet():
         """
         self.ontology = ontology
         self.association_map = association_map
+        self.subject_label_map = subject_label_map
         self.subject_to_inferred_map = {}
         self.meta = meta  # TODO
         self.strict = False
@@ -106,6 +107,11 @@ class AssociationSet():
         """
         Basic boolean query, using inference
         """
+
+        if terms is None:
+            terms=[]
+        if negated_terms is None:
+            negated_terms=[]
         termset = set(terms)
         negated_termset = set(negated_terms)
         matches = []
@@ -116,11 +122,15 @@ class AssociationSet():
                     matches.append(subj)
         return matches
 
-    def query_intersections(self, x_terms=[], y_terms=[]):
+    def query_intersections(self, x_terms=[], y_terms=[], symmetric=False):
         """
         Query for intersections of terms in two lists
 
-        Return a list of intersection result objects
+        Return a list of intersection result objects with keys:
+         - x : term from x
+         - y : term from y
+         - c : count of intersection
+         - j : jaccard score
         """
         xset = set(x_terms)
         yset = set(y_terms)
@@ -140,13 +150,47 @@ class AssociationSet():
             gmap[z] = set(gmap[z])
         ilist = []
         for x in x_terms:
-            for y in x_terms:
-                if x<y:
+            for y in y_terms:
+                if not symmetric or x<y:
                     shared = gmap[x].intersection(gmap[y])
-                    ilist.append({'x':x,'y':y,'shared':shared, 'c':len(shared)})
+                    union = gmap[x].union(gmap[y])
+                    j = 0
+                    if len(union)>0:
+                        j = len(shared) / len(union)
+                    ilist.append({'x':x,'y':y,'shared':shared, 'c':len(shared), 'j':j})
         return ilist
 
-    def enrichment_test(self, subjects=[], background=None, threshold=0.05, labels=False, direction='greater'):
+    def intersectionlist_to_matrix(self, ilist, xterms, yterms):
+        z = [ [0] * len(xterms) for i1 in range(len(yterms)) ]
+    
+        xmap = {}
+        xi = 0
+        for x in xterms:
+            xmap[x] = xi
+            xi = xi+1
+        
+        ymap = {}
+        yi = 0
+        for y in yterms:
+            ymap[y] = yi
+            yi = yi+1
+            
+        for i in ilist:
+            z[ymap[i['y']]][xmap[i['x']]] = i['j']
+            
+        logging.debug("Z={}".format(z))
+        return (z,xterms,yterms)
+
+    
+    def label(self, id):
+        """
+        return label for a subject id
+        """
+        if self.subject_label_map is not None and id in self.subject_label_map:
+            return self.subject_label_map[id]
+        return None
+    
+    def enrichment_test(self, subjects=[], background=None, hypotheses=None, threshold=0.05, labels=False, direction='greater'):
         """
         Performs term enrichment analysis
 
@@ -177,10 +221,14 @@ class AssociationSet():
         subjects=set(subjects)
         bg_count = {}
         sample_count = {}
-        hypotheses = set()
+        potential_hypotheses = set()
         sample_size = len(subjects)
         for s in subjects:
-            hypotheses.update(self.inferred_types(s))
+            potential_hypotheses.update(self.inferred_types(s))
+        if hypotheses is None:
+            hypotheses = potential_hypotheses
+        else:
+            hypotheses = potential_hypotheses.intersection(hypotheses)
         logging.info("Hypotheses: {}".format(hypotheses))
         
         # get background counts
@@ -204,7 +252,8 @@ class AssociationSet():
                 bg_count[a] = bg_count[a]+1
         for s in subjects:
             for a in self.inferred_types(s):
-                sample_count[a] = sample_count[a]+1
+                if a in hypotheses:
+                    sample_count[a] = sample_count[a]+1
 
         hypotheses = [x for x in hypotheses if bg_count[x] > 1]
         logging.info("Filtered hypotheses: {}".format(hypotheses))
@@ -256,6 +305,39 @@ class AssociationSet():
         if num_union == 0:
             return 0.0
         return len(a1.intersection(a2)) / num_union
+
+    def similarity_matrix(self, x_subjects=[], y_subjects=[], symmetric=False):
+        """
+        Query for similarity matrix between groups of subjects
+
+        Return a list of intersection result objects with keys:
+         - x : term from x
+         - y : term from y
+         - c : count of intersection
+         - j : jaccard score
+        """
+        xset = set(x_subjects)
+        yset = set(y_subjects)
+        zset = xset.union(yset)
+
+        # first built map of gene->termClosure.
+        # this could be calculated ahead of time for all g,
+        # but this may be space-expensive. TODO: benchmark
+        gmap={}
+        for z in zset:
+            gmap[z] = self.inferred_types(z)
+        ilist = []
+        for x in x_subjects:
+            for y in y_subjects:
+                if not symmetric or x<y:
+                    shared = gmap[x].intersection(gmap[y])
+                    union = gmap[x].union(gmap[y])
+                    j = 0
+                    if len(union)>0:
+                        j = len(shared) / len(union)
+                    ilist.append({'x':x,'y':y,'shared':shared, 'c':len(shared), 'j':j})
+        return self.intersectionlist_to_matrix(ilist, x_subjects, y_subjects)
+    
 
 class NamedEntity():
     """

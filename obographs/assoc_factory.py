@@ -50,15 +50,18 @@ class AssociationSetFactory():
         
         
         amap = {}
+        subject_label_map = {}
         for a in assocs:
             rel = a['relation']
             subj = a['subject']
+            subject_label_map[subj] = a['subject_label']
             amap[subj] = a['objects']
         meta = AssociationSetMetadata(subject_category=subject_category,
-                                   object_category=object_category,
-                                   taxon=taxon)
+                                      object_category=object_category,
+                                      taxon=taxon)
         aset = AssociationSet(ontology=ontology,
                               meta=meta,
+                              subject_label_map=subject_label_map,
                               association_map=amap)
         return aset
 
