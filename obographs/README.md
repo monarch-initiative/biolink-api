@@ -24,8 +24,6 @@ Note that object modeling is lightweight - we use the python networkx
 package for representing the basic graph portion of an ontology. See
 also the [obographs](https://github.com/geneontology/obographs) spec.
 
-
-
 # Command Line Usage
 
 ## Initial Setup
@@ -87,6 +85,12 @@ Descendants and ancestors of neuron, parts and subtypes
 
 ```
 ogr -r cl -p subClassOf -p BFO:0000050 -t tree -d du neuron
+```
+
+All ancestors of all classes 2 levels down from subclass-roots within CL:
+
+```
+ogr -r cl -P CL -p subClassOf -t tree -d u -L 2
 ```
 
 ## Visualization using obographviz
