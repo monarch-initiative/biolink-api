@@ -223,7 +223,7 @@ class Ontology():
 
     def parent_index(self, relations=None):
         """
-        Returns a list of lists, where the inner list is [CHILD, PARENT1, ..., PARENT2]
+        Returns a list of lists [[CLASS_1, PARENT_1,1, ..., PARENT_1,N], [CLASS_2, PARENT_2,1, PARENT_2,2, ... ] ... ]
         """
         g = None
         if relations is None:
@@ -238,6 +238,8 @@ class Ontology():
     def logical_definitions(self, nid):
         """
         Retrieves logical definitions for a class id
+
+        Returns: LogicalDefinition
         """
         ldefs = self.all_logical_definitions
         if ldefs is not None:
@@ -270,16 +272,25 @@ class Ontology():
             syns = syns + self.synonyms(n)
         return syns
     
-    def label(self, nid):
+    def label(self, nid, id_if_null=False):
         """
         Fetches label for a node
         """
         g = self.get_graph()
         if nid in g:
             n = g.node[nid]
-            return n['label']
+            if 'label' in n:
+                return n['label']
+            else:
+                if id_if_null:
+                    return nid
+                else:
+                    return None
         else:
-            return None
+            if id_if_null:
+                return nid
+            else:
+                return None
 
     def xrefs(self, nid, bidirectional=False):
         """
