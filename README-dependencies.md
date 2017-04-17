@@ -1,16 +1,8 @@
 
-Some of these may be moved into separate modules
+Some of these may be moved into separate modules, https://github.com/biolink/biolink-api/issues/49
 
-```
- prefixcommons <-- scigraph
-  ^                ^
-  |                |
- obographs <-------+
-  ^                |
-  |                |
- biogolr           |
-  ^                |
-  |                -
-  \----------- biolink-api (ie flaskrest) 
- 
-```
+biolink <- prefixcommons, biogolr, obographs, biowikidata, causalmodels
+prefixcommons <- []
+biogolr <- prefixcommons
+obographs <- prefixcommons, biogolr
+
