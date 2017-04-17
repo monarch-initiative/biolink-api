@@ -278,10 +278,15 @@ def plot_dendrogram(z, xaxis, yaxis):
 
     py.plot(figure, filename='dendrogram_with_labels')
     
-    
-    
 def mk_axis(terms, kb, args):
-    return [kb.label(x).replace(" ","<br>") for x in terms]
-        
+    return [label_or_id(x).replace(" ","<br>") for x in terms]
+
+def label_or_id(x, kb):
+    label = kb.label(x)
+    if label is None:
+        return x
+    else:
+        return label
+
 if __name__ == "__main__":
     main()
