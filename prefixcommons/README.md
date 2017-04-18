@@ -11,3 +11,4 @@ See [prefixcommons/biocontext](https://github.com/prefixcommons/biocontext)
 The curie_util.py module provides CURIE/URI expansion/contraction
 based on standard contexts.
 
+This repo:  [prefixcommons/prefixcommons-py](https://github.com/prefixcommons/prefixcommons-py)

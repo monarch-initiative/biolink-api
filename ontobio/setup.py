@@ -53,6 +53,7 @@ setuptools.setup(
     install_requires=[
         'networkx',
         'pyyaml',
+        'requests',
         'sparqlwrapper',
         'cachier',
         'prefixcommons'

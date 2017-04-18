@@ -11,7 +11,6 @@ Reconsitutes an ontology from SPARQL queries over a remote SPARQL server
 from SPARQLWrapper import SPARQLWrapper, JSON
 from prefixcommons.curie_util import contract_uri, expand_uri
 from functools import lru_cache
-import percache
 import networkx
 from cachier import cachier
 import datetime
