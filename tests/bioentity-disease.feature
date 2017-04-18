@@ -13,9 +13,9 @@ TODO - consider swapping subject/object
       then the JSON should have some JSONPath "associations[*].subject.id" with "string" "MGI:5544308"
 
  Scenario: User queries for worm models of supranuclear palsy
-    Given a path "/bioentity/disease/DOID:678/models/NCBITaxon:6239"
+    Given a path "/bioentity/disease/DOID:678/models/NCBITaxon:6237"
      then the content should contain "wormbase"
-      and the content should contain "Caenorhabditis elegans"
+      and the content should contain "Caenorhabditis"
       and the content should contain "ptl-1"
 
  Scenario: User queries for dog models of lipid storage diseases (e.g. gangliosidosis)
