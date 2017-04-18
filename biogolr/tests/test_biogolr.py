@@ -6,6 +6,8 @@ HUMAN_SHH = 'NCBIGene:6469'
 HOLOPROSENCEPHALY = 'HP:0001360'
 TWIST_ZFIN = 'ZFIN:ZDB-GENE-050417-357'
 DVPF = 'GO:0009953'
+ROBP = 'GO:0050789' # regulation of biological process
+MF = 'GO:0003674'  # molecular_function
 
 def test_select_distinct():
     results = select_distinct_subjects(subject_category='gene',
@@ -85,4 +87,15 @@ def test_disease_assocs():
                                   object_category='disease'
     )
     assert len(results) > 0
+
+# See
+# https://github.com/geneontology/go-annotation/issues/1542
+# TODO: this doesn't work, as an association document cannot be
+#   both MF and BP
+#def test_boolean():
+#    results = search_associations(objects=[ROBP],
+#                                  negative_objects=[MF],
+#                                  object_category='function'
+#    )
+#    assert len(results) > 0
     

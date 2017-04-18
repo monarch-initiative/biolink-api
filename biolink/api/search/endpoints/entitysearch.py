@@ -47,18 +47,7 @@ class Authocomplete(Resource):
 
         return []
 
-@ns.route('/query/')
-class BooleanQuery(Resource):
 
-
-    @api.expect(parser)
-    def get(self, search_term):
-        """
-        Returns list of matches
-        """
-        args = parser.parse_args()
-
-        return []
     
     
     
