@@ -10,7 +10,7 @@ directory = os.path.dirname(os.path.abspath(__file__))
 init_path = os.path.join(directory, 'prefixcommons', '__init__.py')
 with open(init_path) as read_file:
     text = read_file.read()
-version = '0.1.1'
+version = '0.1.2'
 
 # long_description
 readme_path = os.path.join(directory, 'README.md')
@@ -44,14 +44,13 @@ setuptools.setup(
         'Intended Audience :: Science/Research',
         'Topic :: Scientific/Engineering :: Bio-Informatics',
         'Topic :: Scientific/Engineering :: Information Analysis',
-        'License :: OSI Approved :: BSD3 License',
+        'License :: OSI Approved :: BSD License',
         'Programming Language :: Python :: 3',
     ],
 
     # Dependencies
     install_requires=[
-        'json',
-        'yaml',
+        'pyyaml',
         'cachier'
     ]
 )

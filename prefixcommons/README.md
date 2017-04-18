@@ -1,6 +1,6 @@
 # prefixcommons
 
-A python API for working with ID prefixes.
+A python API for working with ID prefixes in the context of [prefixcommons](http://prefixcommons.org)
 
 See [prefixcommons/biocontext](https://github.com/prefixcommons/biocontext)
 
