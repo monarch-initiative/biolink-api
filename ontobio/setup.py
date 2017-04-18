@@ -7,7 +7,7 @@ import setuptools
 directory = os.path.dirname(os.path.abspath(__file__))
 
 # version
-init_path = os.path.join(directory, 'obographs', '__init__.py')
+init_path = os.path.join(directory, 'ontobio', '__init__.py')
 with open(init_path) as read_file:
     text = read_file.read()
 version = '0.1.1'
@@ -27,16 +27,15 @@ except Exception as error:
     with open(readme_path) as read_file:
         long_description = read_file.read()
 
-
 setuptools.setup(
     name='ontobio',
     version=version,
     author='Chris Mungall',
     author_email='cmungall@gmail.com',
-    url='https://github.com/biolink-api/obographs',
+    url='https://github.com/biolink-api/ontobio',
     description='Library for working with OBO Library Ontologies and associations',
     long_description=long_description,
-    license='BSD3',
+    license='BSD',
     #packages=['ontobio'],
     packages=setuptools.find_packages(),
 
@@ -53,8 +52,7 @@ setuptools.setup(
     # Dependencies
     install_requires=[
         'networkx',
-        'json',
-        'yaml',
+        'pyyaml',
         'sparqlwrapper',
         'cachier',
         'prefixcommons'
@@ -65,8 +63,8 @@ setuptools.setup(
     # for example:
     # $ pip install -e .[dev,test]
     extras_require={
-        'dev': ['check-manifest'],
-        'test': ['coverage'],
+        'dev': ['scipy', 'plotly'],
+        'test': ['pytest'],
     },
     scripts=['scripts/ogr.py', 'scripts/ogr-assoc.py']
     # To provide executable scripts, use entry points in preference to the
