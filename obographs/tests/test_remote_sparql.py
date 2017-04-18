@@ -1,4 +1,4 @@
-from obographs.ontol_factory import OntologyFactory
+from ontobio.ontol_factory import OntologyFactory
 import logging
 
 HAS_PART = 'BFO:0000051'

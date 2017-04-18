@@ -1,5 +1,5 @@
-from obographs.ontol_factory import OntologyFactory
-from obographs.lexmap import LexicalMapEngine
+from ontobio.ontol_factory import OntologyFactory
+from ontobio.lexmap import LexicalMapEngine
 import logging
 
 HAS_PART = 'BFO:0000051'

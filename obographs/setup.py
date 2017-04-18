@@ -29,7 +29,7 @@ except Exception as error:
 
 
 setuptools.setup(
-    name='obographs',
+    name='ontobio',
     version=version,
     author='Chris Mungall',
     author_email='cmungall@gmail.com',
@@ -37,7 +37,7 @@ setuptools.setup(
     description='Library for working with OBO Library Ontologies and associations',
     long_description=long_description,
     license='BSD3',
-    #packages=['obographs'],
+    #packages=['ontobio'],
     packages=setuptools.find_packages(),
 
     keywords='ontology graph obo owl sparql networkx network',

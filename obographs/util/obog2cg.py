@@ -7,8 +7,8 @@ import logging
 import unittest
 import json
 
-import obographs.obograph_util
-from obographs.cgraph import CompactGraph
+import ontobio.obograph_util
+from ontobio.cgraph import CompactGraph
 
 def main():
 

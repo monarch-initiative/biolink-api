@@ -14,9 +14,9 @@ For instructions
 import argparse
 import networkx as nx
 from networkx.algorithms.dag import ancestors, descendants
-from obographs.ontol_factory import OntologyFactory
-from obographs.graph_io import GraphRenderer
-from obographs.slimmer import get_minimal_subgraph
+from ontobio.ontol_factory import OntologyFactory
+from ontobio.graph_io import GraphRenderer
+from ontobio.slimmer import get_minimal_subgraph
 import logging
 
 def main():

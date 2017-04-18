@@ -4,9 +4,9 @@ Classes for representing ontologies backed by a SPARQL endpoint
 
 import networkx as nx
 import logging
-import obographs.ontol
-from obographs.ontol import Ontology, Synonym
-from obographs.sparql.sparql_ontol_utils import get_digraph, get_named_graph, run_sparql, fetchall_syns, fetchall_labels
+import ontobio.ontol
+from ontobio.ontol import Ontology, Synonym
+from ontobio.sparql.sparql_ontol_utils import get_digraph, get_named_graph, run_sparql, fetchall_syns, fetchall_labels
 
 
 class RemoteSparqlOntology(Ontology):

@@ -1,6 +1,6 @@
-from obographs.ontol_factory import OntologyFactory
-from obographs.assoc_factory import AssociationSetFactory
-from obographs.assocmodel import AssociationSet
+from ontobio.ontol_factory import OntologyFactory
+from ontobio.assoc_factory import AssociationSetFactory
+from ontobio.assocmodel import AssociationSet
 import logging
 import random
 

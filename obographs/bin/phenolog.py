@@ -16,10 +16,10 @@ python obographs/bin/phenolog.py -b 'nervous system phenotype' -v -r cache/ontol
 import argparse
 import networkx as nx
 from networkx.algorithms.dag import ancestors, descendants
-from obographs.ontol_factory import OntologyFactory
-from obographs.assoc_factory import AssociationSetFactory
-from obographs.graph_io import GraphRenderer
-from obographs.slimmer import get_minimal_subgraph
+from ontobio.ontol_factory import OntologyFactory
+from ontobio.assoc_factory import AssociationSetFactory
+from ontobio.graph_io import GraphRenderer
+from ontobio.slimmer import get_minimal_subgraph
 import logging
 import sys
 

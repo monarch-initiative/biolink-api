@@ -25,7 +25,7 @@ import networkx as nx
 from networkx.algorithms.dag import ancestors, descendants
 from networkx.drawing.nx_pydot import write_dot
 from prefixcommons.curie_util import expand_uri
-from obographs.slimmer import get_minimal_subgraph
+from ontobio.slimmer import get_minimal_subgraph
 import logging
 
 def main():

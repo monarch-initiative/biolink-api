@@ -13,13 +13,13 @@ For instructions
 
 import argparse
 from biogolr.golr_associations import search_associations_compact
-from obographs.ontol_factory import OntologyFactory
-from obographs.graph_io import *
+from ontobio.ontol_factory import OntologyFactory
+from ontobio.graph_io import *
 import networkx as nx
 from networkx.algorithms.dag import ancestors, descendants
 from networkx.drawing.nx_pydot import write_dot
 from prefixcommons.curie_util import expand_uri
-from obographs.slimmer import get_minimal_subgraph
+from ontobio.slimmer import get_minimal_subgraph
 #from biogolr.golr_associations import search_associations, search_associations_compact, GolrFields, select_distinct_subjects, get_objects_for_subject, get_subjects_for_object
 import logging
 

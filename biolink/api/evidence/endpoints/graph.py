@@ -5,7 +5,7 @@ from flask_restplus import Resource
 from biolink.datamodel.serializers import association, bbop_graph
 from biogolr.golr_associations import get_association
 from biolink.api.restplus import api
-from obographs.obograph_util import convert_json_object
+from ontobio.obograph_util import convert_json_object
 import tempfile
 import pysolr
 #import matplotlib.pyplot as plt

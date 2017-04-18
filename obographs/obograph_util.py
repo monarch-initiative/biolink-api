@@ -9,7 +9,7 @@ import json
 import networkx
 import logging
 from prefixcommons.curie_util import contract_uri
-from obographs.ontol import LogicalDefinition
+from ontobio.ontol import LogicalDefinition
 
 def contract_uri_wrap(uri):
     curies = contract_uri(uri)

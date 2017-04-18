@@ -1,6 +1,6 @@
-from obographs.ontol_factory import OntologyFactory
+from ontobio.ontol_factory import OntologyFactory
 from networkx.algorithms.dag import ancestors
-from obographs.graph_io import GraphRenderer
+from ontobio.graph_io import GraphRenderer
 
 PLOIDY = 'PATO:0001374'
 
