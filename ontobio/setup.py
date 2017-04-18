@@ -53,10 +53,12 @@ setuptools.setup(
     install_requires=[
         'networkx',
         'pyyaml',
+        'pysolr',
         'requests',
         'sparqlwrapper',
         'cachier',
-        'prefixcommons'
+        'prefixcommons',
+        'scipy'
     ],
 
     # List additional groups of dependencies here (e.g. development
@@ -64,7 +66,7 @@ setuptools.setup(
     # for example:
     # $ pip install -e .[dev,test]
     extras_require={
-        'dev': ['scipy', 'plotly'],
+        'dev': ['plotly'],
         'test': ['pytest'],
     },
     scripts=['bin/ogr.py', 'bin/ogr-assoc.py']
