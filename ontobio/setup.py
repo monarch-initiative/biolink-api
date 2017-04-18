@@ -66,7 +66,7 @@ setuptools.setup(
         'dev': ['scipy', 'plotly'],
         'test': ['pytest'],
     },
-    scripts=['scripts/ogr.py', 'scripts/ogr-assoc.py']
+    scripts=['bin/ogr.py', 'bin/ogr-assoc.py']
     # To provide executable scripts, use entry points in preference to the
     # "scripts" keyword. Entry points provide cross-platform support and allow
     # pip to create the appropriate form of executable for the target platform.
