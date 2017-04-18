@@ -68,7 +68,7 @@ def add_obograph_digraph(og, digraph, node_type=None, predicates=None, xref_grap
             ld = LogicalDefinition(contract_uri_wrap(a['definedClassId']),
                                    [contract_uri_wrap(x) for x in a['genusIds']],
                                    [(contract_uri_wrap(x['propertyId']),
-                                     contract_uri_wrap(x['fillerId'])) for x in a['restrictions']])
+                                     contract_uri_wrap(x['fillerId'])) for x in a['restrictions'] if x is not None])
             logical_definitions.append(ld)
                                 
         

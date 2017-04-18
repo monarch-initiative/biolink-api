@@ -95,7 +95,7 @@ def main():
     # query all IDs, gathering associations
     assocs = []
     for id in args.ids:
-        this_assocs = search_ontobio.golr_wrap(id,
+        this_assocs = search_golr_wrap(id,
                                           args.category,
                                           subject_taxon=args.species,
                                           rows=1000,
@@ -181,7 +181,7 @@ def show_graph(g, nodes, query_ids, args):
     logging.info("Writing subg from "+str(g))
     w.write(g, query_ids=query_ids, container_predicates=args.container_properties)
 
-def search_ontobio.golr_wrap(id, category, **args):
+def search_golr_wrap(id, category, **args):
     """
     performs searches in both directions
     """

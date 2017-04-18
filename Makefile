@@ -37,7 +37,7 @@ EXAMPLE-QUERIES.md:
 	./util/behave-to-markdown.pl tests/*.feature > $@
 
 #PACKAGES = prefixcommons scigraph biogolr
-PACKAGES = prefixcommons biogolr
+PACKAGES = ontobio prefixcommons
 subpackage_tests: $(patsubst %,test-%,$(PACKAGES))
 
 test-%:

@@ -9,7 +9,10 @@ MUS = 'NCBITaxon:10090'
 
 def test_construct():
     """
-    factory test
+    enrichment test
+
+    build a gene set from MP term for cardiomyopathy;
+    test for enrichment against GO
     """
     ofactory = OntologyFactory()
     afactory = AssociationSetFactory()
