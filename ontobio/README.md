@@ -1,13 +1,14 @@
-# obographs - a python API for working with ontology graphs
+# ontobio - a python API for working with ontology graphs
 
-NOTE: This is a standalone module currently in the biolink-api
-repo. It does not depend on any other module in this repo (other than
-prefixcommons), and will be moved to its own repo.
+This module provides objects and utility methods for working with
+ontologies and associations of entities (genes, variants, etc) to
+ontology classes.
 
-Thhis module provides a general purpose Ontology object that is bound
-to either remote services, PURLs or a local file, and provides various
-operations on these objects, including extraction to trees and
-subgraphs. See the command line examples below for a general picture.
+The ontologies and associations can either be local files or provided
+by remote services (currently the OntoBee SPARQL service for
+ontologies and a Monarch or GO Golr service for associations).
+
+# Ontologies
 
 There are two ways of initiating an ontology object:
 
@@ -17,19 +18,23 @@ There are two ways of initiating an ontology object:
 
 Persistent caching is used (currently cachier) to avoid repeated expensive I/O connections
 
-This is handled via the [ontol_manager.py](ontol_manager.py)
-module. This creates an ontology object (see [ontol.py](ontol.py) ).
+This is handled via the [ontol_manager.py](ontobio/ontol_manager.py)
+module. This creates an ontology object (see [ontol.py](ontobio/ontol.py) ).
 
 Note that object modeling is lightweight - we use the python networkx
 package for representing the basic graph portion of an ontology. See
 also the [obographs](https://github.com/geneontology/obographs) spec.
+
+# Associations
+
+See the ontobio.golr backage
 
 # Command Line Usage
 
 ## Initial Setup
 
 ```
-export PATH $HOME/repos/bioink-api/obographs/bin
+export PATH $HOME/repos/bioink-api/ontobio/bin
 ogr -h
 ```
 
@@ -105,13 +110,13 @@ ogr -p subClassOf BFO:0000050 -r go -t png   a nucleus
 
 This proceeds by:
 
- 1. Using the python obographs library to extract a networkx subgraph around the specified node
+ 1. Using the python ontobio library to extract a networkx subgraph around the specified node
  2. Write as obographs-json
  3. Calls og2dot.js
 
 Output:
 
-![img](https://github.com/biolink/biolink-api/raw/master/obographs/docs/nucleus.png)
+![img](https://github.com/biolink/biolink-api/raw/master/ontobio/docs/nucleus.png)
 
 ## Search
 
