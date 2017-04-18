@@ -3,7 +3,7 @@ import logging
 from flask import request
 from flask_restplus import Resource
 from biolink.datamodel.serializers import compact_association_set, association_results
-from biogolr.golr_associations import search_associations, GolrFields
+from ontobio.golr.golr_associations import search_associations, GolrFields
 
 from biolink.api.restplus import api
 import pysolr

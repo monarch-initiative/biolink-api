@@ -1,4 +1,4 @@
-from biogolr.golr_associations import map2slim, GolrFields
+from ontobio.golr.golr_associations import map2slim, GolrFields
 
 M=GolrFields()
 

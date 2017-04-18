@@ -3,7 +3,7 @@ import logging
 from flask import request
 from flask_restplus import Resource
 from biolink.api.restplus import api
-from biogolr.golr_associations import calculate_information_content
+from ontobio.golr.golr_associations import calculate_information_content
 import pysolr
 
 log = logging.getLogger(__name__)

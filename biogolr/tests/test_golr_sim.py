@@ -1,4 +1,4 @@
-from biogolr.golr_sim import subject_pair_simj
+from ontobio.golr.golr_sim import subject_pair_simj
 
 gene_ids= [
 "NCBIGene:10891",

@@ -8,7 +8,7 @@ The most efficient strategy may be to pre-load associations and compute in-memor
 
 """
 
-from biogolr.golr_associations import search_associations, GolrFields
+from ontobio.golr.golr_associations import search_associations, GolrFields
 import scipy.stats # TODO - move
 import scipy as sp # TODO - move
 

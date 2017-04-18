@@ -13,14 +13,14 @@ Examples:
 
 all human gene-phenotype associations:
 
-    biogolr-bulk.py -s NCBITaxon:9606 -C gene phenotype
+    ontobio.golr-bulk.py -s NCBITaxon:9606 -C gene phenotype
 
 
 
 """
 
 import argparse
-from biogolr.golr_associations import bulk_fetch
+from ontobio.golr.golr_associations import bulk_fetch
 import networkx as nx
 from networkx.algorithms.dag import ancestors, descendants
 from networkx.drawing.nx_pydot import write_dot
@@ -34,10 +34,10 @@ def main():
     """
 
     parser = argparse.ArgumentParser(
-        description='Command line interface to python-biogolr library'
+        description='Command line interface to python-ontobio.golr library'
         """
 
-        Provides command line interface onto the biogolr python library, a high level 
+        Provides command line interface onto the ontobio.golr python library, a high level 
         abstraction layer over Monarch and GO solr indices.
         """,
         formatter_class=argparse.RawTextHelpFormatter)

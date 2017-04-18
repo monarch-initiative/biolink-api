@@ -1,4 +1,4 @@
-from biogolr.golr_matrix import term_matrix
+from ontobio.golr.golr_matrix import term_matrix
 
 
 idlist=[

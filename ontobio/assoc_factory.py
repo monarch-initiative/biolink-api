@@ -11,7 +11,7 @@ import subprocess
 import hashlib
 from cachier import cachier
 import datetime
-from biogolr.golr_associations import bulk_fetch
+from ontobio.golr.golr_associations import bulk_fetch
 from ontobio.assocmodel import AssociationSet, AssociationSetMetadata
 
 SHELF_LIFE = datetime.timedelta(days=3)

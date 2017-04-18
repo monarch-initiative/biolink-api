@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Command line wrapper to biogolr library.
+Command line wrapper to ontobio.golr library.
 
 Type:
 
@@ -12,7 +12,7 @@ For instructions
 """
 
 import argparse
-from biogolr.golr_associations import search_associations_compact
+from ontobio.golr.golr_associations import search_associations_compact
 from ontobio.ontol_factory import OntologyFactory
 from ontobio.graph_io import *
 import networkx as nx
@@ -20,7 +20,7 @@ from networkx.algorithms.dag import ancestors, descendants
 from networkx.drawing.nx_pydot import write_dot
 from prefixcommons.curie_util import expand_uri
 from ontobio.slimmer import get_minimal_subgraph
-#from biogolr.golr_associations import search_associations, search_associations_compact, GolrFields, select_distinct_subjects, get_objects_for_subject, get_subjects_for_object
+#from ontobio.golr.golr_associations import search_associations, search_associations_compact, GolrFields, select_distinct_subjects, get_objects_for_subject, get_subjects_for_object
 import logging
 
 def main():
@@ -29,10 +29,10 @@ def main():
     """
 
     parser = argparse.ArgumentParser(
-        description='Command line interface to python-biogolr library'
+        description='Command line interface to python-ontobio.golr library'
         """
 
-        Provides command line interface onto the biogolr python library, a high level 
+        Provides command line interface onto the ontobio.golr python library, a high level 
         abstraction layer over Monarch and GO solr indices.
         """,
         formatter_class=argparse.RawTextHelpFormatter)
@@ -95,7 +95,7 @@ def main():
     # query all IDs, gathering associations
     assocs = []
     for id in args.ids:
-        this_assocs = search_biogolr_wrap(id,
+        this_assocs = search_ontobio.golr_wrap(id,
                                           args.category,
                                           subject_taxon=args.species,
                                           rows=1000,
@@ -181,7 +181,7 @@ def show_graph(g, nodes, query_ids, args):
     logging.info("Writing subg from "+str(g))
     w.write(g, query_ids=query_ids, container_predicates=args.container_properties)
 
-def search_biogolr_wrap(id, category, **args):
+def search_ontobio.golr_wrap(id, category, **args):
     """
     performs searches in both directions
     """
