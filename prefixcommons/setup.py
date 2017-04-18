@@ -10,7 +10,7 @@ directory = os.path.dirname(os.path.abspath(__file__))
 init_path = os.path.join(directory, 'prefixcommons', '__init__.py')
 with open(init_path) as read_file:
     text = read_file.read()
-version = '0.1.2'
+version = '0.1.3'
 
 # long_description
 readme_path = os.path.join(directory, 'README.md')
