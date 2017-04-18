@@ -47,6 +47,9 @@ class AssociationSet():
         self.index()
         logging.info("Created {}".format(self))
 
+    def __str__(self):
+        return "AssocSet S->I: {}".format(len(self.subject_to_inferred_map.items()))
+
     def index(self):
         """
         Creates indexes based on inferred terms.
