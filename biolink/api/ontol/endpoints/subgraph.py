@@ -3,8 +3,8 @@ import logging
 from flask import request
 from flask_restplus import Resource
 from biolink.api.restplus import api
-from obographs.ontol_factory import OntologyFactory
-from obographs.graph_io import OboJsonGraphRenderer
+from ontobio.ontol_factory import OntologyFactory
+from ontobio.graph_io import OboJsonGraphRenderer
 import networkx as nx
 
 import pysolr

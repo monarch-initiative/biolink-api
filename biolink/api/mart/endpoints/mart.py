@@ -4,9 +4,9 @@ from flask import request
 from flask import abort
 from flask_restplus import Resource
 from biolink.api.restplus import api
-from biogolr.golr_associations import bulk_fetch
-from biogolr.golr_associations import search_associations
-from biogolr.golr_associations import MAX_ROWS
+from ontobio.golr.golr_associations import bulk_fetch
+from ontobio.golr.golr_associations import search_associations
+from ontobio.golr.golr_associations import MAX_ROWS
 from biolink.datamodel.serializers import compact_association_set
 
 # https://flask-limiter.readthedocs.io/en/stable/

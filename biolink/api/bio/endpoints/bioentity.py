@@ -5,7 +5,7 @@ from flask_restplus import Resource
 from biolink.datamodel.serializers import node, named_object, bio_object, association_results, association, publication, gene, substance, genotype, allele, search_result
 #import biolink.datamodel.serializers
 from biolink.api.restplus import api
-from biogolr.golr_associations import search_associations, search_associations_go, select_distinct_subjects
+from ontobio.golr.golr_associations import search_associations, search_associations_go, select_distinct_subjects
 from scigraph.scigraph_util import SciGraph
 from biowikidata.wd_sparql import doid_to_wikidata, resolve_to_wikidata, condition_to_drug
 

@@ -72,7 +72,7 @@ with app.app_context():
     print("FG={}".format(f.g.foo))
 
 # initial setup
-from obographs.ontol_factory import OntologyFactory
+from ontobio.ontol_factory import OntologyFactory
 factory = OntologyFactory()
 ont = factory.create()
     

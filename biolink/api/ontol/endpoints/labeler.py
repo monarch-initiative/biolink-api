@@ -4,7 +4,7 @@ from flask import request
 from flask_restplus import Resource
 from biolink.datamodel.serializers import association
 from biolink.api.restplus import api
-from obographs.sparql.sparql_ontol_utils import batch_fetch_labels
+from ontobio.sparql.sparql_ontol_utils import batch_fetch_labels
 import pysolr
 
 log = logging.getLogger(__name__)

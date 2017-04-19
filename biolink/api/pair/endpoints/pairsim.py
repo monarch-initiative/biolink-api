@@ -2,7 +2,7 @@ import logging
 
 from flask import request
 from flask_restplus import Resource
-from biogolr.golr_sim import subject_pair_simj
+from ontobio.golr.golr_sim import subject_pair_simj
 from biolink.api.restplus import api
 import pysolr
 
