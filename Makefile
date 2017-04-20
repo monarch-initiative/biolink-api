@@ -2,7 +2,7 @@ SERVER= https://api.monarchinitiative.org/api
 SERVER_DEV= http://localhost:5000/api
 SWAGGER= $(SERVER)/swagger.json
 
-test: behave-tests subpackage_tests
+test: behave-tests 
 
 behave-tests:
 	cd tests && behave
@@ -36,14 +36,3 @@ biomodel/obograph.py: ./biolink/datamodel/obograph_serializers.py
 EXAMPLE-QUERIES.md:
 	./util/behave-to-markdown.pl tests/*.feature > $@
 
-# DOCS
-# See https://github.com/pypa/virtualenv/issues/149
-pydoc-%:
-	python -m pydoc ontobio.ontol
-
-#PACKAGES = prefixcommons scigraph biogolr
-PACKAGES = ontobio prefixcommons
-subpackage_tests: $(patsubst %,test-%,$(PACKAGES))
-
-test-%:
-	pytest $*/tests/*.py
