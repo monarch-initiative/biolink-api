@@ -24,6 +24,32 @@ between these entities
       and the JSON should have some JSONPath "phenotype_associations[*].object.id" with "string" "MP:0008521"
       and the JSON should have some JSONPath "phenotype_associations[*].object.label" with "string" "abnormal Bowman membrane"
 
+## Homologs
+ Scenario: User fetches paralogs of SHH
+    Given a path "/bioentity/gene/NCBIGene:6469/homologs/?homology_type=P"
+     then the content should contain "DHH"
+    when the content is converted to JSON
+      then the JSON should have the top-level property "associations"
+      and the JSON should have some JSONPath "associations[*].object.id" with "string" "NCBIGene:50846"
+      and the JSON should have some JSONPath "associations[*].object.taxon.label" with "string" "Homo sapiens"
+
+ Scenario: User fetches homologs of SHH with taxon Homo sapiens
+    Given a path "/bioentity/gene/NCBIGene:6469/homologs/?homolog_taxon=NCBITaxon:9606"
+     then the content should contain "DHH"
+    when the content is converted to JSON
+      then the JSON should have the top-level property "associations"
+      and the JSON should have some JSONPath "associations[*].object.id" with "string" "NCBIGene:50846"
+      and the JSON should have some JSONPath "associations[*].object.taxon.label" with "string" "Homo sapiens"
+
+ Scenario: User fetches all homologs of SHH
+    Given a path "/bioentity/gene/NCBIGene:6469/homologs/"
+     then the content should contain "Shh"
+    when the content is converted to JSON
+      then the JSON should have the top-level property "associations"
+      and the JSON should have some JSONPath "associations[*].object.id" with "string" "MGI:98297"
+      and the JSON should have some JSONPath "associations[*].object.taxon.id" with "string" "NCBITaxon:10090"
+
+
 ### TODO ensure label populated in scigraph call
 
  Scenario: User fetches all information on the same mouse gene, using an ENSEMBL ID

@@ -8,6 +8,7 @@ from biolink.api.restplus import api
 from ontobio.golr.golr_associations import search_associations, search_associations_go, select_distinct_subjects
 from scigraph.scigraph_util import SciGraph
 from biowikidata.wd_sparql import doid_to_wikidata, resolve_to_wikidata, condition_to_drug
+from ontobio.vocabulary.relations import HomologyTypes
 
 import pysolr
 
@@ -28,7 +29,7 @@ core_parser.add_argument('evidence', help="""Object id, e.g. ECO:0000501 (for IE
 
 scigraph = SciGraph('https://scigraph-data.monarchinitiative.org/scigraph/')
 
-homol_rel = 'RO:0002434'  # TODO
+homol_rel = HomologyTypes.Homolog.value
 
 def get_object_gene(id, **args):
         obj = scigraph.bioobject(id, 'Gene')
@@ -102,9 +103,9 @@ class GeneInteractions(AbstractGeneAssociationResource):
         """
         return search_associations('gene', 'gene', 'RO:0002434', id, **core_parser.parse_args())
 
-homolog_parser = api.parser()
+homolog_parser = core_parser
 homolog_parser.add_argument('homolog_taxon', help='Taxon CURIE of homolog, e.g. NCBITaxon:9606. Can be intermediate note, includes inferred by default')
-homolog_parser.add_argument('type', choices=['P', 'O', 'LDO'], help='P, O or LDO (paralog, ortholog or least-diverged).')
+homolog_parser.add_argument('homology_type', choices=['P', 'O', 'LDO'], help='P, O or LDO (paralog, ortholog or least-diverged).')
 
 @ns.route('/gene/<id>/homologs/')
 class GeneHomologAssociations(AbstractGeneAssociationResource):
@@ -115,7 +116,12 @@ class GeneHomologAssociations(AbstractGeneAssociationResource):
         """
         Returns homologs for a gene
         """
-        return search_associations('gene', 'gene', homol_rel, id, **core_parser.parse_args())
+        homolog_args = homolog_parser.parse_args()
+        return search_associations(
+            subject_category='gene', object_category='gene',
+            relation=homol_rel, subject=id,
+            object_taxon=homolog_args.homolog_taxon,
+            **homolog_parser.parse_args())
     
 @ns.route('/gene/<id>/phenotypes/')
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:4750. Equivalent IDs can be used with same results'})
