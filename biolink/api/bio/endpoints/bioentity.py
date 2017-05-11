@@ -130,6 +130,7 @@ class GeneHomologAssociations(AbstractGeneAssociationResource):
 class GenePhenotypeAssociations(Resource):
 
     @api.expect(core_parser)
+    @api.marshal_with(association_results)
     def get(self, id):
         """
         Returns phenotypes associated with gene
@@ -146,6 +147,7 @@ class GenePhenotypeAssociations(Resource):
 class GeneDiseaseAssociations(Resource):
 
     @api.expect(core_parser)
+    @api.marshal_with(association_results)
     def get(self, id):
         """
         Returns diseases associated with gene
