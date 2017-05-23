@@ -18,6 +18,8 @@ from biomodel.core import NamedObject, BioObject, SynonymPropertyValue
 HAS_PART = 'http://purl.obolibrary.org/obo/BFO_0000051'
 INHERES_IN = 'http://purl.obolibrary.org/obo/RO_0000052'
 HAS_ROLE = 'http://purl.obolibrary.org/obo/RO_0000087'
+ENCODES = 'RO:0002205'
+HAS_DBXREF = 'OIO:hasDbXref'
 
 class SciGraph:
     """
@@ -135,7 +137,7 @@ class SciGraph:
         return g
     
     # TODO - direct SciGraph method?
-    def traverse_chain(self, id=None, rels=[], type=None):
+    def traverse_chain(self, id=None, rels=[], type=None, blank=True):
         """
         Finds all nodes reachable via a specified chain of relationship types
         """
@@ -155,13 +157,15 @@ class SciGraph:
             else:
                 nextrel = nextrels.pop()
                 nextg = self.neighbors(nextid,
-                                       blankNodes=True,
+                                       blankNodes=blank,
                                        relationshipType=nextrel,
                                        direction='OUTGOING',
                                        depth=1)
                 for n in nextg.nodes:
                     nmap[n.id] = n
                 for e in nextg.edges:
+                    if not blank and e.obj.startswith(":"):
+                        continue
                     stack.append( (e.obj, nextrels.copy()) )
                 
         sinknodes = [nmap[x] for x in sinks]
@@ -227,7 +231,16 @@ class SciGraph:
 
     ## Domain-specific methods
     ## Note some of these may be redundant with https://github.com/monarch-initiative/monarch-cypher-queries/tree/master/src/main/cypher/golr-loader
-    
+
+    def gene_to_uniprot_proteins(self, id):
+        """
+        Given a gene ID, find the list of uniprot proteins that this encodes
+
+        This method may be retired in future. See https://github.com/monarch-initiative/dipper/issues/461
+        """
+        objs = self.traverse_chain(id, [ENCODES, HAS_DBXREF], blank=False)
+        return [x.id for x in objs]
+
     def phenotype_to_entity_list(self, id):
         """
         Given a phenotype ID, find the list of affected entities

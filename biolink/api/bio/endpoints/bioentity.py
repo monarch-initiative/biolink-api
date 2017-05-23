@@ -191,9 +191,21 @@ class GeneFunctionAssociations(AbstractGeneAssociationResource):
          - Use UniProt for human (TODO: map this)
         """
 
-        return search_associations(
-            subject_category='gene', object_category='function',
+        assocs = search_associations(
+            object_category='function',
             subject=id, **core_parser.parse_args())
+        if len(assocs['associations']) == 0:
+            # Note that GO currently uses UniProt as primary ID for some sources: https://github.com/biolink/biolink-api/issues/66
+            # https://github.com/monarch-initiative/dipper/issues/461   
+            logging.debug("Found no associations using {} - will try mapping to other IDs".format(id))
+            sg_dev = SciGraph(url='https://scigraph-data-dev.monarchinitiative.org/scigraph/')
+            prots = sg_dev.gene_to_uniprot_proteins(id)
+            for prot in prots:
+                pr_assocs = search_associations(
+                        object_category='function',
+                        subject=prot, **core_parser.parse_args())
+                assocs['associations'] += pr_assocs['associations']
+        return assocs
     
 @ns.route('/gene/<id>/pubs/')
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:4750. Equivalent IDs can be used with same results'})
