@@ -183,17 +183,29 @@ class GeneFunctionAssociations(AbstractGeneAssociationResource):
         """
         Returns function associations for a gene.
 
-        Note: currently this is implemented as a query to the GO solr instance.
-        A smaller set of identifiers may be supported:
+        IMPLEMENTATION DETAILS
+        ----------------------
+
+        Note: currently this is implemented as a query to the GO/AmiGO solr instance.
+        This directly supports IDs such as:
 
          - ZFIN e.g. ZFIN:ZDB-GENE-050417-357
-         - MGI e.g. MGI:1342287
-         - Use UniProt for human (TODO: map this)
+
+        Note that the AmiGO GOlr natively stores MGI annotations to MGI:MGI:nn. However,
+        the standard for biolink is MGI:nnnn, so you should use this (will be transparently
+        mapped to legacy ID)
+
+        Additionally, for some species such as Human, GO has the annotation attached to the UniProt ID.
+        Again, this should be transparently handled; e.g. you can use NCBIGene:6469, and this will be
+        mapped behind the scenes for querying.
         """
 
         assocs = search_associations(
             object_category='function',
             subject=id, **core_parser.parse_args())
+
+        # If there are no associations for the given ID, try other IDs.
+        # Note the AmiGO instance does *not* support equivalent IDs
         if len(assocs['associations']) == 0:
             # Note that GO currently uses UniProt as primary ID for some sources: https://github.com/biolink/biolink-api/issues/66
             # https://github.com/monarch-initiative/dipper/issues/461   
