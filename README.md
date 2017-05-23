@@ -17,8 +17,9 @@ biomedically relevant entities, and the relationships between them, including:
  * phylogenies
  * metadata: publications, ontology terms, database metadata, prefixes
 
-This repository provides an example server for the biolink API. The
-swagger is also generated from this.
+This repository provides an example server for the biolink API. This
+can be customized for other sources; or an entirely new implementation
+conforming to the API can be created.
 
 ## Demo
 
@@ -29,6 +30,35 @@ The Monarch instance provides access to a wide variety of aggregated
 data:
 
 http://api.monarchinitiative.org/api/
+
+Note this instance also provides access to GO annotations.
+
+## Running the server
+
+After checking out this repo:
+
+```
+./start-server.sh
+```
+
+This uses gunicorn and starts a server on 8888 by default. pyvenv is
+activated automatically.
+
+Then look at:
+
+http://localhost:8888/api/
+
+For the swagger docs
+
+To run in development mode:
+
+```
+pyvenv venv
+source venv/bin/activate
+pip install -r requirements.txt
+export PYTHONPATH=.:$PYTHONPATH
+python biolink/app.py
+```
 
 ## Datamodel
 
@@ -49,57 +79,20 @@ See [EXAMPLE-QUERIES.md](EXAMPLE-QUERIES.md)
 
 These examples are compiled from the [behave tests](tests/)
 
-## Writing client code
-
-The API uses Swagger, which means you can take advantage of a variety of swagger tooling
-
-For example, to generate a python client:
-
-    swagger-codegen generate -i http://api.monarchinitiative.org/api/swagger.json -l $* -o $@
 
 # Contributing to BioLink-API
 
 This is the repo:
 
-https://github.com/monarch-initiative/biolink-api/
+https://github.com/biolink/biolink-api/
 
 You can run a server instance locally with very little effort (less
 than one minute), see below:
 
-## Setting up
+## Dependencies
 
-```
-pyvenv venv
-source venv/bin/activate
-pip install -r requirements.txt
-export PYTHONPATH=.:$PYTHONPATH
-python biolink/app.py
-```
-
-to run:
-
-```
-python biolink/app.py
-```
-
-Then look at:
-
-http://localhost:8888/api/
-
-For the swagger docs
-
-Note that only a small subset has been implemented
-
-## Organization
-
-This repo contains multiple sub-packages. These can all be used in
-python programs independent of biolink or a web service context.
-
- * [biolink](biolink) FlaskREST service implementation for BioLink API
- * [biomodel](biomodel) Data access objects
- * [biogolr](biogolr) Python API onto Monarch and GO golr instances
- * [scigraph](scigraph) Python API onto Monarch SciGraph instance
- * [prefixcommons](prefixcommons) Python code for working with ID prefixes
+This server implementation is primarily a flask-rest wrapper onto the
+[ontobio](https://github.com/biolink/ontobio) package.
 
 ## Goals
 
@@ -124,40 +117,4 @@ services, as shown here:
 
 ![img](docs/biolink-integrator-arch.png)
 
-This is only very partially integrated
-
-We have some business logic in the following sub-packages:
-
- * [scigraph](scigraph) - python API for Monarch Neo4J instance and generic SciGraph functions
- * [biogolr](biogolr) - python API for any golr instance (GO or Monarch)
- * [obographs](obographs) - python ontology object model and utilities. See [obographs](https://github.com/geneontology/obographs)
- * [causalmodels](causalmodels) - python API for LEGO, and wrapper to GO triplestore
- * [prefixcommons](prefixcommons) - python utilities for handling prefixes/CURIEs
-
-
-These may eventually migrate to their own repos, see #16
-
-### Solr indices
-
-Most of the `link` subset is implemented via the Monarch Golr, with
-function queries coming from the GO instance. See:
-
-https://github.com/monarch-initiative/biolink-api/issues/14
-
-### SciGraph
-
-Two different ways of accessing this are used:
-
- * Direct access via BOLT/Cypher
- * Access to SciGraph API layer
-
-### Triplestore
-
-The `lego` calls are imlemented as calls to the GO triplestore.
-
-### OwlSim
-
-http://owlsim3.monarchinitiative.org/api/docs/
-
-## Notes
 
