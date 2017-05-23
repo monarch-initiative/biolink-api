@@ -245,9 +245,4 @@ clinical_individual = api.inherit('ClinicalIndividual', named_object, {
 })
 
 
-# SEARCH
-
-search_result = api.inherit('SearchResult', named_object, {
-    'score': fields.Float(description='accuracy of match')
-})
 
