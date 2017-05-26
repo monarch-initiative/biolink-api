@@ -3,7 +3,7 @@ import logging
 from flask import request, send_file
 from flask_restplus import Resource
 from biolink.datamodel.serializers import association, bbop_graph
-from ontobio.golr.golr_associations import get_association
+from ontobio.golr.golr_associations import get_association, search_associations
 from biolink.api.restplus import api
 from ontobio.obograph_util import convert_json_object
 import tempfile
@@ -32,7 +32,11 @@ class AssociationObject(Resource):
         """
         args = parser.parse_args()
 
-        assoc = get_association(id)
+        ## TODO: restore this next release of OntoBio (0.2.3 or higher)
+        ## assoc = get_association(id)
+        
+        results = search_associations(fq={'id':id})
+        assoc = results['associations'][0]
         eg = assoc.get('evidence_graph')
         return [eg]
 
