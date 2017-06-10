@@ -11,7 +11,7 @@ import time
 def before_all(context):
     ## Determine the server target.
     ##context.target = 'http://api.monarchinitiative.org/api'
-    context.target = 'http://localhost:8888/api'
+    context.target = 'http://localhost:5000/api'
     context.content_type = None
     
 ## Do this after completing everything.
