@@ -1,5 +1,5 @@
 prefixcommons>=0.0
-ontobio==0.2.3
+ontobio==0.2.4
 pip>=9.0.1
 wheel>0.25.0
 flask-restplus>=0.10.1
