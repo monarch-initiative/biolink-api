@@ -71,7 +71,7 @@ class AssociationSearch(Resource):
         """
         args = parser.parse_args()
 
-        return search_associations(subject_category, object_category, **args)
+        return search_associations(subject_category=subject_category, object_category=object_category, **args)
 
     
     
