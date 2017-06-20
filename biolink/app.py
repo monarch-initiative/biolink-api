@@ -9,14 +9,16 @@ from biolink.api.bio.endpoints.bioentity import ns as bio_objects_namespace
 from biolink.api.link.endpoints.associations_from import ns as associations_from_namespace
 from biolink.api.link.endpoints.find_associations import ns as find_associations_namespace
 from biolink.api.search.endpoints.entitysearch import ns as entity_search_namespace
-from biolink.api.entityset.endpoints.summary import ns as entityset_summary_namespace
-from biolink.api.entityset.endpoints.slimmer import ns as entityset_slimmer_namespace
-from biolink.api.entityset.endpoints.geneset_homologs import ns as geneset_homologs_namespace
-from biolink.api.nlp.endpoints.annotate import ns as nlp_annotate_namespace
+
 from biolink.api.ontol.endpoints.subgraph import ns as ontol_subgraph_namespace
 from biolink.api.ontol.endpoints.termstats import ns as ontol_termstats_namespace
 from biolink.api.ontol.endpoints.labeler import ns as ontol_labeler
 #from biolink.api.ontol.endpoints.enrichment import ns as ontol_enrichment_namespace
+
+from biolink.api.entityset.endpoints.summary import ns as entityset_summary_namespace
+from biolink.api.entityset.endpoints.slimmer import ns as entityset_slimmer_namespace
+from biolink.api.entityset.endpoints.geneset_homologs import ns as geneset_homologs_namespace
+from biolink.api.nlp.endpoints.annotate import ns as nlp_annotate_namespace
 from biolink.api.graph.endpoints.node import ns as graph_node_namespace
 
 from biolink.api.mart.endpoints.mart import ns as mart_namespace
