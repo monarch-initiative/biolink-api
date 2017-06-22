@@ -1,4 +1,4 @@
-# Biolink API
+# BioLink API
 
 An API providing access to information on biologically and
 biomedically relevant entities, and the relationships between them, including:
