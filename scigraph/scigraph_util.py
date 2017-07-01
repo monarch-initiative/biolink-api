@@ -159,6 +159,9 @@ class SciGraph:
                 nextg = self.neighbors(nextid,
                                        blankNodes=blank,
                                        relationshipType=nextrel,
+                                       # works?
+                                       # See https://github.com/SciGraph/SciGraph/issues/135#issuecomment-305097228
+                                       entail=True,   
                                        direction='OUTGOING',
                                        depth=1)
                 for n in nextg.nodes:
@@ -239,6 +242,10 @@ class SciGraph:
         This method may be retired in future. See https://github.com/monarch-initiative/dipper/issues/461
         """
         objs = self.traverse_chain(id, [ENCODES, HAS_DBXREF], blank=False)
+
+        # This second step is expensive and will no longer be required when https://github.com/SciGraph/SciGraph/issues/135
+        # is implemented
+        objs += self.traverse_chain(id, ['equivalentClass', ENCODES, HAS_DBXREF], blank=False)
         return [x.id for x in objs]
 
     def phenotype_to_entity_list(self, id):
