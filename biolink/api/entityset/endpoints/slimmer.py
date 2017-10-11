@@ -39,7 +39,7 @@ class EntitySetSlimmer(Resource):
         assoc_count = 0
         for result in results:
             assoc_count += len(result['assocs'])
-        if assoc_count == 0 && len(subjects) == 1:
+        if assoc_count == 0 and len(subjects) == 1:
             # Note that GO currently uses UniProt as primary ID for some sources: https://github.com/biolink/biolink-api/issues/66
             # https://github.com/monarch-initiative/dipper/issues/461
             # nota bene:
