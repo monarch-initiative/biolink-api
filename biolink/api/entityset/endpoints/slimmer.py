@@ -32,6 +32,7 @@ class EntitySetSlimmer(Resource):
         del args['subject']
         results = map2slim(subjects=subjects,
                            slim=slim,
+                           rows=200,
                            object_category=category,
                            **args)
         # If there are no associations for the given ID, try other IDs.
@@ -50,6 +51,7 @@ class EntitySetSlimmer(Resource):
             if len(prots) > 0:
                 results = map2slim(subjects=prots,
                                    slim=slim,
+                                   rows=200,
                                    object_category=category,
                                    **args)
         return results
