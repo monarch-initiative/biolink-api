@@ -17,6 +17,7 @@ parser = api.parser()
 parser.add_argument('subject', help='SUBJECT id, e.g. NCBIGene:84570, ZFIN:ZDB-GENE-050417-357. Includes inferred by default')
 parser.add_argument('subject_taxon', help='SUBJECT TAXON id, e.g. NCBITaxon:9606. Includes inferred by default')
 parser.add_argument('object', help='OBJECT id, e.g. HP:0011927. Includes inferred by default')
+parser.add_argument('object_category', help='E.g. phenotype')
 #parser.add_argument('objects', append=True,help='list of OBJECT id, e.g. HP:0011927. Includes inferred by default')
 parser.add_argument('evidence', help="""Object id, e.g. ECO:0000501 (for IEA; Includes inferred by default)
                     or a specific publication or other supporting ibject, e.g. ZFIN:ZDB-PUB-060503-2.
