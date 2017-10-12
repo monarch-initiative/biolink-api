@@ -14,7 +14,6 @@ between these entities
       then the JSON should have the top-level property "id"
       and the JSON should have a JSONPath "homology_associations[*].object"
       and the JSON should have a JSONPath "homology_associations[*].object.id"
-      and the JSON should have some JSONPath "homology_associations[*].object.label" with "string" "col25a1"
 
  Scenario: User fetches all information on a mouse gene
     Given a path "/bioentity/gene/MGI:1342287"
@@ -42,7 +41,7 @@ between these entities
       and the JSON should have some JSONPath "associations[*].object.taxon.label" with "string" "Homo sapiens"
 
  Scenario: User fetches all homologs of SHH
-    Given a path "/bioentity/gene/NCBIGene:6469/homologs/"
+    Given a path "/bioentity/gene/NCBIGene:6469/homologs?rows=500"
      then the content should contain "Shh"
     when the content is converted to JSON
       then the JSON should have the top-level property "associations"
@@ -78,8 +77,8 @@ between these entities
       then the JSON should have some JSONPath "associations[*].slim[*]" with "string" "GO:0048731"
 
  Scenario: User fetches all interactions for a mouse gene
-    Given a path "/bioentity/gene/MGI:1342287/interactions"
-     then the content should contain "http://data.monarchinitiative.org/ttl/biogrid.ttl"
+    Given a path "/bioentity/gene/MGI:1342287/interactions?rows=500"
+     then the content should contain "https://data.monarchinitiative.org/ttl/biogrid.ttl"
     when the content is converted to JSON
       then the JSON should have some JSONPath "associations[*].object.id" with "string" "MGI:88039"
       and the JSON should have some JSONPath "associations[*].object.label" with "string" "Apc"

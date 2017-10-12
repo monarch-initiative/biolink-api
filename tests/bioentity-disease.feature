@@ -4,13 +4,12 @@ TODO - consider swapping subject/object
 
 ## Models
 
- Scenario: User queries for a specific form of Parkinson disease
-    Given a path "/bioentity/disease/OMIM:605543/models"
-     then the content should contain "Snca"
+ Scenario: User queries for a specific form of episodic ataxia disease
+    Given a path "/bioentity/disease/OMIM:160120/models"
+     then the content should contain "Kcna1"
       and the content should contain "Mus musculus"
-      and the content should contain "C57BL/6"
     when the content is converted to JSON
-      then the JSON should have some JSONPath "associations[*].subject.id" with "string" "MGI:5544308"
+      then the JSON should have some JSONPath "associations[*].subject.id" with "string" "MGI:2655686"
 
  Scenario: User queries for worm models of supranuclear palsy
     Given a path "/bioentity/disease/DOID:678/models/NCBITaxon:6237"
