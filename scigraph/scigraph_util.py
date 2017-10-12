@@ -137,14 +137,23 @@ class SciGraph:
         return g
     
     # TODO - direct SciGraph method?
-    def traverse_chain(self, id=None, rels=[], type=None, blank=True):
+    def traverse_chain(self, id=None, rels=[], type=None, blank=True, reverse_direction=False):
         """
         Finds all nodes reachable via a specified chain of relationship types
         """
 
+        # we pop parts of the chain from a stack, so the
+        # default direction is reversed, unless we
+        # want to follow in the opposite direction
         relsr = rels.copy()
-        relsr.reverse()
-        
+        if not reverse_direction:
+            relsr.reverse()
+
+
+        direction = 'OUTGOING'
+        if reverse:
+            direction = 'INCOMING'
+            
         # list of tuples
         stack = [ (id, relsr) ]
 
@@ -162,7 +171,7 @@ class SciGraph:
                                        # works?
                                        # See https://github.com/SciGraph/SciGraph/issues/135#issuecomment-305097228
                                        entail=True,   
-                                       direction='OUTGOING',
+                                       direction=direction,
                                        depth=1)
                 for n in nextg.nodes:
                     nmap[n.id] = n
@@ -235,19 +244,19 @@ class SciGraph:
     ## Domain-specific methods
     ## Note some of these may be redundant with https://github.com/monarch-initiative/monarch-cypher-queries/tree/master/src/main/cypher/golr-loader
 
-    def gene_to_uniprot_proteins(self, id):
+    def gene_to_uniprot_proteins(self, id, reverse_direction=False):
         """
         Given a gene ID, find the list of uniprot proteins that this encodes
 
         This method may be retired in future. See https://github.com/monarch-initiative/dipper/issues/461
         """
-        objs = self.traverse_chain(id, [ENCODES, HAS_DBXREF], blank=False)
+        objs = self.traverse_chain(id, [ENCODES, HAS_DBXREF], blank=False, reverse_direction=False)
 
         # This second step is expensive and will no longer be required when https://github.com/SciGraph/SciGraph/issues/135
         # is implemented
-        objs += self.traverse_chain(id, ['equivalentClass', ENCODES, HAS_DBXREF], blank=False)
+        objs += self.traverse_chain(id, ['equivalentClass', ENCODES, HAS_DBXREF], blank=False, reverse_direction=False)
         return [x.id for x in objs]
-
+    
     def phenotype_to_entity_list(self, id):
         """
         Given a phenotype ID, find the list of affected entities
