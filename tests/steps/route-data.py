@@ -7,7 +7,7 @@ from contextlib import closing
 import requests
 import json
 import jsonpath_rw
-
+import logging
 
 ###
 ### Helpers.
@@ -133,10 +133,48 @@ def step_impl(context, jsonpath, thing, value):
                 elif thing == "integer":
                     if res.value == int(value):
                         is_found = True
+                elif thing == "boolean":
+                    if res.value == bool(value):
+                        is_found = True
                 elif thing == "float":
                     if res.value == float(value):
                         is_found = True                        
                 else:
                     ## Not a thing we know how to deal with yet.
+                    logging.error("Cannot interpret: {}".format(thing))
                     assert True is False
             assert is_found is True
+
+@then('the JSON should have some JSONPath "{jsonpath}" containing "{thing}" "{value}"')
+def step_impl(context, jsonpath, thing, value):
+    if not context.content_json :
+        ## Apparently no JSON at all...
+        assert True is False
+    else:
+        jsonpath_expr = jsonpath_rw.parse(jsonpath)
+        results = jsonpath_expr.find(context.content_json)
+        if (len(results)) == 0:
+            assert True is False
+        else:
+            is_found = False
+            for res in results:
+                if res.value is None or res.value=='None':
+                    continue
+                if thing == "string":
+                    if str(value) in res.value:
+                        is_found = True
+                elif thing == "integer":
+                    if int(value) in res.value:
+                        is_found = True
+                elif thing == "boolean":
+                    if bool(value) in res.value:
+                        is_found = True
+                elif thing == "float":
+                    if float(value) in res.value:
+                        is_found = True                        
+                else:
+                    ## Not a thing we know how to deal with yet.
+                    logging.error("Cannot interpret: {}".format(thing))
+                    assert True is False
+            assert is_found is True
+            
