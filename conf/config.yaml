@@ -17,7 +17,7 @@ scigraph_ontology:
   url: "https://scigraph-ontology.monarchinitiative.org/scigraph/"
   timeout: 2
 scigraph_data:
-  url: "https://scigraph-ontology.monarchinitiative.org/scigraph/"
+  url: "https://scigraph-data.monarchinitiative.org/scigraph/"
   timeout: 2
 use_amigo_for:
   - function
@@ -25,4 +25,10 @@ ontologies:
   - id: magic1234
     handle: pato
     pre_load: true
+  - id: monarch
+    handle: ontologies/monarch.json
+    pre_load: false
+  - id: nucleus
+    handle: ontologies/nucleus.json
+    pre_load: false
 
