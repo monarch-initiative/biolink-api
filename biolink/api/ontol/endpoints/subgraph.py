@@ -4,7 +4,7 @@ from flask import request
 from flask_restplus import Resource
 from biolink.api.restplus import api
 from ontobio.ontol_factory import OntologyFactory
-from ontobio.graph_io import OboJsonGraphRenderer
+from ontobio.io.ontol_renderers import OboJsonGraphRenderer
 from ontobio.config import get_config
 import networkx as nx
 
