@@ -151,7 +151,7 @@ class SciGraph:
 
 
         direction = 'OUTGOING'
-        if reverse:
+        if reverse_direction:
             direction = 'INCOMING'
             
         # list of tuples
