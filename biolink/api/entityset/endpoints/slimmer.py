@@ -25,7 +25,6 @@ class EntitySetSlimmer(Resource):
         Summarize a set of objects
         """
         args = parser.parse_args()
-        logging.info("category is {}".format(category))
         slim = args.get('slim')
         del args['slim']
         subjects = args.get('subject')
@@ -33,6 +32,7 @@ class EntitySetSlimmer(Resource):
         results = map2slim(subjects=subjects,
                            slim=slim,
                            rows=200,
+                           exclude_automatic_assertions=True,
                            object_category=category,
                            **args)
         # If there are no associations for the given ID, try other IDs.
@@ -45,13 +45,24 @@ class EntitySetSlimmer(Resource):
             # https://github.com/monarch-initiative/dipper/issues/461
             # nota bene:
             # currently incomplete because code is not checking for the possibility of >1 subjects
-            logging.info("Found no associations using {} - will try mapping to other IDs".format(subjects[0]))
             sg_dev = SciGraph(url='https://scigraph-data-dev.monarchinitiative.org/scigraph/')
             prots = sg_dev.gene_to_uniprot_proteins(subjects[0])
             if len(prots) > 0:
                 results = map2slim(subjects=prots,
                                    slim=slim,
                                    rows=200,
+                                   exclude_automatic_assertions=True,
                                    object_category=category,
                                    **args)
+        for result in results:
+            for association in result['assocs']:
+                taxon = association['subject']['taxon']['id']
+                proteinId = association['subject']['id']
+                if taxon == 'NCBITaxon:9606' and proteinId.startswith('UniProtKB'):
+                    sg_dev = SciGraph(url='https://scigraph-data-dev.monarchinitiative.org/scigraph/')
+                    genes = sg_dev.uniprot_protein_to_genes(proteinId)
+                    for gene in genes:
+                        if gene.startswith('HGNC'):
+                            association['subject']['id'] = gene
+
         return results

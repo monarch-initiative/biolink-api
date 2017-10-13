@@ -85,7 +85,7 @@ class SciGraph:
                 t = self.make_NamedObject(**n)
         obj.taxon = t
         return obj
-        
+
     def graph(self, id=None, depth=0):
         """
         Extracts a subgraph around a given in
@@ -135,27 +135,25 @@ class SciGraph:
                     visited.append(next_id)
             g.merge(nextg)
         return g
-    
+
     # TODO - direct SciGraph method?
     def traverse_chain(self, id=None, rels=[], type=None, blank=True, reverse_direction=False):
         """
         Finds all nodes reachable via a specified chain of relationship types
         """
-
         # we pop parts of the chain from a stack, so the
         # default direction is reversed, unless we
         # want to follow in the opposite direction
-        relsr = rels.copy()
+        rels_ordered = rels.copy()
         if not reverse_direction:
-            relsr.reverse()
-
+            rels_ordered.reverse()
 
         direction = 'OUTGOING'
-        if reverse:
+        if reverse_direction:
             direction = 'INCOMING'
-            
+
         # list of tuples
-        stack = [ (id, relsr) ]
+        stack = [ (id, rels_ordered) ]
 
         nmap = {}
         sinks = []
@@ -165,12 +163,13 @@ class SciGraph:
                 sinks.append(nextid)
             else:
                 nextrel = nextrels.pop()
+
                 nextg = self.neighbors(nextid,
                                        blankNodes=blank,
                                        relationshipType=nextrel,
                                        # works?
                                        # See https://github.com/SciGraph/SciGraph/issues/135#issuecomment-305097228
-                                       entail=True,   
+                                       entail=True,
                                        direction=direction,
                                        depth=1)
                 for n in nextg.nodes:
@@ -179,13 +178,14 @@ class SciGraph:
                     if not blank and e.obj.startswith(":"):
                         continue
                     stack.append( (e.obj, nextrels.copy()) )
-                
+
         sinknodes = [nmap[x] for x in sinks]
         if type is not None:
             sinknodes = [x for x in sinknodes if type in x.meta.pmap['types']]
+
         return sinknodes
-            
-    
+
+
     def autocomplete(self, term=None):
         """
         Directly wraps SciGraph autocomplete
@@ -235,7 +235,7 @@ class SciGraph:
             'label':lbl,
             'categories':meta.get('category'),
             'xrefs':meta.get('http://www.geneontology.org/formats/oboInOwl#hasDbXref'),
-            
+
         }
         if 'synonym' in meta:
             obj['synonyms'] = [SynonymPropertyValue(pred='synonym', val=s) for s in meta['synonym']]
@@ -250,13 +250,63 @@ class SciGraph:
 
         This method may be retired in future. See https://github.com/monarch-initiative/dipper/issues/461
         """
+
         objs = self.traverse_chain(id, [ENCODES, HAS_DBXREF], blank=False, reverse_direction=False)
 
         # This second step is expensive and will no longer be required when https://github.com/SciGraph/SciGraph/issues/135
         # is implemented
         objs += self.traverse_chain(id, ['equivalentClass', ENCODES, HAS_DBXREF], blank=False, reverse_direction=False)
         return [x.id for x in objs]
-    
+
+    def uniprot_protein_to_genes(self, id):
+        """
+        Given a UniProt ID, find the list of genes encoding this protein
+
+        This method may be retired in future. See https://github.com/monarch-initiative/dipper/issues/461
+        """
+        blank = False
+
+        encoding_nodes = self.neighbors(id,
+                               blankNodes=blank,
+                               relationshipType=ENCODES,
+                               # works?
+                               # See https://github.com/SciGraph/SciGraph/issues/135#issuecomment-305097228
+                               entail=True,
+                               direction='INCOMING',
+                               depth=1)
+        encoding_genes = []
+        genes = []
+        for gene in encoding_nodes.nodes:
+            if gene.id != id:
+                encoding_genes.append(gene.id);
+                genes.append(gene.id)
+
+        for identifier in encoding_genes:
+            nodes = self.neighbors(identifier,
+                                   blankNodes=blank,
+                                   relationshipType=HAS_DBXREF,
+                                   # works?
+                                   # See https://github.com/SciGraph/SciGraph/issues/135#issuecomment-305097228
+                                   entail=True,
+                                   direction='OUTGOING',
+                                   depth=1)
+            for gene in nodes.nodes:
+                if gene.id not in genes:
+                    genes.append(gene.id)
+            nodes = self.neighbors(identifier,
+                                   blankNodes=blank,
+                                   relationshipType='equivalentClass',
+                                   # works?
+                                   # See https://github.com/SciGraph/SciGraph/issues/135#issuecomment-305097228
+                                   entail=True,
+                                   direction='OUTGOING',
+                                   depth=1)
+            for gene in nodes.nodes:
+                if gene.id not in genes:
+                    genes.append(gene.id)
+
+        return genes
+
     def phenotype_to_entity_list(self, id):
         """
         Given a phenotype ID, find the list of affected entities
@@ -285,7 +335,7 @@ class SciGraph:
         # TODO - include closure
         bbg = self.neighbors(id, direction='INCOMING', depth=1)
         return bbg_to_assocs(bbg)
-    
+
 
 def bbg_to_assocs(g):
     return [bbedge_to_assoc(e,g) for e in g.edges]
@@ -299,5 +349,3 @@ def bbedge_to_assoc(e,g):
                    'label': g.get_lbl(e.obj)
                     },
         }
-        
-    
