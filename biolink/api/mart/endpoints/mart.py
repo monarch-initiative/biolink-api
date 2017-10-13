@@ -44,8 +44,7 @@ class MartGeneAssociationsResource(Resource):
         """
         assocs = bulk_fetch(subject_category='gene',
                             object_category=object_category,
-                            taxon=taxon,
-                            iterate=True)
+                            taxon=taxon)
         return assocs
 
 @ns.route('/case/<object_category>/<taxon>')
