@@ -93,6 +93,5 @@ class MartDiseaseAssociationsResource(Resource):
 
         assocs = bulk_fetch(subject_category='disease',
                             object_category=object_category,
-                            taxon=taxon,
-                            iterate=True)
+                            taxon=taxon)
         return assocs
