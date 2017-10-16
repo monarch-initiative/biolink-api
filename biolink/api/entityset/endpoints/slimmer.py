@@ -46,8 +46,11 @@ class EntitySetSlimmer(Resource):
             # nota bene:
             # currently incomplete because code is not checking for the possibility of >1 subjects
             sg_dev = SciGraph(url='https://scigraph-data-dev.monarchinitiative.org/scigraph/')
-            useId = subjects[0].replace('WB', 'WormBase', 1);
-            prots = sg_dev.gene_to_uniprot_proteins(useId)
+            subjects[0] = subjects[0].replace('WB', 'WormBase', 1);
+            if (subjects[0].startswith('HGNC')):
+                prots = sg_dev.gene_to_uniprot_proteins(subjects[0])
+            else:
+                prots = subjects
             if len(prots) > 0:
                 results = map2slim(subjects=prots,
                                    slim=slim,
