@@ -244,7 +244,7 @@ class SciGraph:
     ## Domain-specific methods
     ## Note some of these may be redundant with https://github.com/monarch-initiative/monarch-cypher-queries/tree/master/src/main/cypher/golr-loader
 
-    def gene_to_uniprot_proteins(self, id, reverse_direction=False):
+    def gene_to_uniprot_proteins(self, id):
         """
         Given a gene ID, find the list of uniprot proteins that this encodes
 

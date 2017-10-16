@@ -119,18 +119,11 @@ class GeneHomologAssociations(AbstractGeneAssociationResource):
         Returns homologs for a gene
         """
         homolog_args = homolog_parser.parse_args()
-        logging.info("args are {}".format(homolog_args))
-        logging.info("id is {}".format(id))
-        if id.startswith("SGD"):
-            logging.info("it is yeast")
-            return {"hello": "world"}
-        ortho = search_associations(
+        return search_associations(
             subject_category='gene', object_category='gene',
             relation=homol_rel, subject=id,
             object_taxon=homolog_args.homolog_taxon,
             **homolog_parser.parse_args())
-        logging.info("search returned {}".format(ortho))
-        return ortho
 
 @ns.route('/gene/<id>/phenotypes/')
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:4750. Equivalent IDs can be used with same results'})
@@ -216,7 +209,6 @@ class GeneFunctionAssociations(AbstractGeneAssociationResource):
         if len(assocs['associations']) == 0:
             # Note that GO currently uses UniProt as primary ID for some sources: https://github.com/biolink/biolink-api/issues/66
             # https://github.com/monarch-initiative/dipper/issues/461
-            logging.debug("Found no associations using {} - will try mapping to other IDs".format(id))
             sg_dev = SciGraph(url='https://scigraph-data-dev.monarchinitiative.org/scigraph/')
             prots = sg_dev.gene_to_uniprot_proteins(id)
             for prot in prots:
