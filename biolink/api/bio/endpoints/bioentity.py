@@ -37,7 +37,7 @@ def get_object_gene(id, **args):
         obj.homology_associations = search_associations(subject=id, rel=homol_rel, object_category='gene', **args)['associations']
         obj.disease_associations = search_associations(subject=id, object_category='disease', **args)['associations']
         obj.genotype_associations = search_associations(subject=id, invert_subject_object=True, object_category='genotype', **args)['associations']
-        
+
         return(obj)
 
 def get_object_genotype(id, **args):
@@ -45,9 +45,9 @@ def get_object_genotype(id, **args):
         obj.phenotype_associations = search_associations(subject=id, object_category='phenotype', **args)['associations']
         obj.disease_associations = search_associations(subject=id, object_category='disease', **args)['associations']
         obj.gene_associations = search_associations(subject=id, object_category='gene', **args)['associations']
-        
+
         return(obj)
-    
+
 @ns.route('/<id>')
 @api.doc(params={'id': 'id, e.g. NCBIGene:84570'})
 class GenericObject(Resource):
@@ -71,7 +71,7 @@ class GenericAssociations(Resource):
         Returns associations for an entity regardless of the type
         """
         return search_associations(subject=id, **core_parser.parse_args())
-    
+
 @ns.route('/gene/<id>')
 @api.doc(params={'id': 'id, e.g. NCBIGene:84570'})
 class GeneObject(Resource):
@@ -91,7 +91,7 @@ class AbstractGeneAssociationResource(Resource):
     @api.marshal_with(association_results)
     def get(self, id):
         pass
-    
+
 @ns.route('/gene/<id>/interactions/')
 class GeneInteractions(AbstractGeneAssociationResource):
 
@@ -124,7 +124,7 @@ class GeneHomologAssociations(AbstractGeneAssociationResource):
             relation=homol_rel, subject=id,
             object_taxon=homolog_args.homolog_taxon,
             **homolog_parser.parse_args())
-    
+
 @ns.route('/gene/<id>/phenotypes/')
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:4750. Equivalent IDs can be used with same results'})
 class GenePhenotypeAssociations(Resource):
@@ -208,8 +208,7 @@ class GeneFunctionAssociations(AbstractGeneAssociationResource):
         # Note the AmiGO instance does *not* support equivalent IDs
         if len(assocs['associations']) == 0:
             # Note that GO currently uses UniProt as primary ID for some sources: https://github.com/biolink/biolink-api/issues/66
-            # https://github.com/monarch-initiative/dipper/issues/461   
-            logging.debug("Found no associations using {} - will try mapping to other IDs".format(id))
+            # https://github.com/monarch-initiative/dipper/issues/461
             sg_dev = SciGraph(url='https://scigraph-data-dev.monarchinitiative.org/scigraph/')
             prots = sg_dev.gene_to_uniprot_proteins(id)
             for prot in prots:
@@ -218,7 +217,7 @@ class GeneFunctionAssociations(AbstractGeneAssociationResource):
                         subject=prot, **core_parser.parse_args())
                 assocs['associations'] += pr_assocs['associations']
         return assocs
-    
+
 @ns.route('/gene/<id>/pubs/')
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:4750. Equivalent IDs can be used with same results'})
 class GenePublicationList(Resource):
@@ -235,7 +234,7 @@ class GenePublicationList(Resource):
         return search_associations(
             subject_category='gene', object_category='publication',
             subject=id, **core_parser.parse_args())
-    
+
 @ns.route('/geneproduct/<id>')
 class GeneproductObject(Resource):
 
@@ -246,7 +245,7 @@ class GeneproductObject(Resource):
         TODO Returns gene product object
         """
         return { 'foo' : 'bar' }
-    
+
 @ns.route('/disease/<id>')
 class DiseaseObject(Resource):
 
@@ -301,7 +300,7 @@ class DiseaseAnatomyAssociations(Resource):
         For cancer, this may include both site of original and end location.
         """
         return { 'foo' : 'bar' }
-    
+
 @ns.route('/disease/<id>/function/')
 class DiseaseFunctionAssociations(Resource):
 
@@ -389,7 +388,7 @@ class PhenotypeObject(Resource):
         TODO Returns phenotype class object
         """
         return { 'foo' : 'bar' }
-    
+
 @ns.route('/phenotype/<id>/anatomy/')
 class PhenotypeAnatomyAssociations(Resource):
 
@@ -401,7 +400,7 @@ class PhenotypeAnatomyAssociations(Resource):
 
         Example IDs:
 
-         * ZP:0004204 
+         * ZP:0004204
          * MP:0008521 abnormal Bowman membrane
 
         For example, *abnormal limb development* will map to *limb*
@@ -425,7 +424,7 @@ class PhenotypeFunctionAssociations(Resource):
         Results are typically represented as GO classes
         """
         return { 'foo' : 'bar' }
-    
+
 @ns.route('/phenotype/<id>/phenotype/')
 class PhenotypePhenotypeAssociations(Resource):
 
@@ -507,7 +506,7 @@ class GotermGeneAssociations(Resource):
         return search_associations(
             subject_category='gene', object_category='function',
             subject=id, invert_subject_object=True, **core_parser.parse_args())
-    
+
 @ns.route('/pathway/<id>')
 @api.doc(params={'id': 'CURIE any pathway element. May be a GO ID or a pathway database ID'})
 class PathwayObject(Resource):
@@ -519,7 +518,7 @@ class PathwayObject(Resource):
         TODO Returns pathway object
         """
         return { 'foo' : 'bar' }
-    
+
 @ns.route('/pathway/<id>/genes/')
 class PathwayGeneAssociations(Resource):
 
@@ -634,7 +633,7 @@ class AnatomyPhenotypeAssociations(Resource):
         TODO Returns associations between anatomical entity and phenotypes
         """
         return { 'foo' : 'bar' }
-    
+
 
 @ns.route('/environment/<id>')
 class EnvironmentObject(Resource):
@@ -648,7 +647,7 @@ class EnvironmentObject(Resource):
         TODO consider renaming exposure
         """
         return { 'foo' : 'bar' }
-    
+
 @ns.route('/environment/<id>/phenotypes/')
 class EnvironmentPhenotypeAssociations(Resource):
 
@@ -712,7 +711,7 @@ class SubstanceParticipantInAssociations(Resource):
          * substance elicits a response program/pathway
          * substance is transported by activity or pathway
 
-        For example, CHEBI:40036 (amitrole) 
+        For example, CHEBI:40036 (amitrole)
 
         """
         return scigraph.substance_participates_in_associations(id)
@@ -729,7 +728,7 @@ class SubstanceInteractions(Resource):
         Interactions can encompass drugs or environments
         """
         return { 'foo' : 'bar' }
-    
+
 @ns.route('/substance/<id>/substances/')
 class SubstanceRelationships(Resource):
 
@@ -742,7 +741,7 @@ class SubstanceRelationships(Resource):
         E.g. metabolite-of, tautomer-of, parent-of, ...
         """
         return { 'foo' : 'bar' }
-    
+
 @ns.route('/substance/<id>/exposures/')
 class SubstanceExposures(Resource):
 
@@ -755,7 +754,7 @@ class SubstanceExposures(Resource):
         E.g. between pesticide and occupational exposure class
         """
         return { 'foo' : 'bar' }
-    
+
 @ns.route('/substance/<id>/treats/')
 class DiseaseSubstanceAssociations(Resource):
 
@@ -769,7 +768,7 @@ class DiseaseSubstanceAssociations(Resource):
 
         """
         return condition_to_drug(id)
-    
+
 
 @ns.route('/genotype/<id>')
 @api.doc(params={'id': 'CURIE identifier of genotype, e.g. ZFIN:ZDB-FISH-150901-6607'})
@@ -839,7 +838,7 @@ class GenotypeDiseaseAssociations(Resource):
         return search_associations(
             subject_category='genotype', object_category='disease',
             subject=id, **core_parser.parse_args())
-    
+
 @ns.route('/genotype/<id>/genes/')
 @api.doc(params={'id': 'CURIE identifier of genotype, e.g. ZFIN:ZDB-FISH-150901-6607'})
 class GenotypeGeneAssociations(Resource):
@@ -873,7 +872,7 @@ class AlleleObject(Resource):
         TODO - should allele be subsumed into variant?
         """
         return { 'id' : 'foobar' }
-    
+
 
 @ns.route('/variant/<id>')
 @api.doc(params={'id': 'CURIE identifier of variant, e.g. ZFIN:ZDB-ALT-010427-8, ClinVarVariant:39783'})
@@ -918,7 +917,7 @@ class VariantPhenotypeAssociations(Resource):
         return search_associations(
             subject_category='variant', object_category='phenotypes',
             subject=id, **core_parser.parse_args())
-    
+
 @ns.route('/variant/<id>/genes/')
 @api.doc(params={'id': 'CURIE identifier of variant, e.g. ZFIN:ZDB-ALT-010427-8, ClinVarVariant:39783'})
 class VariantGeneAssociations(Resource):
@@ -934,7 +933,7 @@ class VariantGeneAssociations(Resource):
         return search_associations(
             subject_category='variant', object_category='gene',
             subject=id, **core_parser.parse_args())
-    
+
 @ns.route('/sequence_feature/<id>')
 class SequenceFeatureObject(Resource):
 
@@ -972,6 +971,3 @@ class ParentObject(Resource):
         Investigations encompass clinical trials, molecular biology experiments or any kind of study
         """
         return { 'foo' : 'bar' }
-    
-    
-
