@@ -44,8 +44,7 @@ class MartGeneAssociationsResource(Resource):
         """
         assocs = bulk_fetch(subject_category='gene',
                             object_category=object_category,
-                            taxon=taxon,
-                            iterate=True)
+                            taxon=taxon)
         return assocs
 
 @ns.route('/case/<object_category>/<taxon>')
@@ -69,8 +68,7 @@ class MartCaseAssociationsResource(Resource):
 
         assocs = bulk_fetch(subject_category='case',
                             object_category=object_category,
-                            taxon=taxon,
-                            iterate=True)
+                            taxon=taxon)
         return assocs
 
 @ns.route('/disease/<object_category>/<taxon>')
@@ -94,6 +92,5 @@ class MartDiseaseAssociationsResource(Resource):
 
         assocs = bulk_fetch(subject_category='disease',
                             object_category=object_category,
-                            taxon=taxon,
-                            iterate=True)
+                            taxon=taxon)
         return assocs
