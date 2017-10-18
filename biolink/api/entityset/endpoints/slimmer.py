@@ -29,35 +29,31 @@ class EntitySetSlimmer(Resource):
         del args['slim']
         subjects = args.get('subject')
         del args['subject']
-        results = map2slim(subjects=subjects,
-                           slim=slim,
-                           rows=200,
-                           exclude_automatic_assertions=True,
-                           object_category=category,
-                           **args)
-        # If there are no associations for the given ID, try other IDs.
-        # Note the AmiGO instance does *not* support equivalent IDs
-        assoc_count = 0
-        for result in results:
-            assoc_count += len(result['assocs'])
-        if assoc_count == 0 and len(subjects) == 1:
-            # Note that GO currently uses UniProt as primary ID for some sources: https://github.com/biolink/biolink-api/issues/66
-            # https://github.com/monarch-initiative/dipper/issues/461
-            # nota bene:
-            # currently incomplete because code is not checking for the possibility of >1 subjects
+        # Note that GO currently uses UniProt as primary ID for some sources: https://github.com/biolink/biolink-api/issues/66
+        # https://github.com/monarch-initiative/dipper/issues/461
+        # nota bene:
+        # currently incomplete because code is not checking for the possibility of >1 subjects
+        logging.info('slimming subject is {}'.format(subjects[0]))
+
+        subjects[0] = subjects[0].replace('WormBase:', 'WB:', 1)
+
+        if (subjects[0].startswith('HGNC') or subjects[0].startswith('NCBIGene') or subjects[0].startswith('ENSEMBL:')):
+            logging.info('swapping out {}'.format(subjects[0]))
             sg_dev = SciGraph(url='https://scigraph-data-dev.monarchinitiative.org/scigraph/')
-            subjects[0] = subjects[0].replace('WB', 'WormBase', 1);
-            if (subjects[0].startswith('HGNC') or subjects[0].startswith('NCBIGene')):
-                prots = sg_dev.gene_to_uniprot_proteins(subjects[0])
-            else:
+            prots = sg_dev.gene_to_uniprot_proteins(subjects[0])
+            if len(prots) == 0:
                 prots = subjects
-            if len(prots) > 0:
-                results = map2slim(subjects=prots,
-                                   slim=slim,
-                                   rows=200,
-                                   exclude_automatic_assertions=True,
-                                   object_category=category,
-                                   **args)
+        else:
+            prots = subjects
+
+        logging.info('Looking for GO annotations to {}'.format(prots))
+            results = map2slim(subjects=prots,
+                               slim=slim,
+                               rows=200,
+                               exclude_automatic_assertions=True,
+                               object_category=category,
+                               **args)
+        # To the fullest extent possible return HGNC ids
         for result in results:
             for association in result['assocs']:
                 taxon = association['subject']['taxon']['id']
