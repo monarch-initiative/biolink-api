@@ -47,7 +47,7 @@ class EntitySetSlimmer(Resource):
             # currently incomplete because code is not checking for the possibility of >1 subjects
             sg_dev = SciGraph(url='https://scigraph-data-dev.monarchinitiative.org/scigraph/')
             subjects[0] = subjects[0].replace('WB', 'WormBase', 1);
-            if (subjects[0].startswith('HGNC')):
+            if (subjects[0].startswith('HGNC') or subjects[0].startswith('NCBIGene')):
                 prots = sg_dev.gene_to_uniprot_proteins(subjects[0])
             else:
                 prots = subjects
