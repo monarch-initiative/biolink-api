@@ -118,12 +118,30 @@ class GeneHomologAssociations(AbstractGeneAssociationResource):
         """
         Returns homologs for a gene
         """
+        """
+        Horrible hacks
+        """
+        id = id.replace('WB:', 'WormBase:', 1)
+        id = id.replace('WormBaseGene', 'WBGene', 1)
+
+        logging.info("looking for homologs to {}".format(id))
+
         homolog_args = homolog_parser.parse_args()
-        return search_associations(
+        results = search_associations(
             subject_category='gene', object_category='gene',
             relation=homol_rel, subject=id,
             object_taxon=homolog_args.homolog_taxon,
             **homolog_parser.parse_args())
+
+        for result in results:
+            if result == 'associations':
+                for association in results[result]:
+                    label = association['object']['id']
+                    taxon = association['object']['taxon']['id']
+                    if label.startswith('ENSEMBL:') and (taxon == 'NCBITaxon:9606' or taxon == 'NCBITaxon:10090' or taxon == 'NCBITaxon:10116' or taxon == 'NCBITaxon:7955' or taxon == 'NCBITaxon:7227' or taxon == 'NCBITaxon:6239' or taxon == 'NCBITaxon:4932' or taxon == 'NCBITaxon:559292'):
+                        logging.info('skipping homolog to {}'.format(label))
+                        association['object']['taxon']['id'] = 'repeat'
+        return results
 
 @ns.route('/gene/<id>/phenotypes/')
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:4750. Equivalent IDs can be used with same results'})
