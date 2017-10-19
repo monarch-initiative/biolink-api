@@ -47,12 +47,12 @@ class EntitySetSlimmer(Resource):
             prots = subjects
 
         logging.info('Looking for GO annotations to {}'.format(prots))
-            results = map2slim(subjects=prots,
-                               slim=slim,
-                               rows=200,
-                               exclude_automatic_assertions=True,
-                               object_category=category,
-                               **args)
+        results = map2slim(subjects=prots,
+                           slim=slim,
+                           rows=200,
+                           exclude_automatic_assertions=True,
+                           object_category=category,
+                           **args)
         # To the fullest extent possible return HGNC ids
         for result in results:
             for association in result['assocs']:
