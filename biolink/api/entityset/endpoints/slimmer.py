@@ -33,12 +33,10 @@ class EntitySetSlimmer(Resource):
         # https://github.com/monarch-initiative/dipper/issues/461
         # nota bene:
         # currently incomplete because code is not checking for the possibility of >1 subjects
-        logging.info('slimming subject is {}'.format(subjects[0]))
 
         subjects[0] = subjects[0].replace('WormBase:', 'WB:', 1)
 
         if (subjects[0].startswith('HGNC') or subjects[0].startswith('NCBIGene') or subjects[0].startswith('ENSEMBL:')):
-            logging.info('swapping out {}'.format(subjects[0]))
             sg_dev = SciGraph(url='https://scigraph-data-dev.monarchinitiative.org/scigraph/')
             prots = sg_dev.gene_to_uniprot_proteins(subjects[0])
             if len(prots) == 0:
@@ -46,7 +44,6 @@ class EntitySetSlimmer(Resource):
         else:
             prots = subjects
 
-        logging.info('Looking for GO annotations to {}'.format(prots))
         results = map2slim(subjects=prots,
                            slim=slim,
                            rows=200,
@@ -54,15 +51,19 @@ class EntitySetSlimmer(Resource):
                            object_category=category,
                            **args)
         # To the fullest extent possible return HGNC ids
+        checked = {}
         for result in results:
             for association in result['assocs']:
                 taxon = association['subject']['taxon']['id']
                 proteinId = association['subject']['id']
-                if taxon == 'NCBITaxon:9606' and proteinId.startswith('UniProtKB'):
-                    sg_dev = SciGraph(url='https://scigraph-data-dev.monarchinitiative.org/scigraph/')
-                    genes = sg_dev.uniprot_protein_to_genes(proteinId)
-                    for gene in genes:
-                        if gene.startswith('HGNC'):
-                            association['subject']['id'] = gene
-
+                if taxon == 'NCBITaxon:9606' and proteinId.startswith('UniProtKB:'):
+                    if checked.get(proteinId) == None:
+                        sg_dev = SciGraph(url='https://scigraph-data-dev.monarchinitiative.org/scigraph/')
+                        genes = sg_dev.uniprot_protein_to_genes(proteinId)
+                        for gene in genes:
+                            if gene.startswith('HGNC'):
+                                association['subject']['id'] = gene
+                                checked[proteinId] = gene
+                    else:
+                        association['subject']['id'] = checked[proteinId]
         return results
