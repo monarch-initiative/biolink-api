@@ -163,7 +163,6 @@ class SciGraph:
                 sinks.append(nextid)
             else:
                 nextrel = nextrels.pop()
-
                 nextg = self.neighbors(nextid,
                                        blankNodes=blank,
                                        relationshipType=nextrel,
@@ -250,13 +249,19 @@ class SciGraph:
 
         This method may be retired in future. See https://github.com/monarch-initiative/dipper/issues/461
         """
-
+        uniprot_ids = []
         objs = self.traverse_chain(id, [ENCODES, HAS_DBXREF], blank=False, reverse_direction=False)
-
+        for x in objs:
+            if x.id.startswith('UniProtKB') and x.id not in uniprot_ids:
+                uniprot_ids.append(x.id)
         # This second step is expensive and will no longer be required when https://github.com/SciGraph/SciGraph/issues/135
         # is implemented
-        objs += self.traverse_chain(id, ['equivalentClass', ENCODES, HAS_DBXREF], blank=False, reverse_direction=False)
-        return [x.id for x in objs]
+        if len(uniprot_ids) == 0:
+            objs = self.traverse_chain(id, ['equivalentClass', ENCODES, HAS_DBXREF], blank=False, reverse_direction=False)
+            for x in objs:
+                if x.id.startswith('UniProtKB') and x.id not in uniprot_ids:
+                    uniprot_ids.append(x.id)
+        return uniprot_ids
 
     def uniprot_protein_to_genes(self, id):
         """
@@ -264,48 +269,35 @@ class SciGraph:
 
         This method may be retired in future. See https://github.com/monarch-initiative/dipper/issues/461
         """
-        blank = False
-
         encoding_nodes = self.neighbors(id,
-                               blankNodes=blank,
+                               blankNodes=False,
                                relationshipType=ENCODES,
                                # works?
                                # See https://github.com/SciGraph/SciGraph/issues/135#issuecomment-305097228
                                entail=True,
                                direction='INCOMING',
                                depth=1)
-        encoding_genes = []
         genes = []
-        for gene in encoding_nodes.nodes:
-            if gene.id != id:
-                encoding_genes.append(gene.id);
-                genes.append(gene.id)
+        for x in encoding_nodes.edges:
+            genes.append(x.sub)
 
-        for identifier in encoding_genes:
-            nodes = self.neighbors(identifier,
-                                   blankNodes=blank,
-                                   relationshipType=HAS_DBXREF,
-                                   # works?
-                                   # See https://github.com/SciGraph/SciGraph/issues/135#issuecomment-305097228
-                                   entail=True,
-                                   direction='OUTGOING',
-                                   depth=1)
-            for gene in nodes.nodes:
-                if gene.id not in genes:
-                    genes.append(gene.id)
-            nodes = self.neighbors(identifier,
-                                   blankNodes=blank,
+        # This second step is expensive and will no longer be required when https://github.com/SciGraph/SciGraph/issues/135
+        # is implemented
+        gene_ids = []
+        for geneId in genes:
+            encoding_nodes = self.neighbors(geneId,
+                                   blankNodes=False,
                                    relationshipType='equivalentClass',
                                    # works?
                                    # See https://github.com/SciGraph/SciGraph/issues/135#issuecomment-305097228
                                    entail=True,
-                                   direction='OUTGOING',
+                                   direction='BOTH',
                                    depth=1)
-            for gene in nodes.nodes:
-                if gene.id not in genes:
-                    genes.append(gene.id)
+            for x in encoding_nodes.edges:
+                if x.sub not in gene_ids:
+                    gene_ids.append(x.sub)
 
-        return genes
+        return gene_ids
 
     def phenotype_to_entity_list(self, id):
         """
