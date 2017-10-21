@@ -127,20 +127,29 @@ class GeneHomologAssociations(AbstractGeneAssociationResource):
         logging.info("looking for homologs to {}".format(id))
 
         homolog_args = homolog_parser.parse_args()
-        results = search_associations(
+        unfiltered_results = search_associations(
             subject_category='gene', object_category='gene',
             relation=homol_rel, subject=id,
             object_taxon=homolog_args.homolog_taxon,
             **homolog_parser.parse_args())
 
-        for result in results:
+        results = {'associations':[]}
+        for result in unfiltered_results:
             if result == 'associations':
-                for association in results[result]:
-                    label = association['object']['id']
-                    taxon = association['object']['taxon']['id']
-                    if label.startswith('ENSEMBL:') and (taxon == 'NCBITaxon:9606' or taxon == 'NCBITaxon:10090' or taxon == 'NCBITaxon:10116' or taxon == 'NCBITaxon:7955' or taxon == 'NCBITaxon:7227' or taxon == 'NCBITaxon:6239' or taxon == 'NCBITaxon:4932' or taxon == 'NCBITaxon:559292'):
-                        logging.info('skipping homolog to {}'.format(label))
-                        association['object']['taxon']['id'] = 'repeat'
+                for association in unfiltered_results[result]:
+                    if 'provided_by' in association and 'panther' in association['provided_by'][0]:
+                        if 'object' in association and 'taxon' in association['object'] and 'id' in association['object']['taxon']:
+                            label = association['object']['id']
+                            taxon = association['object']['taxon']['id']
+                            if label.startswith('ENSEMBL:') and (taxon == 'NCBITaxon:9606' or taxon == 'NCBITaxon:10090' or taxon == 'NCBITaxon:10116' or taxon == 'NCBITaxon:7955' or taxon == 'NCBITaxon:7227' or taxon == 'NCBITaxon:6239' or taxon == 'NCBITaxon:4932' or taxon == 'NCBITaxon:559292'):
+                                logging.info('skipping homolog to {}'.format(label))
+                            else:
+                                # hooray, keep this
+                                results['associations'].append(association)
+                        else:
+                            logging.error('Missing taxon key in association {}'.format(association))
+                    else:
+                        logging.info('Ignore non-panther homology provided by {}'.format(association['provided_by'][0]))
         return results
 
 @ns.route('/gene/<id>/phenotypes/')
