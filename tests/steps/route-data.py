@@ -29,7 +29,7 @@ def get_and_process(context, url):
             context.content = resp.text
             context.content_json = resp.json()
 
-            
+
 
 ###
 ### Definitions.
@@ -93,6 +93,41 @@ def step_impl(context, jsonpath):
         #print(res)
         assert res
 
+@then('the JSON should have some JSONPath "{jsonpath}" of type "{thing}"')
+def step_impl(context, jsonpath, thing):
+    if not context.content_json :
+        ## Apparently no JSON at all...
+        assert True is False
+    else:
+        jsonpath_expr = jsonpath_rw.parse(jsonpath)
+        results = jsonpath_expr.find(context.content_json)
+        if (len(results)) == 0:
+            assert True is False
+        else:
+            is_found = False
+            for res in results:
+                if type(thing) == str and thing == "string":
+                    is_found = True
+                elif type(thing) == int and thing == "number":
+                    is_found = True
+                elif type(thing) == float and thing == "number":
+                    is_found = True
+                elif type(thing) == True and thing == "boolean":
+                    is_found = True
+                elif type(thing) == False and thing == "boolean":
+                    is_found = True
+                elif type(thing) == dict and thing == "object":
+                    is_found = True
+                elif type(thing) == list and thing == "array":
+                    is_found = True
+                elif thing is None and thing == "null":
+                    is_found = True
+                else:
+                    ## Not a thing we know how to deal with yet.
+                    logging.error("Cannot interpret: {}".format(thing))
+                    assert True is False
+            assert is_found is True
+
 @then('the JSON should have JSONPath "{jsonpath}" equal to "{thing}" "{value}"')
 def step_impl(context, jsonpath, thing, value):
     if not context.content_json :
@@ -138,7 +173,7 @@ def step_impl(context, jsonpath, thing, value):
                         is_found = True
                 elif thing == "float":
                     if res.value == float(value):
-                        is_found = True                        
+                        is_found = True
                 else:
                     ## Not a thing we know how to deal with yet.
                     logging.error("Cannot interpret: {}".format(thing))
@@ -171,10 +206,9 @@ def step_impl(context, jsonpath, thing, value):
                         is_found = True
                 elif thing == "float":
                     if float(value) in res.value:
-                        is_found = True                        
+                        is_found = True
                 else:
                     ## Not a thing we know how to deal with yet.
                     logging.error("Cannot interpret: {}".format(thing))
                     assert True is False
             assert is_found is True
-            
