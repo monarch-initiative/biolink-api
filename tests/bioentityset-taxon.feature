@@ -6,6 +6,8 @@ Feature: homologous set of bioentities returned for a given gene all have a vali
     when the content is converted to JSON
       then the JSON should have some JSONPath "associations[*].object.taxon.id" of type "string"
       and the JSON should have some JSONPath "associations[*].object.taxon.label" of type "string"
+      and the gene "associations[*].object" homolog ID should be the authoritative source for taxon
+
     Examples: human genes
       | hgncID  |
       | HGNC:100 |
