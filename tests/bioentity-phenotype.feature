@@ -5,8 +5,13 @@ TODO
 ## Phenotypes
 
  Scenario: User queries for mouse genes with abnormal Bowman membrane phenotype
-    Given a path "/bioentity/phenotype/MP:0008521"
-     then the content should contain "foo"
+    Given a path "/bioentity/phenotype/MP:0008521/genes"
+     then the content should contain "Klf4"
+
+ Scenario: User queries for MP:0000087
+    Given a path "/bioentity/phenotype/MP:0000087"
+     then the content should contain "lower jaw"
+      and the content should contain "mandible"
 
 ### Phenotype connections
 

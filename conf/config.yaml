@@ -22,9 +22,6 @@ scigraph_data:
 use_amigo_for:
   - function
 ontologies:
-  - id: magic1234
-    handle: pato
-    pre_load: true
   - id: monarch
     handle: ontologies/monarch.json
     pre_load: false
