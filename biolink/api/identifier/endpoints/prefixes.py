@@ -8,7 +8,7 @@ import pysolr
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('identifier/prefixes', description='identifier prefixies')
+ns = api.namespace('identifier/prefixes', description='identifier prefixes')
 
 parser = api.parser()
 
