@@ -76,7 +76,7 @@ with app.app_context():
 # initial setup
 from ontobio.ontol_factory import OntologyFactory
 factory = OntologyFactory()
-ont = factory.create()
+#ont = factory.create()
     
 
 @app.route("/")
