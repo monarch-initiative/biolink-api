@@ -29,7 +29,7 @@ def get_and_process(context, url):
             context.content = resp.text
             context.content_json = resp.json()
 
-            
+
 
 ###
 ### Definitions.
@@ -93,6 +93,75 @@ def step_impl(context, jsonpath):
         #print(res)
         assert res
 
+@then('the JSON should have some JSONPath "{jsonpath}" of type "{thing}"')
+def step_impl(context, jsonpath, thing):
+    if not context.content_json :
+        ## Apparently no JSON at all...
+        assert True is False
+    else:
+        jsonpath_expr = jsonpath_rw.parse(jsonpath)
+        results = jsonpath_expr.find(context.content_json)
+        if (len(results)) == 0:
+            assert True is False
+        else:
+            is_found = False
+            for res in results:
+                if type(res.value) == str and thing == "string":
+                    is_found = True
+                elif type(res.value) == int and thing == "number":
+                    is_found = True
+                elif type(res.value) == float and thing == "number":
+                    is_found = True
+                elif type(res.value) == True and thing == "boolean":
+                    is_found = True
+                elif type(res.value) == False and thing == "boolean":
+                    is_found = True
+                elif type(res.value) == dict and thing == "object":
+                    is_found = True
+                elif type(res.value) == list and thing == "array":
+                    is_found = True
+                elif res.value is None and thing == "null":
+                    is_found = True
+                else:
+                    ## Not a thing we know how to deal with yet.
+                    logging.error("Cannot interpret value: {}".format(res.value))
+                    assert True is False
+            assert is_found is True
+
+@then('the gene "{jsonpath}" homolog ID should be the authoritative source for taxon')
+def step_impl(context, jsonpath):
+        if not context.content_json:
+            ## Apparently no JSON at all...
+            assert True is False
+        else:
+            json_expr = jsonpath_rw.parse(jsonpath)
+            results = json_expr.find(context.content_json)
+            if (len(results)) == 0:
+                assert True is False
+            else:
+                is_okay = True
+                for res in results:
+                    print(str(res.value))
+                    geneID = res.value['id']
+                    taxon = res.value['taxon']['id']
+                    print(geneID)
+                    print(taxon)
+                    if taxon == 'NCBITaxon:9606' and not geneID.startswith('HGNC'):
+                        is_okay = False
+                    elif taxon == 'NCBITaxon:10090' and not geneID.startswith('MGI'):
+                        is_okay = False
+                    elif taxon == 'NCBITaxon:10116' and not geneID.startswith('RGD'):
+                        is_okay = False
+                    elif taxon == 'NCBITaxon:7955' and not geneID.startswith('ZFIN'):
+                        is_okay = False
+                    elif taxon == 'NCBITaxon:7227' and not (geneID.startswith('FlyBase') or geneID.startswith('FB')):
+                        is_okay = False
+                    elif taxon == 'NCBITaxon:6239' and not (geneID.startswith('WormBase') or geneID.startswith('WB')):
+                        is_okay = False
+                    elif (taxon == 'NCBITaxon:4932' or taxon == 'NCBITaxon:559292') and not geneID.startswith('SGD'):
+                        is_okay = False
+                assert is_okay is True
+
 @then('the JSON should have JSONPath "{jsonpath}" equal to "{thing}" "{value}"')
 def step_impl(context, jsonpath, thing, value):
     if not context.content_json :
@@ -138,7 +207,7 @@ def step_impl(context, jsonpath, thing, value):
                         is_found = True
                 elif thing == "float":
                     if res.value == float(value):
-                        is_found = True                        
+                        is_found = True
                 else:
                     ## Not a thing we know how to deal with yet.
                     logging.error("Cannot interpret: {}".format(thing))
@@ -171,10 +240,9 @@ def step_impl(context, jsonpath, thing, value):
                         is_found = True
                 elif thing == "float":
                     if float(value) in res.value:
-                        is_found = True                        
+                        is_found = True
                 else:
                     ## Not a thing we know how to deal with yet.
                     logging.error("Cannot interpret: {}".format(thing))
                     assert True is False
             assert is_found is True
-            
