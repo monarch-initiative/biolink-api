@@ -18,6 +18,7 @@ from biolink.api.ontol.endpoints.labeler import ns as ontol_labeler
 from biolink.api.entityset.endpoints.summary import ns as entityset_summary_namespace
 from biolink.api.entityset.endpoints.slimmer import ns as entityset_slimmer_namespace
 from biolink.api.entityset.endpoints.geneset_homologs import ns as geneset_homologs_namespace
+from biolink.api.entityset.endpoints.overrepresentation import ns as overrepresentation
 from biolink.api.nlp.endpoints.annotate import ns as nlp_annotate_namespace
 from biolink.api.graph.endpoints.node import ns as graph_node_namespace
 

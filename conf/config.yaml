@@ -22,10 +22,10 @@ scigraph_data:
 use_amigo_for:
   - function
 ontologies:
-  - id: monarch
-    handle: ontologies/monarch.json
-    pre_load: false
-  - id: nucleus
-    handle: ontologies/nucleus.json
-    pre_load: false
+  - id: go
+    handle: go
+    pre_load: true
+  - id: hp
+    handle: hp
+    pre_load: true
 

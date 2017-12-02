@@ -95,19 +95,6 @@ class EntitySetAssociations(Resource):
 #        return results
     
 
-@ns.route('/ora/')
-@ns.route('/ora/<object_category>/')
-@api.doc(params={'object_category': 'CATEGORY of entity at link OBJECT (target), e.g. phenotype, disease'})
-class EntitySetOverRepresentationAnalysis(Resource):
-
-    @api.expect(parser)
-    def get(self, object_category=None):
-        """
-        TODO Over-representation analysis
-        """
-        args = parser.parse_args()
-
-        return "TODO"    
     
 @ns.route('/graph/')
 class EntitySetGraphResource(Resource):
