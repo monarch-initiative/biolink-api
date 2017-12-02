@@ -16,13 +16,15 @@ log = logging.getLogger(__name__)
 omap = {}
 
 def get_ontology(id):
-    handle = None 
+    handle = id 
     for c in get_config().ontologies:
         print("ONT={}".format(c))
         # temporary. TODO fix
         if not isinstance(c,dict):
             if c.id == id:
                 handle = c.handle
+                print("Using handle={} for {}".format(handle, id))
+
                 
     if handle not in omap:
         omap[handle] = OntologyFactory().create(handle)
@@ -35,7 +37,8 @@ parser = api.parser()
 parser.add_argument('subject', action='append', help='Entity ids to be examined, e.g. NCBIGene:9342, NCBIGene:7227, NCBIGene:8131, NCBIGene:157570, NCBIGene:51164, NCBIGene:6689, NCBIGene:6387')
 parser.add_argument('background', action='append', help='Entity ids in background set, e.g. NCBIGene:84570, NCBIGene:3630; used in over-representation tests')
 parser.add_argument('object_category', help='E.g. phenotype, function')
-parser.add_argument('object_slim', help='Slim or subset to which the descriptors are to be mapped, NOT IMPLEMENTED')
+parser.add_argument('subject_category', default='gene', help='Default: gene. Other types may be used e.g. disease but statistics may not make sense')
+parser.add_argument('max_p_value', default='0.05', help='Exclude results with p-value greater than this')
 parser.add_argument('ontology', help='ontology id. Must be obo id. Examples: go, mp, hp, uberon (optional: will be inferred if left blank)')
 parser.add_argument('taxon', help='must be NCBITaxon CURIE. Example: NCBITaxon:9606')
 
@@ -61,14 +64,17 @@ class OverRepresentation(Resource):
             if ocat == 'phenotype':
                 # TODO: other phenotype ontologies
                 ontid = 'hp'
+
+        print("Loading: {}".format(ontid))
         ont = get_ontology(ontid)
         taxid = args.get('taxon')
+        max_p_value = float(args.max_p_value)
         
         subjects = args.get('subject')
         background = args.get('background')
         afactory = AssociationSetFactory()
         aset = afactory.create(ontology=ont, subject_category='gene', object_category=ocat, taxon=taxid)
-        enr = aset.enrichment_test(subjects=subjects, threshold=0.05, labels=True)
+        enr = aset.enrichment_test(subjects=subjects, threshold=max_p_value, labels=True)
         return {'results':enr}
 
     
