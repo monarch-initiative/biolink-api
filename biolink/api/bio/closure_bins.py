@@ -56,7 +56,7 @@ closure_map = {
     'MP:0010771' : 'integument'
 }
 
-def create_closure_bin(fcmap):
+def create_closure_bin(fcmap={}):
     """
     Given a facet count dict from golr_query (i.e. map of class ID to count)
     return a new dict that maps original IDs to high level text descriptors.
@@ -65,6 +65,8 @@ def create_closure_bin(fcmap):
     i.e. grouping terms already included, and if not included assume = 0
     """
     lmap = {}
+    for v in closure_map.values():
+        lmap[v] = 0
     for k,v in fcmap.items():
         if k in closure_map:
             label = closure_map[k]
