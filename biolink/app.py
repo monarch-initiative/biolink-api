@@ -22,6 +22,8 @@ from biolink.api.entityset.endpoints.overrepresentation import ns as overreprese
 from biolink.api.nlp.endpoints.annotate import ns as nlp_annotate_namespace
 from biolink.api.graph.endpoints.node import ns as graph_node_namespace
 
+from biolink.api.ontol.endpoints.subgraph import ns as subgraph_namespace
+
 from biolink.api.mart.endpoints.mart import ns as mart_namespace
 
 from biolink.api.cam.endpoints.cam_endpoint import ns as cam_namespace
@@ -70,13 +72,9 @@ api.init_app(blueprint)
 app.register_blueprint(blueprint)
 db.init_app(app)
 
-with app.app_context():
-    f.g.foo = 99
-    print("FG={}".format(f.g.foo))
-
 # initial setup
-from ontobio.ontol_factory import OntologyFactory
-factory = OntologyFactory()
+#from ontobio.ontol_factory import OntologyFactory
+#factory = OntologyFactory()
 #ont = factory.create()
     
 
