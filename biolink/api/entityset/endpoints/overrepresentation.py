@@ -2,6 +2,7 @@ import logging
 
 from flask import request
 from flask_restplus import Resource
+from biolink.ontology.ontology_manager import get_ontology
 from biolink.datamodel.serializers import compact_association_set, association_results
 from ontobio.golr.golr_associations import search_associations, GolrFields
 from ontobio.ontol_factory import OntologyFactory
@@ -11,24 +12,6 @@ from ontobio.assoc_factory import AssociationSetFactory
 from biolink.api.restplus import api
 
 log = logging.getLogger(__name__)
-
-# TODO: handle this centrally
-omap = {}
-
-def get_ontology(id):
-    handle = id 
-    for c in get_config().ontologies:
-        print("ONT={}".format(c))
-        # temporary. TODO fix
-        if not isinstance(c,dict):
-            if c.id == id:
-                handle = c.handle
-                print("Using handle={} for {}".format(handle, id))
-
-                
-    if handle not in omap:
-        omap[handle] = OntologyFactory().create(handle)
-    return omap[handle]
 
 ns = api.namespace('bioentityset', description='operations over sets of entities')
 

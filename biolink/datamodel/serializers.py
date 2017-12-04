@@ -48,9 +48,13 @@ bbop_graph = api.model('Graph', {
     'edges': fields.List(fields.Nested(edge), description='All edges in graph'),
 })
 
-named_object = api.model('NamedObject', {
+named_object_core = api.model('NamedObjectCore', {
     'id': fields.String(readOnly=True, description='ID or CURIE e.g. MGI:1201606'),
-    'label': fields.String(readOnly=True, description='RDFS Label'),
+    'label': fields.String(readOnly=True, description='RDFS Label')
+})
+
+
+named_object = api.inherit('NamedObject', named_object_core, {
     'description': fields.String(readOnly=True, description='Descriptive text for the entity. For ontology classes, this will be a definition.'),
     'categories': fields.List(fields.String(readOnly=True, description='Type of object (inferred)')),
     'types': fields.List(fields.String(readOnly=True, description='Type of object (direct)')),
@@ -68,6 +72,8 @@ entity_reference = api.model('EntityReference', {
 
 relation = api.inherit('Relation', named_object, {
 })
+relation_ref = api.inherit('RelationRef', named_object_core, {
+})
 
 publication = api.inherit('Publication', named_object, {
     # authors etc
@@ -80,6 +86,10 @@ taxon = api.model('Taxon', {
     'label': fields.String(readOnly=True, description='RDFS Label')
 })
 
+bio_object_core = api.inherit('BioObjectCore', named_object_core, {
+    'taxon': fields.Nested(taxon, description='Taxon to which the object belongs'),
+    
+})
 bio_object = api.inherit('BioObject', named_object, {
     'taxon': fields.Nested(taxon, description='Taxon to which the object belongs'),
     'xrefs': fields.List(fields.String, description='Database cross-references. These are usually CURIEs, but may also be URLs. E.g. ENSEMBL:ENSG00000099940 '),
@@ -96,11 +106,11 @@ annotation_extension = api.model('AnnotationExtension', {
 association = api.model('Association', {
     'id': fields.String(readOnly=True, description='Association/annotation unique ID'),
     'type': fields.String(readOnly=True, description='Type of association, e.g. gene-phenotype'),
-    'subject': fields.Nested(bio_object, description='Subject of association (what it is about), e.g. ClinVar:nnn, MGI:1201606'),
+    'subject': fields.Nested(bio_object_core, description='Subject of association (what it is about), e.g. ClinVar:nnn, MGI:1201606'),
     'subject_extension': fields.List(fields.Nested(annotation_extension, description='Additional properties of the subject in the context of this association.')),
-    'object': fields.Nested(bio_object, description='Object (sensu RDF), aka target, e.g. HP:0000448, MP:0002109, DOID:14330'),
+    'object': fields.Nested(bio_object_core, description='Object (sensu RDF), aka target, e.g. HP:0000448, MP:0002109, DOID:14330'),
     'object_extension': fields.List(fields.Nested(annotation_extension, description='Additional properties of the object in the context of this association. See http://www.biomedcentral.com/1471-2105/15/155')),
-    'relation': fields.Nested(relation, description='Relationship type connecting subject and object'),
+    'relation': fields.Nested(relation_ref, description='Relationship type connecting subject and object'),
     'slim': fields.List(fields.String, description='Objects mapped to a slim'),
     'negated': fields.Boolean(description='True if association is negated'),
     'qualifiers': fields.List(fields.String, description='Qualifier on the association'),

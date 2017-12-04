@@ -28,4 +28,13 @@ ontologies:
   - id: hp
     handle: hp
     pre_load: true
+  - id: mp
+    handle: mp
+    pre_load: true
+  - id: uberon
+    handle: uberon
+    pre_load: true
+  - id: monarch
+    handle: data/monarch.json
+    pre_load: true
 
