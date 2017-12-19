@@ -24,7 +24,7 @@ class PrefixCollection(Resource):
 
 @ns.route('/expand/<id>')
 @api.doc(params={'id': 'ID of entity to be contracted to URI, e.g "MGI:1"'})
-class PrefixCollection(Resource):
+class PrefixExpand(Resource):
 
     @api.expect(parser)
     def get(self, id):
@@ -35,7 +35,7 @@ class PrefixCollection(Resource):
 
 @ns.route('/contract/<path:uri>')
 @api.doc(params={'uri': 'URI of entity to be contracted to identifier/CURIE, e.g "http://www.informatics.jax.org/accession/MGI:1"'})
-class PrefixCollection(Resource):
+class PrefixContract(Resource):
 
     @api.expect(parser)
     def get(self, uri):

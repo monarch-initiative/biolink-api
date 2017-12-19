@@ -58,7 +58,7 @@ class AssociationsTo(Resource):
 @ns.route('/between/<subject>/<object>')
 @api.doc(params={'subject': 'E.g. e.g. MGI:1342287'})
 @api.doc(params={'object': 'E.g. e.g. MP:0013765, can also be a biological entity such as a gene'})
-class AssociationsFrom(Resource):
+class AssociationsBetween(Resource):
 
     @api.expect(parser)
     @api.marshal_list_with(association_results)

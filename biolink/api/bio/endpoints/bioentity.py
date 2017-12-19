@@ -420,7 +420,7 @@ class PhenotypeGeneAssociations(Resource):
 @ns.route('/phenotype/<id>/gene/<taxid>/ids')
 @api.doc(params={'id': 'Pheno class CURIE identifier, e.g  MP:0001569 (abnormal circulating bilirubin level)'})
 @api.doc(params={'taxid': 'Species or high level taxon grouping, e.g  NCBITaxon:10090 (Mus musculus)'})
-class PhenotypeGeneAssociations(Resource):
+class PhenotypeGeneByTaxonAssociations(Resource):
 
     @api.expect(core_parser)
     #@api.marshal_list_with(association)
@@ -525,6 +525,25 @@ class AnatomyGeneAssociations(Resource):
             subject_category='gene', object_category='anatomical entity',
             object=id, **core_parser.parse_args())
 
+@ns.route('/anatomy/<id>/genes/<taxid>')
+@api.doc(params={'id': 'CURIE identifier of anatomical entity, e.g. GO:0005634 (nucleus), UBERON:0002037 (cerebellum), CL:0000540 (neuron). Equivalent IDs can be used with same results'})
+@api.doc(params={'taxid': 'Species or high level taxon grouping, e.g  NCBITaxon:10090 (Mus musculus)'})
+class AnatomyGeneByTaxonAssociations(Resource):
+
+    @api.expect(core_parser)
+    #@api.marshal_list_with(association)
+    def get(self, id, taxid):
+        """
+        Returns gene ids for all genes for a particular anatomy in a taxon
+
+        For example, + NCBITaxon:10090 (mouse)
+
+        """
+        return search_associations(
+                subject_category='gene',
+                object_category='anatomical entity',
+                subject_taxon=taxid,
+                object=id, **core_parser.parse_args())
 
 @ns.route('/substance/<id>')
 class SubstanceObject(Resource):
@@ -578,7 +597,7 @@ class SubstanceParticipantInAssociations(Resource):
 
 
 @ns.route('/substance/<id>/treats/')
-class DiseaseSubstanceAssociations(Resource):
+class SubstanceTreatsAssociations(Resource):
 
     @api.expect(core_parser)
     #TODO: @api.marshal_list_with(association)

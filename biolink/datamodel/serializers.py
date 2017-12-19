@@ -96,11 +96,19 @@ annotation_extension = api.model('AnnotationExtension', {
 association = api.model('Association', {
     'id': fields.String(readOnly=True, description='Association/annotation unique ID'),
     'type': fields.String(readOnly=True, description='Type of association, e.g. gene-phenotype'),
+<<<<<<< Updated upstream
     'subject': fields.Nested(bio_object, description='Subject of association (what it is about), e.g. ClinVar:nnn, MGI:1201606'),
-    'subject_extension': fields.List(fields.Nested(annotation_extension, description='Additional properties of the subject in the context of this association.')),
+    'subject_extensions': fields.List(fields.Nested(annotation_extension, description='Additional properties of the subject in the context of this association.')),
     'object': fields.Nested(bio_object, description='Object (sensu RDF), aka target, e.g. HP:0000448, MP:0002109, DOID:14330'),
-    'object_extension': fields.List(fields.Nested(annotation_extension, description='Additional properties of the object in the context of this association. See http://www.biomedcentral.com/1471-2105/15/155')),
+    'object_extensions': fields.List(fields.Nested(annotation_extension, description='Additional properties of the object in the context of this association. See http://www.biomedcentral.com/1471-2105/15/155')),
     'relation': fields.Nested(relation, description='Relationship type connecting subject and object'),
+=======
+    'subject': fields.Nested(bio_object_core, description='Subject of association (what it is about), e.g. ClinVar:nnn, MGI:1201606'),
+    'subject_extensions': fields.List(fields.Nested(annotation_extension, description='Additional properties of the subject in the context of this association.')),
+    'object': fields.Nested(bio_object_core, description='Object (sensu RDF), aka target, e.g. HP:0000448, MP:0002109, DOID:14330'),
+    'object_extensions': fields.List(fields.Nested(annotation_extension, description='Additional properties of the object in the context of this association. See http://www.biomedcentral.com/1471-2105/15/155')),
+    'relation': fields.Nested(relation_ref, description='Relationship type connecting subject and object'),
+>>>>>>> Stashed changes
     'slim': fields.List(fields.String, description='Objects mapped to a slim'),
     'negated': fields.Boolean(description='True if association is negated'),
     'qualifiers': fields.List(fields.String, description='Qualifier on the association'),

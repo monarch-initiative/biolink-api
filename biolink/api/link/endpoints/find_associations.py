@@ -58,10 +58,23 @@ class AssociationSearch(Resource):
         return search_associations(**args)
 
 @ns.route('/find/<subject_category>/')
+@api.doc(params={'object_category': 'CATEGORY of entity at link OBJECT (target), e.g. phenotype, disease'})
+class AssociationBySubjectCategorySearch(Resource):
+
+    @api.expect(parser)
+    @api.marshal_list_with(association_results)
+    def get(self, subject_category='gene'):
+        """
+        Returns list of matching associations
+        """
+        args = parser.parse_args()
+
+        return search_associations(subject_category=subject_category, **args)
+
 @ns.route('/find/<subject_category>/<object_category>/')
 @api.doc(params={'subject_category': 'CATEGORY of entity at link SUBJECT (source), e.g. gene, disease, genotype'})
 @api.doc(params={'object_category': 'CATEGORY of entity at link OBJECT (target), e.g. phenotype, disease'})
-class AssociationSearch(Resource):
+class AssociationBySubjectAndObjectCategorySearch(Resource):
 
     @api.expect(parser)
     @api.marshal_list_with(association_results)

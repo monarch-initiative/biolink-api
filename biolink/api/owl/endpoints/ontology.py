@@ -30,7 +30,7 @@ class DLQuery(Resource):
         return []
 
 @ns.route('/sparql/<query>')
-class DLQuery(Resource):
+class SparqlQuery(Resource):
 
     @api.expect(parser)
     @api.marshal_list_with(association)

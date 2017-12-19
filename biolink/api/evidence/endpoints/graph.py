@@ -20,7 +20,7 @@ parser = api.parser()
 
 @ns.route('/<id>')
 @api.doc(params={'id': 'association id, e.g. cfef92b7-bfa3-44c2-a537-579078d2de37'})
-class AssociationObject(Resource):
+class EvidenceGraphObject(Resource):
 
     @api.expect(parser)
     @api.marshal_list_with(bbop_graph)
@@ -42,7 +42,7 @@ class AssociationObject(Resource):
 
 @ns.route('/<id>/image')
 @api.doc(params={'id': 'association id, e.g. cfef92b7-bfa3-44c2-a537-579078d2de37'})
-class AssociationObject(Resource):
+class EvidenceGraphImage(Resource):
 
     @api.expect(parser)
     def get(self,id):
