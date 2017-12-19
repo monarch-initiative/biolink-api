@@ -14,7 +14,7 @@ parser = api.parser()
 #parser.add_argument('subject_taxon', help='SUBJECT TAXON id, e.g. NCBITaxon:9606. Includes inferred by default')
 
 @ns.route('/<source>/<target>/')
-class PrefixCollection(Resource):
+class IdentifierMapper(Resource):
 
     @api.expect(parser)
     @api.marshal_list_with(association)

@@ -127,7 +127,7 @@ class VariantSetsArchiveCollection(Resource):
         return posts_page
 
 @ns.route('/analyze/<id>')
-class Analyze(Resource):
+class VariantAnalyze(Resource):
 
     #@api.expect(parser)
     @api.marshal_list_with(association)

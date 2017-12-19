@@ -32,7 +32,7 @@ class ModelCollection(Resource):
         }""", limit=1000)
 
 @ns.route('/model/query/')
-class ModelCollection(Resource):
+class ModelQuery(Resource):
 
     @api.expect(parser)
     def get(self):
@@ -48,7 +48,7 @@ class ModelCollection(Resource):
         return lego_query(sparql, limit=100)
     
 @ns.route('/model/properties/')
-class ModelCollection(Resource):
+class ModelProperties(Resource):
 
     @api.expect(parser)
     def get(self):
@@ -79,7 +79,7 @@ class ModelContibutors(Resource):
         }""", limit=1000)
 
 @ns.route('/instances/')
-class ModelContibutors(Resource):
+class ModelInstances(Resource):
 
     #@api.expect(parser)
     def get(self):
@@ -93,7 +93,7 @@ class ModelContibutors(Resource):
         }""", limit=1000)
     
 @ns.route('/model/property_values/')
-class ModelCollection(Resource):
+class ModelPropertyValues(Resource):
 
     @api.expect(parser)
     def get(self):
@@ -109,7 +109,7 @@ class ModelCollection(Resource):
         }""", limit=1000)
     
 @ns.route('/model/<id>')
-class Model(Resource):
+class ModelObject(Resource):
 
     #@api.expect(parser)
     #@api.marshal_list_with(association)
@@ -127,7 +127,7 @@ class Model(Resource):
         return []
 
 @ns.route('/instance/<id>')
-class Instance(Resource):
+class InstanceObject(Resource):
 
     @api.expect(parser)
     @api.marshal_list_with(association)
