@@ -9,6 +9,7 @@ from ontobio.golr.golr_associations import search_associations, search_associati
 from scigraph.scigraph_util import SciGraph
 from biowikidata.wd_sparql import doid_to_wikidata, resolve_to_wikidata, condition_to_drug
 from ontobio.vocabulary.relations import HomologyTypes
+from ..closure_bins import create_closure_bin
 
 import pysolr
 
@@ -268,9 +269,13 @@ class DiseasePhenotypeAssociations(Resource):
         Returns phenotypes associated with disease
         """
 
-        return search_associations(
-            subject_category='disease', object_category='phenotype',
-            subject=id, **core_parser.parse_args())
+        results = search_associations(
+                subject_category='disease', object_category='phenotype',
+                subject=id, **core_parser.parse_args())
+        fcs = results.get('facet_counts')
+        if fcs is not None:
+            fcs['closure_bin'] = create_closure_bin(fcs.get('object_closure'))
+        return results
 
 @ns.route('/disease/<id>/genes/')
 @api.doc(params={'id': 'CURIE identifier of disease, e.g. OMIM:605543, DOID:678. Equivalent IDs can be used with same results'})
