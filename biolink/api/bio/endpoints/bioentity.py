@@ -7,7 +7,7 @@ from biolink.datamodel.serializers import node, named_object, bio_object, associ
 from biolink.api.restplus import api
 from ontobio.golr.golr_associations import search_associations, search_associations_go, select_distinct_subjects
 from scigraph.scigraph_util import SciGraph
-from biowikidata.wd_sparql import doid_to_wikidata, resolve_to_wikidata, condition_to_drug
+from biowikidata.wd_sparql import doid_to_wikidata, resolve_to_wikidata, condition_to_drug, drug_to_condition
 from ontobio.vocabulary.relations import HomologyTypes
 from ..closure_bins import create_closure_bin
 
@@ -613,7 +613,7 @@ class SubstanceTreatsAssociations(Resource):
         e.g. drugs or small molecules used to treat
 
         """
-        return condition_to_drug(id)
+        return drug_to_condition(id)
 
 
 @ns.route('/genotype/<id>')

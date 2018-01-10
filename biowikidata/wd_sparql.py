@@ -44,6 +44,7 @@ class PrefixMap:
     # maps prefix to a tuple of (isCurie, WikidataProperty)
     def dbprefix2prop(self):
         return {
+            'CHEBI': ('chemical', False, self.ChebiID),
             'DOID': ('disease', True, self.DiseaseOntologyID),
             'UniProtKB': ('protein', False, self.UniProtID),
             'InterPro': ('domain', False, self.InterProID)
@@ -111,6 +112,29 @@ def doid_to_wikidata(id):
 
 def flatten(l):
     return [item for sublist in l for item in sublist]
+
+def drug_to_condition(drug_id):
+    """
+    Given a drug (e.g CHEBI) return condition (e.g. disease) it treats
+
+    Accepts CURIEs, eg. CHEBI:nnnn
+    """
+    wdids = resolve_to_wikidata(drug_id)
+    return flatten([wd_drug_to_condition(x) for x in wdids])
+
+def wd_drug_to_condition(drug_id):
+    """
+    Accepts WD URIs as args.
+
+    TODO: capture everything in http://tinyurl.com/knuzgt7
+    need to also query active ingredient
+    """
+    results = run_sparql_query("""
+    SELECT ?c_id WHERE {{?c treated_by_drug: <{d}> . ?c DiseaseOntologyID: ?c_id }}
+    """.format(d=drug_id), limit=1000)
+    # prefix IDs with CHEBI prefix. TODO: consider more generic/metadata-driven way of doing this
+    return [b['c_id']['value'] for b in results['results']['bindings']]
+
 
 def condition_to_drug(condition_id):
     """
