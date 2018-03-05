@@ -29,6 +29,12 @@ core_parser.add_argument('evidence', help="""Object id, e.g. ECO:0000501 (for IE
                     or a specific publication or other supporting ibject, e.g. ZFIN:ZDB-PUB-060503-2.
                     """)
 
+GENES_IN_PATHWAY = 'genes in pathway'
+GENES_REGULATING_PATHWAY = 'genes regulating pathway'
+core_parser_with_rel = core_parser.copy()
+core_parser_with_rel.add_argument('relationship_type', required=False, default='genes in pathway', help="relationship type ('{}' or '{}')".format(GENES_IN_PATHWAY, GENES_REGULATING_PATHWAY))
+
+
 scigraph = SciGraph('https://scigraph-data.monarchinitiative.org/scigraph/')
 
 homol_rel = HomologyTypes.Homolog.value
@@ -459,15 +465,24 @@ class GotermObject(Resource):
 @ns.route('/goterm/<id>/genes/')
 class GotermGeneAssociations(Resource):
 
-    @api.expect(core_parser)
+    @api.expect(core_parser_with_rel)
     @api.marshal_with(association_results)
     def get(self, id):
         """
         Returns associations to GO terms for a gene
         """
-        return search_associations(
-            subject_category='gene', object_category='function',
-            subject=id, invert_subject_object=True, **core_parser.parse_args())
+        args = core_parser_with_rel.parse_args()
+        if args['relationship_type'] == GENES_REGULATING_PATHWAY:
+            # Temporary fix until https://github.com/geneontology/amigo/pull/469
+            # and https://github.com/owlcollab/owltools/issues/241 are resolved
+            return search_associations(
+                subject_category = 'gene', object_category = 'function',
+                fq = {'regulates_closure': id, '-isa_partof_closure': id},
+                invert_subject_object=True, **args)
+        else:
+            return search_associations(
+                subject_category='gene', object_category='function',
+                subject=id, invert_subject_object=True, **core_parser.parse_args())
 
 @ns.route('/pathway/<id>')
 @api.doc(params={'id': 'CURIE any pathway element. May be a GO ID or a pathway database ID'})
@@ -806,4 +821,3 @@ class ParentObject(Resource):
         """
         obj = scigraph.bioobject(id)
         return obj
-
