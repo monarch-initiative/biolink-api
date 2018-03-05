@@ -29,10 +29,12 @@ core_parser.add_argument('evidence', help="""Object id, e.g. ECO:0000501 (for IE
                     or a specific publication or other supporting ibject, e.g. ZFIN:ZDB-PUB-060503-2.
                     """)
 
-GENES_IN_PATHWAY = 'genes in pathway'
-GENES_REGULATING_PATHWAY = 'genes regulating pathway'
+INVOLVED_IN = 'involved_in'
+INVOLVED_IN_REGULATION_OF = 'involved_in_regulation_of'
+ACTS_UPSTREAM_OF_OR_WITHIN = 'acts_upstream_of_or_within'
+
 core_parser_with_rel = core_parser.copy()
-core_parser_with_rel.add_argument('relationship_type', required=False, default='genes in pathway', help="relationship type ('{}' or '{}')".format(GENES_IN_PATHWAY, GENES_REGULATING_PATHWAY))
+core_parser_with_rel.add_argument('relationship_type', required=False, default='involved_in', help="relationship type ('{}', '{}' or '{}')".format(INVOLVED_IN, INVOLVED_IN_REGULATION_OF, ACTS_UPSTREAM_OF_OR_WITHIN))
 
 
 scigraph = SciGraph('https://scigraph-data.monarchinitiative.org/scigraph/')
@@ -472,14 +474,19 @@ class GotermGeneAssociations(Resource):
         Returns associations to GO terms for a gene
         """
         args = core_parser_with_rel.parse_args()
-        if args['relationship_type'] == GENES_REGULATING_PATHWAY:
+        if args['relationship_type'] == ACTS_UPSTREAM_OF_OR_WITHIN:
+            return search_associations(
+                subject_category='gene', object_category='function',
+                fq = {'regulates_closure': id},
+                invert_subject_object=True, **args)
+        elif args['relationship_type'] == INVOLVED_IN_REGULATION_OF:
             # Temporary fix until https://github.com/geneontology/amigo/pull/469
             # and https://github.com/owlcollab/owltools/issues/241 are resolved
             return search_associations(
                 subject_category = 'gene', object_category = 'function',
                 fq = {'regulates_closure': id, '-isa_partof_closure': id},
                 invert_subject_object=True, **args)
-        else:
+        elif args['relationship_type'] == INVOLVED_IN:
             return search_associations(
                 subject_category='gene', object_category='function',
                 subject=id, invert_subject_object=True, **core_parser.parse_args())
