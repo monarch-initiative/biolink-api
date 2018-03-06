@@ -34,7 +34,7 @@ INVOLVED_IN_REGULATION_OF = 'involved_in_regulation_of'
 ACTS_UPSTREAM_OF_OR_WITHIN = 'acts_upstream_of_or_within'
 
 core_parser_with_rel = core_parser.copy()
-core_parser_with_rel.add_argument('relationship_type', required=False, default='involved_in', help="relationship type ('{}', '{}' or '{}')".format(INVOLVED_IN, INVOLVED_IN_REGULATION_OF, ACTS_UPSTREAM_OF_OR_WITHIN))
+core_parser_with_rel.add_argument('relationship_type', choices=[INVOLVED_IN, INVOLVED_IN_REGULATION_OF, ACTS_UPSTREAM_OF_OR_WITHIN], help="relationship type ('{}', '{}' or '{}')".format(INVOLVED_IN, INVOLVED_IN_REGULATION_OF, ACTS_UPSTREAM_OF_OR_WITHIN))
 
 
 scigraph = SciGraph('https://scigraph-data.monarchinitiative.org/scigraph/')
