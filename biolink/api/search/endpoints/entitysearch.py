@@ -4,7 +4,7 @@ from flask import request
 from flask_restplus import Resource
 from biolink.datamodel.serializers import search_result
 from biolink.api.restplus import api
-from ontobio.golr.golr_query import GolrSearchQuery
+from ontobio.golr.golr_query import GolrSearchQuery, GolrLayPersonSearch
 import pysolr
 
 log = logging.getLogger(__name__)
@@ -35,12 +35,28 @@ def get_advanced_parser():
         p.add_argument('noise', type=bool, help='If set, uses noise-tolerant querying, e.g owlsim, boqa')
         return p
 
+def get_layperson_parser():
+    """
+    A simple flaskrest parser object that includes basic http params
+    """
+    p = api.parser()
+    p.add_argument('rows', type=int, required=False, default=10, help='number of rows')
+    p.add_argument('start', type=str, required=False, default='0', help='row number to start from')
+    p.add_argument('phenotype_group', type=str, required=False, help='phenotype group id')
+    p.add_argument('phenotype_group_label', type=str, required=False, help='phenotype group label')
+    p.add_argument('anatomical_system', type=str, required=False, help='anatomical system id')
+    p.add_argument('anatomical_system_label', type=str, required=False, help='anatomical system label')
+    p.add_argument('highlight_class', type=str, required=False, help='highlight class')
+
+    return p
+
 def search(term, args):
     q = GolrSearchQuery(term, args)
     return q.exec()
     
 simple_parser = get_simple_parser()
 adv_parser = get_advanced_parser()
+layperson_parser = get_layperson_parser()
 
 @ns.route('/entity/<term>')
 @api.doc(params={'term': 'search string, e.g. shh, parkinson, femur'})
@@ -58,6 +74,40 @@ class SearchEntities(Resource):
                             **args)
         results = q.exec()
         return results
+
+@ns.route('/entity/hpo-pl/<term>')
+@api.doc(params={'term': 'search string, e.g. muscle atrophy, frequent infections'})
+class SearchHPOEntities(Resource):
+
+    @api.expect(layperson_parser)
+
+    #@api.marshal_list_with(search_result)
+    def get(self, term):
+        """
+        Returns list of matching concepts or entities using lexical search
+        """
+        
+        input_args = layperson_parser.parse_args()
+        args = {}
+        args['rows'] = input_args['rows']
+        args['start'] = input_args['start']
+        args['url'] = 'https://solr-dev.monarchinitiative.org/solr/hpo-pl'
+        args['hl_cls'] = input_args['highlight_class']
+        args['fq'] = []
+        if input_args['phenotype_group'] is not None:
+            args['fq'].append('phenotype_closure:"{}"'.format(input_args['phenotype_group']))
+        if input_args['phenotype_group_label'] is not None:
+            args['fq'].append('phenotype_closure_label:"{}"'.format(input_args['phenotype_group_label']))
+        if input_args['anatomical_system'] is not None:
+            args['fq'].append('anatomy_closure:"{}"'.format(input_args['anatomical_system']))
+        if input_args['anatomical_system_label'] is not None:
+            args['fq'].append('anatomy_closure_label:"{}"'.format(input_args['anatomical_system_label']))
+
+
+        q = GolrLayPersonSearch(term, **args)
+        results = q.exec()
+        return results
+
 
 @ns.route('/entity/autocomplete/<term>')
 class Autocomplete(Resource):
