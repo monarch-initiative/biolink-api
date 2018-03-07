@@ -10,7 +10,7 @@ log = logging.getLogger(__name__)
 api = Api(version='0.1.1', title='BioLink API',
           license='BSD3',
           contact='cjmungall@lbl.gov',
-          description='API integration layer for linked biological objects.\n\n __Source:__ https://github.com/monarch-initiative/biolink-api/')
+          description='API integration layer for linked biological objects.\n\n __Source:__ https://github.com/biolink/biolink-api/')
 
 
 @api.errorhandler
