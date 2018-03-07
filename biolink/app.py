@@ -2,7 +2,8 @@ import logging.config
 import os
 
 import flask as f
-from flask import Flask, Blueprint
+from flask import Flask, Blueprint, request
+from flask import render_template
 from flask_cors import CORS, cross_origin
 from biolink import settings
 from biolink.api.bio.endpoints.bioentity import ns as bio_objects_namespace
@@ -76,11 +77,11 @@ db.init_app(app)
 #from ontobio.ontol_factory import OntologyFactory
 #factory = OntologyFactory()
 #ont = factory.create()
-    
+
 
 @app.route("/")
 def hello():
-    return "<h1 style='color:blue'>Hello There!</h1>"
+    return render_template('index.html', base_url=request.base_url)
 
 def main():
     #initialize_app(app)

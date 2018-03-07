@@ -1,0 +1,15 @@
+#container {
+  font-family: "Droid Sans", sans-serif;
+}
+
+#title {
+  margin: 10px;
+}
+
+#description {
+  margin: 10px;
+}
+
+#keyword_span {
+  margin-right: 5px;
+}
