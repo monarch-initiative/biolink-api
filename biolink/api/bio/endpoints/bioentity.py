@@ -786,7 +786,7 @@ class VariantPhenotypeAssociations(Resource):
 
         # TODO: invert
         return search_associations(
-            subject_category='variant', object_category='phenotypes',
+            subject_category='variant', object_category='phenotype',
             subject=id, **core_parser.parse_args())
 
 @ns.route('/variant/<id>/genes/')
