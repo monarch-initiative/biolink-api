@@ -195,7 +195,7 @@ class GenePathwayAssociations(Resource):
 
 @ns.route('/gene/<id>/variants/')
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:8854. Equivalent IDs can be used with same results'})
-class GenePathwayAssociations(Resource):
+class GeneVariantAssociations(Resource):
 
     @api.expect(core_parser)
     @api.marshal_with(association_results)
