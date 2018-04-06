@@ -1,11 +1,8 @@
 import logging
 
-from flask import request
 from flask_restplus import Resource
-from biolink.datamodel.serializers import search_result
 from biolink.api.restplus import api
 from ontobio.golr.golr_query import GolrSearchQuery, GolrLayPersonSearch
-import pysolr
 
 log = logging.getLogger(__name__)
 
@@ -18,10 +15,12 @@ def get_simple_parser():
         p = api.parser()
         #p.add_argument('taxon', type=str, help='SUBJECT TAXON id, e.g. NCBITaxon:9606. Includes inferred by default')
         p.add_argument('category', action='append', help='e.g. gene, disease')
+        p.add_argument('prefix', type=str, required=False, help='ontology prefix: HP, -MONDO')
+        p.add_argument('boost_fx', action='append', help='e.g. pow(edges,0.334)')
         #p.add_argument('subclass_of', action='append', help='restrict search to entities that are subclasses of the specified class')
         #p.add_argument('engine', help='Name of engine to perform search')
         p.add_argument('rows', type=int, required=False, default=20, help='number of rows')
-        p.add_argument('start', type=int, required=False, default=1, help='row number to start from')
+        p.add_argument('start', type=str, required=False, default='0', help='row number to start from')
         return p
 
 def get_advanced_parser():
@@ -70,8 +69,7 @@ class SearchEntities(Resource):
         Returns list of matching concepts or entities using lexical search
         """
         args = simple_parser.parse_args()
-        q = GolrSearchQuery(term,
-                            **args)
+        q = GolrSearchQuery(term, **args)
         results = q.exec()
         return results
 
@@ -113,13 +111,14 @@ class SearchHPOEntities(Resource):
 class Autocomplete(Resource):
 
     @api.expect(simple_parser)
-    def get(self, search_term):
+    def get(self, term):
         """
         Returns list of matching concepts or entities using lexical search
         """
-        args = parser.parse_args()
-
-        return []
+        args = simple_parser.parse_args()
+        q = GolrSearchQuery(term, **args)
+        results = q.exec_autocomplete()
+        return results
 
 #@ns.route('/entity/query/')
 #class BooleanQuery(Resource):
