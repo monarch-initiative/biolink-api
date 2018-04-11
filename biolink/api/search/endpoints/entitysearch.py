@@ -21,6 +21,7 @@ def get_simple_parser():
         #p.add_argument('engine', help='Name of engine to perform search')
         p.add_argument('rows', type=int, required=False, default=20, help='number of rows')
         p.add_argument('start', type=str, required=False, default='0', help='row number to start from')
+        p.add_argument('highlight_class', type=str, required=False, help='highlight class')
         return p
 
 def get_advanced_parser():
