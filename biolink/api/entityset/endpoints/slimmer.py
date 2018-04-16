@@ -15,6 +15,7 @@ ns = api.namespace('bioentityset/slimmer', description='maps a set of entities t
 parser = api.parser()
 parser.add_argument('subject', action='append', help='Entity ids to be examined, e.g. NCBIGene:9342, NCBIGene:7227, NCBIGene:8131, NCBIGene:157570, NCBIGene:51164, NCBIGene:6689, NCBIGene:6387')
 parser.add_argument('slim', action='append', help='Map objects up (slim) to a higher level category. Value can be ontology class ID (IMPLEMENTED) or subset ID (TODO)')
+parser.add_argument('exclude_automatic_assertions', default=False, type=bool, help='If set, excludes associations that involve IEAs (ECO:0000501)')
 
 @ns.route('/<category>')
 class EntitySetSlimmer(Resource):
@@ -47,7 +48,6 @@ class EntitySetSlimmer(Resource):
         results = map2slim(subjects=prots,
                            slim=slim,
                            rows=200,
-                           exclude_automatic_assertions=True,
                            object_category=category,
                            **args)
         # To the fullest extent possible return HGNC ids
