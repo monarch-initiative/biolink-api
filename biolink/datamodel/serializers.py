@@ -16,7 +16,7 @@ search_result = api.model('SearchResult', {
 
 autocomplete_result = api.model('AutocompleteResult', {
     'id': fields.String(description='curie formatted id'),
-    'label': fields.String(description='primary label (rdfs:label)'),
+    'label': fields.List(fields.String, description='primary label (rdfs:label)'),
     'match': fields.String(description='matched part of document (may be primary label, synonym, id, etc)'),
     'category': fields.List(fields.String, description='node categories'),
     'taxon': fields.String(description='taxon as NCBITaxon curie'),
