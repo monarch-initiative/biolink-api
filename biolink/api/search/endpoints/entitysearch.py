@@ -2,7 +2,7 @@ import logging
 
 from flask_restplus import Resource
 from biolink.api.restplus import api
-from biolink.datamodel.serializers import search_result, autocomplete_results
+from biolink.datamodel.serializers import search_result, autocomplete_results, lay_results
 from ontobio.golr.golr_query import GolrSearchQuery, GolrLayPersonSearch
 
 log = logging.getLogger(__name__)
@@ -79,29 +79,27 @@ class SearchEntities(Resource):
 class SearchHPOEntities(Resource):
 
     @api.expect(layperson_parser)
-
-    #@api.marshal_list_with(search_result)
+    @api.marshal_with(lay_results)
     def get(self, term):
         """
         Returns list of matching concepts or entities using lexical search
         """
         
         input_args = layperson_parser.parse_args()
-        args = {}
-        args['rows'] = input_args['rows']
-        args['start'] = input_args['start']
-        args['url'] = 'https://solr-dev.monarchinitiative.org/solr/hpo-pl'
-        args['hl_cls'] = input_args['highlight_class']
-        args['fq'] = []
-        if input_args['phenotype_group'] is not None:
-            args['fq'].append('phenotype_closure:"{}"'.format(input_args['phenotype_group']))
-        if input_args['phenotype_group_label'] is not None:
-            args['fq'].append('phenotype_closure_label:"{}"'.format(input_args['phenotype_group_label']))
-        if input_args['anatomical_system'] is not None:
-            args['fq'].append('anatomy_closure:"{}"'.format(input_args['anatomical_system']))
-        if input_args['anatomical_system_label'] is not None:
-            args['fq'].append('anatomy_closure_label:"{}"'.format(input_args['anatomical_system_label']))
+        # params that don't directly translate to solr controller
+        filtered_params = ['phenotype_group', 'phenotype_group_label',
+                           'anatomical_system', 'anatomical_system_label']
+        args = {k:v for k,v in input_args.items() if k not in filtered_params}
 
+        args['fq'] = {}
+        if input_args['phenotype_group'] is not None:
+            args['fq']['phenotype_closure'] = input_args['phenotype_group']
+        if input_args['phenotype_group_label'] is not None:
+            args['fq']['phenotype_closure_label'] = input_args['phenotype_group_label']
+        if input_args['anatomical_system'] is not None:
+            args['fq']['anatomy_closure'] = input_args['anatomical_system']
+        if input_args['anatomical_system_label'] is not None:
+            args['fq']['anatomy_closure_label'] = input_args['anatomical_system_label']
 
         q = GolrLayPersonSearch(term, **args)
         results = q.autocomplete()

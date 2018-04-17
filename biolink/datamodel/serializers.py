@@ -30,6 +30,19 @@ autocomplete_results = api.model('AutocompleteResults', {
                         description='list of AutocompleteResult docs'),
 })
 
+lay_autocomplete = api.model('LayAutocomplete', {
+    'id': fields.String(description='curie formatted id'),
+    'label': fields.String(description='primary label (rdfs:label)'),
+    'matched_synonym': fields.String(description='matched synonym'),
+    'highlight': fields.String(description='solr highlight')
+})
+
+lay_results = api.model('LayResults', {
+    'results': fields.List(fields.Nested(lay_autocomplete),
+                        description='list of AutocompleteResult docs'),
+})
+
+
 ## BBOP/OBO Graphs
 
 abstract_property_value = api.model('AbstractPropertyValue', {
