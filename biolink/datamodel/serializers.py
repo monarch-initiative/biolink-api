@@ -9,10 +9,26 @@ from biolink.api.restplus import api
 
 search_result = api.model('SearchResult', {
     'numFound': fields.Integer(description='total number of associations matching query'),
-    'start': fields.Integer(description='Cursor position'),
+    'docs': fields.List(fields.Raw, description='solr docs'),
     'facet_counts': fields.Raw(description='Mapping between field names and association counts'),
-    'facet_pivot': fields.Raw(description='Populated in facet_pivots is passed'),
-    })
+    'highlighting': fields.Raw(description='Mapping between id and solr highlight')
+})
+
+autocomplete_result = api.model('AutocompleteResult', {
+    'id': fields.String(description='curie formatted id'),
+    'label': fields.String(description='primary label (rdfs:label)'),
+    'match': fields.String(description='matched part of document (may be primary label, synonym, id, etc)'),
+    'category': fields.List(fields.String, description='node categories'),
+    'taxon': fields.String(description='taxon as NCBITaxon curie'),
+    'taxon_label': fields.String(description='taxon label'),
+    'highlight': fields.String(description='solr highlight'),
+    'has_highlight': fields.Boolean(description='True if highlight can be interpreted as html, else False')
+})
+
+autocomplete_results = api.model('AutocompleteResults', {
+    'docs': fields.List(fields.Nested(autocomplete_result),
+                        description='list of AutocompleteResult docs'),
+})
 
 ## BBOP/OBO Graphs
 
@@ -263,6 +279,3 @@ phylogenetic_tree = api.inherit('PhylogeneticTree', named_object, {
 # clinical
 clinical_individual = api.inherit('ClinicalIndividual', named_object, {
 })
-
-
-

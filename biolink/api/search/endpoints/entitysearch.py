@@ -2,6 +2,7 @@ import logging
 
 from flask_restplus import Resource
 from biolink.api.restplus import api
+from biolink.datamodel.serializers import search_result, autocomplete_results
 from ontobio.golr.golr_query import GolrSearchQuery, GolrLayPersonSearch
 
 log = logging.getLogger(__name__)
@@ -13,12 +14,11 @@ def get_simple_parser():
         A simple flaskrest parser object that includes basic http params
         """
         p = api.parser()
-        #p.add_argument('taxon', type=str, help='SUBJECT TAXON id, e.g. NCBITaxon:9606. Includes inferred by default')
         p.add_argument('category', action='append', help='e.g. gene, disease')
         p.add_argument('prefix', type=str, required=False, help='ontology prefix: HP, -MONDO')
         p.add_argument('boost_fx', action='append', help='boost function e.g. pow(edges,0.334)')
         p.add_argument('boost_q', action='append', help='boost query e.g. category:genotype^-10')
-        #p.add_argument('subclass_of', action='append', help='restrict search to entities that are subclasses of the specified class')
+        p.add_argument('taxon', action='append', help='taxon filter, eg NCBITaxon:9606, includes inferred taxa')
         #p.add_argument('engine', help='Name of engine to perform search')
         p.add_argument('rows', type=int, required=False, default=20, help='number of rows')
         p.add_argument('start', type=str, required=False, default='0', help='row number to start from')
@@ -53,7 +53,7 @@ def get_layperson_parser():
 
 def search(term, args):
     q = GolrSearchQuery(term, args)
-    return q.exec()
+    return q.search()
     
 simple_parser = get_simple_parser()
 adv_parser = get_advanced_parser()
@@ -64,15 +64,14 @@ layperson_parser = get_layperson_parser()
 class SearchEntities(Resource):
 
     @api.expect(simple_parser)
-
-    #@api.marshal_list_with(search_result)
+    @api.marshal_list_with(search_result)
     def get(self, term):
         """
         Returns list of matching concepts or entities using lexical search
         """
         args = simple_parser.parse_args()
         q = GolrSearchQuery(term, **args)
-        results = q.exec()
+        results = q.search()
         return results
 
 @ns.route('/entity/hpo-pl/<term>')
@@ -105,7 +104,7 @@ class SearchHPOEntities(Resource):
 
 
         q = GolrLayPersonSearch(term, **args)
-        results = q.exec()
+        results = q.autocomplete()
         return results
 
 
@@ -113,13 +112,14 @@ class SearchHPOEntities(Resource):
 class Autocomplete(Resource):
 
     @api.expect(simple_parser)
+    @api.marshal_list_with(autocomplete_results)
     def get(self, term):
         """
         Returns list of matching concepts or entities using lexical search
         """
         args = simple_parser.parse_args()
         q = GolrSearchQuery(term, **args)
-        results = q.exec_autocomplete()
+        results = q.autocomplete()
         return results
 
 #@ns.route('/entity/query/')
