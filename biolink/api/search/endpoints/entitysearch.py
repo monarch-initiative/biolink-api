@@ -64,7 +64,7 @@ layperson_parser = get_layperson_parser()
 class SearchEntities(Resource):
 
     @api.expect(simple_parser)
-    @api.marshal_list_with(search_result)
+    @api.marshal_with(search_result)
     def get(self, term):
         """
         Returns list of matching concepts or entities using lexical search
@@ -112,7 +112,7 @@ class SearchHPOEntities(Resource):
 class Autocomplete(Resource):
 
     @api.expect(simple_parser)
-    @api.marshal_list_with(autocomplete_results)
+    @api.marshal_with(autocomplete_results)
     def get(self, term):
         """
         Returns list of matching concepts or entities using lexical search
