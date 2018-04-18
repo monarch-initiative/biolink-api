@@ -94,8 +94,6 @@ class GenericObjectByType(Resource):
         """
         Return basic info on an object for a given type
         """
-        # No need to do a switch case here since this call is only for the barebone information about
-        # the entity and nothing else
         obj = scigraph.bioobject(id)
         return(obj)
 
