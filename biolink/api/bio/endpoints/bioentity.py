@@ -32,6 +32,16 @@ core_parser.add_argument('evidence', help="""Object id, e.g. ECO:0000501 (for IE
 INVOLVED_IN = 'involved_in'
 INVOLVED_IN_REGULATION_OF = 'involved_in_regulation_of'
 ACTS_UPSTREAM_OF_OR_WITHIN = 'acts_upstream_of_or_within'
+TYPE_GENE = 'gene'
+TYPE_VARIANT = 'variant'
+TYPE_GENOTYPE = 'genotype'
+TYPE_PHENOTYPE = 'phenotype'
+TYPE_DISEASE = 'disease'
+TYPE_GOTERM = 'goterm'
+TYPE_PATHWAY = 'pathway'
+TYPE_ANATOMY = 'anatomy'
+TYPE_SUBSTANCE = 'substance'
+TYPE_INDIVIDUAL = 'individual'
 
 core_parser_with_rel = core_parser.copy()
 core_parser_with_rel.add_argument('relationship_type', choices=[INVOLVED_IN, INVOLVED_IN_REGULATION_OF, ACTS_UPSTREAM_OF_OR_WITHIN], help="relationship type ('{}', '{}' or '{}')".format(INVOLVED_IN, INVOLVED_IN_REGULATION_OF, ACTS_UPSTREAM_OF_OR_WITHIN))
@@ -72,8 +82,10 @@ class GenericObject(Resource):
         return(obj)
 
 @ns.route('/<type>/<id>')
-@api.doc(params={'id': 'id, e.g. NCBIGene:84570'})
-@api.doc(params={'type': 'bioentity type, e.g. gene, variant, disease, substance, genotype, phenotype, etc.'})
+@api.param('id', 'id, e.g. NCBIGene:84570')
+@api.param('type', 'bioentity type', enum=[TYPE_GENE, TYPE_VARIANT, TYPE_GENOTYPE, TYPE_PHENOTYPE,
+                                           TYPE_DISEASE, TYPE_GOTERM, TYPE_PATHWAY, TYPE_ANATOMY,
+                                           TYPE_SUBSTANCE, TYPE_INDIVIDUAL])
 class GenericObjectByType(Resource):
 
     @api.expect(core_parser)
