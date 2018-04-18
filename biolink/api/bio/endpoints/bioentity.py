@@ -71,6 +71,22 @@ class GenericObject(Resource):
         obj = scigraph.bioobject(id)
         return(obj)
 
+@ns.route('/<type>/<id>')
+@api.doc(params={'id': 'id, e.g. NCBIGene:84570'})
+@api.doc(params={'type': 'bioentity type, e.g. gene, variant, disease, substance, genotype, phenotype, etc.'})
+class GenericObjectByType(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_with(bio_object)
+    def get(self, id, type):
+        """
+        Return basic info on an object for a given type
+        """
+        # No need to do a switch case here since this call is only for the barebone information about
+        # the entity and nothing else
+        obj = scigraph.bioobject(id)
+        return(obj)
+
 @ns.route('/<id>/associations/')
 class GenericAssociations(Resource):
 
@@ -81,18 +97,6 @@ class GenericAssociations(Resource):
         Returns associations for an entity regardless of the type
         """
         return search_associations(subject=id, **core_parser.parse_args())
-
-@ns.route('/gene/<id>')
-@api.doc(params={'id': 'id, e.g. NCBIGene:84570'})
-class GeneObject(Resource):
-
-    @api.expect(core_parser)
-    @api.marshal_with(gene)
-    def get(self, id):
-        """
-        Returns basic info about a gene
-        """
-        return get_object_gene(id)
 
 @api.doc(params={'id': 'id, e.g. NCBIGene:3630. Equivalent IDs can be used with same results'})
 class AbstractGeneAssociationResource(Resource):
@@ -253,20 +257,6 @@ class GeneFunctionAssociations(AbstractGeneAssociationResource):
                 assocs['associations'] += pr_assocs['associations']
         return assocs
 
-
-@ns.route('/disease/<id>')
-@api.doc(params={'id': 'CURIE identifier of disease, e.g. OMIM:605543, Orphanet:1934, DOID:678. Equivalent IDs can be used with same results'})
-class DiseaseObject(Resource):
-
-    @api.expect(core_parser)
-    @api.marshal_with(bio_object)
-    def get(self, id):
-        """
-        Returns basic info on a disease
-        """
-        obj = scigraph.bioobject(id)
-        return(obj)
-
 @ns.route('/disease/<id>/phenotypes/')
 @api.doc(params={'id': 'CURIE identifier of disease, e.g. OMIM:605543, Orphanet:1934, DOID:678. Equivalent IDs can be used with same results'})
 class DiseasePhenotypeAssociations(Resource):
@@ -365,19 +355,6 @@ class DiseaseModelTaxonAssociations(Resource):
             subject=id, invert_subject_object=True,
             object_taxon=taxon, **core_parser.parse_args())
 
-@ns.route('/phenotype/<id>')
-@api.doc(params={'id': 'CURIE identifier of phenotype, e.g. MP:0008521, MP:0013166, WBPhenotype:0000180 '})
-class PhenotypeObject(Resource):
-
-    @api.expect(core_parser)
-    @api.marshal_with(bio_object)
-    def get(self, id):
-        """
-        Returns basic info on a phenotype
-        """
-        obj = scigraph.bioobject(id)
-        return(obj)
-
 @ns.route('/phenotype/<id>/anatomy/')
 class PhenotypeAnatomyAssociations(Resource):
 
@@ -450,20 +427,6 @@ class PhenotypeGeneByTaxonAssociations(Resource):
                                            subject_taxon=taxid)
         return results
 
-@ns.route('/goterm/<id>')
-@api.doc(params={'id': 'GO class CURIE identifier, e.g GO:0016301 (kinase activity)'})
-class GotermObject(Resource):
-
-    @api.expect(core_parser)
-    @api.marshal_with(bio_object)
-    def get(self, id):
-        """
-        Returns basic info on a gene
-        """
-        obj = scigraph.bioobject(id)
-        return(obj)
-
-
 @ns.route('/goterm/<id>/genes/')
 class GotermGeneAssociations(Resource):
 
@@ -491,19 +454,6 @@ class GotermGeneAssociations(Resource):
                 subject_category='gene', object_category='function',
                 subject=id, invert_subject_object=True, **core_parser.parse_args())
 
-@ns.route('/pathway/<id>')
-@api.doc(params={'id': 'CURIE any pathway element. May be a GO ID or a pathway database ID'})
-class PathwayObject(Resource):
-
-    @api.expect(core_parser)
-    @api.marshal_with(bio_object)
-    def get(self, id):
-        """
-        Returns basic info on a pathway
-        """
-        obj = scigraph.bioobject(id)
-        return(obj)
-
 @ns.route('/pathway/<id>/genes/')
 @api.doc(params={'id': 'CURIE any pathway element. E.g. REACT:R-HSA-5387390'})
 class PathwayGeneAssociations(Resource):
@@ -519,24 +469,6 @@ class PathwayGeneAssociations(Resource):
         return search_associations(
             subject_category='gene', object_category='pathway',
             object=id, **core_parser.parse_args())
-
-
-@ns.route('/anatomy/<id>')
-@api.doc(params={'id': 'CURIE identifier of anatomical entity, e.g. GO:0005634 (nucleus), UBERON:0002037 (cerebellum), CL:0000540 (neuron). Equivalent IDs can be used with same results'})
-class AnatomyObject(Resource):
-
-    @api.expect(core_parser)
-    @api.marshal_with(bio_object)
-    def get(self, id):
-        """
-        Returns basic info on anatomical entity
-
-        Anatomical entities span ranges from the subcellular (e.g. nucleus) through cells to tissues, organs and organ systems.
-
-        When returning associations, inference over the appropriate relation will be used. For example, for gene expression, part-of will be used.
-        """
-        obj = scigraph.bioobject(id)
-        return obj
 
 @ns.route('/anatomy/<id>/genes/')
 @api.doc(params={'id': 'CURIE identifier of anatomical entity, e.g. GO:0005634 (nucleus), UBERON:0002037 (cerebellum), CL:0000540 (neuron). Equivalent IDs can be used with same results'})
@@ -572,21 +504,6 @@ class AnatomyGeneByTaxonAssociations(Resource):
                 object_category='anatomical entity',
                 subject_taxon=taxid,
                 object=id, **core_parser.parse_args())
-
-@ns.route('/substance/<id>')
-class SubstanceObject(Resource):
-
-    @api.expect(core_parser)
-    @api.marshal_with(bio_object)
-    def get(self, id):
-        """
-        Returns basic info on a substance
-
-        This can be classes from CHEBI
-        """
-        obj = scigraph.bioobject(id)
-        return obj
-
 
 @ns.route('/substance/<id>/roles/')
 class SubstanceRoleAssociations(Resource):
@@ -637,26 +554,6 @@ class SubstanceTreatsAssociations(Resource):
 
         """
         return condition_to_drug(id)
-
-
-@ns.route('/genotype/<id>')
-@api.doc(params={'id': 'CURIE identifier of genotype, e.g. ZFIN:ZDB-FISH-150901-6607'})
-class GenotypeObject(Resource):
-
-    @api.expect(core_parser)
-    @api.marshal_list_with(genotype)
-    def get(self, id):
-        """
-        Returns genotype object.
-
-        The genotype object will have the following association sets populated:
-
-         * gene
-         * phenotype
-         * disease
-
-        """
-        return get_object_genotype(id)
 
 @ns.route('/genotype/<id>/genotypes/')
 @api.doc(params={'id': 'CURIE identifier of genotype, e.g. ZFIN:ZDB-FISH-150901-6607'})
@@ -725,38 +622,6 @@ class GenotypeGeneAssociations(Resource):
 
 ##
 
-@ns.route('/allele/<id>')
-class AlleleObject(Resource):
-
-    @api.expect(core_parser)
-    @api.marshal_list_with(genotype)
-    def get(self, id):
-        """
-        Returns genotype object.
-
-        The genotype object will have the following association sets populated:
-
-         * gene
-         * phenotype
-         * disease
-
-        """
-        return get_object_genotype(id)
-
-
-@ns.route('/variant/<id>')
-@api.doc(params={'id': 'CURIE identifier of variant, e.g. ZFIN:ZDB-ALT-010427-8, ClinVarVariant:39783'})
-class VariantObject(Resource):
-
-    @api.expect(core_parser)
-    @api.marshal_with(bio_object)
-    def get(self, id):
-        """
-        Returns basic info on a variant
-        """
-        obj = scigraph.bioobject(id)
-        return obj
-
 @ns.route('/variant/<id>/genotypes/')
 @api.doc(params={'id': 'CURIE identifier of variant, e.g. ZFIN:ZDB-ALT-010427-8, ClinVarVariant:39783'})
 class VariantGenotypeAssociations(Resource):
@@ -804,27 +669,3 @@ class VariantGeneAssociations(Resource):
         return search_associations(
             subject_category='variant', object_category='gene',
             subject=id, **core_parser.parse_args())
-
-#@ns.route('/sequence_feature/<id>')
-#class SequenceFeatureObject(Resource):
-#
-#    @api.expect(core_parser)
-#    #@api.marshal_list_with(association)
-#    def get(self, id):
-#        """
-#        TODO Returns seqfeature
-#        """
-#        return { 'foo' : 'bar' }
-
-
-@ns.route('/individual/<id>')
-class ParentObject(Resource):
-
-    @api.expect(core_parser)
-    @api.marshal_with(bio_object)
-    def get(self, id):
-        """
-        Returns basic info on an individual/case
-        """
-        obj = scigraph.bioobject(id)
-        return obj
