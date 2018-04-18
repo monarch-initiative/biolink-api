@@ -285,6 +285,10 @@ class NamedObject():
 
          Type of object
 
+     description :
+
+         Description (or definition) of an object
+
      synonyms : 
 
          list of synonyms or alternate labels
@@ -295,12 +299,14 @@ class NamedObject():
                  label=None,
                  categories=None,
                  synonyms=None,
+                 description=None,
                  **kwargs):
         self.id=id
         self.id=id
         self.label=label
         self.categories=categories
         self.synonyms=synonyms
+        self.description=description
 
 
     """
@@ -449,6 +455,8 @@ class BioObject(NamedObject):
             obj.categories = [x for x in json_obj['categories']]
         if 'taxon' in json_obj:
             obj.taxon = Taxon.from_json(json_obj['taxon'])
+        if 'description' in json_obj:
+            obj.description = json_obj['description']
         return obj
 
 class AnnotationExtension():
