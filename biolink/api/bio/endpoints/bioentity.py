@@ -207,6 +207,23 @@ class GenePathwayAssociations(Resource):
             subject_category='gene', object_category='pathway',
             subject=id, **core_parser.parse_args())
 
+@ns.route('/gene/<id>/variants/')
+@api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:8854. Equivalent IDs can be used with same results'})
+class GeneVariantAssociations(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_with(association_results)
+    def get(self, id):
+        """
+        Returns variants associated with a gene
+        """
+        args = core_parser.parse_args()
+
+        return search_associations(
+            subject_category='variant',
+            fq={'object_closure': id},
+            **core_parser.parse_args())
+
 @ns.route('/gene/<id>/expression/anatomy')
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:4750. Equivalent IDs can be used with same results'})
 class GeneExpressionAssociations(Resource):
