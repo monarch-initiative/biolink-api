@@ -18,6 +18,7 @@ from biomodel.core import NamedObject, BioObject, SynonymPropertyValue
 HAS_PART = 'http://purl.obolibrary.org/obo/BFO_0000051'
 INHERES_IN = 'http://purl.obolibrary.org/obo/RO_0000052'
 HAS_ROLE = 'http://purl.obolibrary.org/obo/RO_0000087'
+IN_TAXON = 'http://purl.obolibrary.org/obo/RO_0002162'
 ENCODES = 'RO:0002205'
 HAS_DBXREF = 'OIO:hasDbXref'
 
@@ -72,18 +73,28 @@ class SciGraph:
 
         Returns: biomodel.BioObject or subclass
         """
-        response = self.get_response("graph/neighbors",
-                                     q=id, format="json", depth=1,
-                                     relationshipType='http://purl.obolibrary.org/obo/RO_0002162', **params)
+
+        response = self.get_response(
+            "dynamic/cliqueLeader", q=id, format="json",
+            depth=1, **params
+        )
+
         nodes = response.json()['nodes']
-        t=None
-        obj=None
-        for n in nodes:
-            if n['id'] == id:
-                obj = self.make_NamedObject(**n, class_name=class_name)
+        obj = self.make_NamedObject(**nodes[0], class_name=class_name)
+
+        response_for_taxon = self.get_response(
+            "graph/neighbors", q=obj.id, format="json",
+            depth=1, relationshipType=IN_TAXON
+        )
+
+        taxon = None
+        for n in response_for_taxon.json()['nodes']:
+            if n['id'] == obj.id:
+                pass
             else:
-                t = self.make_NamedObject(**n)
-        obj.taxon = t
+                taxon = self.make_NamedObject(**n)
+        obj.taxon = taxon
+
         return obj
 
     def graph(self, id=None, depth=0):
@@ -238,6 +249,9 @@ class SciGraph:
         }
         if 'synonym' in meta:
             obj['synonyms'] = [SynonymPropertyValue(pred='synonym', val=s) for s in meta['synonym']]
+        if 'definition' in meta:
+            obj['description'] = meta.get('definition')[0]
+
         return obj
 
     ## Domain-specific methods
