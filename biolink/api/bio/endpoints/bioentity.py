@@ -1001,7 +1001,14 @@ class ModelPhenotypeAssociations(Resource):
     @api.expect(core_parser)
     @api.marshal_with(association_results)
     def get(self, id):
-        pass
+        """
+        Returns phenotypes associated with a model
+        """
+
+        return search_associations(
+            subject_category='model', object_category='phenotype',
+            subject=id, **core_parser.parse_args()
+        )
 
 @ns.route('/model/<id>/variants/')
 @api.doc(params={'id': 'CURIE identifier for a model, e.g. MMRRC:042787'})
