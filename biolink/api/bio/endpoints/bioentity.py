@@ -238,15 +238,6 @@ class GeneAnatomyAssociations(Resource):
             subject=id, **core_parser.parse_args()
         )
 
-@ns.route('/gene/<id>/celllines/')
-@api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:4750'})
-class GeneCelllineAssociations(Resource):
-
-    @api.expect(core_parser)
-    @api.marshal_with(association_results)
-    def get(self, id):
-        pass
-
 @ns.route('/gene/<id>/genotypes/')
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. ZFIN:ZDB-GENE-980526-166'})
 class GeneGenotypeAssociations(Resource):
@@ -482,33 +473,6 @@ class DiseaseModelTaxonAssociations(Resource):
             subject=id, invert_subject_object=True,
             object_taxon=taxon, **core_parser.parse_args())
 
-@ns.route('/disease/<id>/anatomy/')
-@api.doc(params={'id': 'CURIE identifier of disease, e.g. OMIM:605543, DOID:678. Equivalent IDs can be used with same results'})
-class DiseaseAnatomyAssociations(Resource):
-
-    @api.expect(core_parser)
-    @api.marshal_with(association_results)
-    def get(self, id):
-        pass
-
-@ns.route('/disease/<id>/celllines/')
-@api.doc(params={'id': 'CURIE identifier of disease, e.g. OMIM:605543, DOID:678. Equivalent IDs can be used with same results'})
-class DiseaseCelllineAssociations(Resource):
-
-    @api.expect(core_parser)
-    @api.marshal_with(association_results)
-    def get(self, id):
-        pass
-
-@ns.route('/disease/<id>/function/')
-@api.doc(params={'id': 'CURIE identifier of disease, e.g. OMIM:605543, DOID:678. Equivalent IDs can be used with same results'})
-class DiseaseFunctionAssociations(Resource):
-
-    @api.expect(core_parser)
-    @api.marshal_with(association_results)
-    def get(self, id):
-        pass
-
 @ns.route('/disease/<id>/genotypes/')
 @api.doc(params={'id': 'CURIE identifier of disease, e.g. Orphanet:399158, DOID:0080008. Equivalent IDs can be used with same results'})
 class DiseaseGenotypeAssociations(Resource):
@@ -523,25 +487,6 @@ class DiseaseGenotypeAssociations(Resource):
         return search_associations(
             subject_category='disease', object_category='genotype', invert_subject_object=True,
             subject=id, **core_parser.parse_args())
-
-@ns.route('/disease/<id>/homologs/')
-@api.doc(params={'id': 'CURIE identifier of disease, e.g. OMIM:605543, DOID:678. Equivalent IDs can be used with same results'})
-class DiseaseHomologAssociations(Resource):
-
-    @api.expect(core_parser)
-    @api.marshal_with(association_results)
-    def get(self, id):
-        pass
-
-@ns.route('/disease/<id>/interactions/')
-@api.doc(params={'id': 'CURIE identifier of disease, e.g. OMIM:605543, DOID:678. Equivalent IDs can be used with same results'})
-class DiseaseInteractionAssociations(Resource):
-
-    @api.expect(core_parser)
-    @api.marshal_with(association_results)
-    def get(self, id):
-        pass
-
 
 @ns.route('/disease/<id>/literature/')
 @api.doc(params={'id': 'CURIE identifier of disease, e.g. OMIM:605543, DOID:678. Equivalent IDs can be used with same results'})
@@ -575,24 +520,6 @@ class DiseaseModelAssociations(Resource):
             subject_category='disease', object_category='model',
             subject=id, **core_parser.parse_args()
         )
-
-@ns.route('/disease/<id>/ortholog/phenotypes/')
-@api.doc(params={'id': 'CURIE identifier of disease, e.g. OMIM:605543, DOID:678. Equivalent IDs can be used with same results'})
-class DiseaseOrthologPhenotypeAssociations(Resource):
-
-    @api.expect(core_parser)
-    @api.marshal_with(association_results)
-    def get(self, id):
-        pass
-
-@ns.route('/disease/<id>/ortholog/diseases/')
-@api.doc(params={'id': 'CURIE identifier of disease, e.g. OMIM:605543, DOID:678. Equivalent IDs can be used with same results'})
-class DiseaseOrthologDiseaseAssociations(Resource):
-
-    @api.expect(core_parser)
-    @api.marshal_with(association_results)
-    def get(self, id):
-        pass
 
 @ns.route('/disease/<id>/pathways/')
 @api.doc(params={'id': 'CURIE identifier of disease, e.g. DOID:4450. Equivalent IDs can be used with same results'})
@@ -645,10 +572,6 @@ class PhenotypeAnatomyAssociations(Resource):
         objs = scigraph.phenotype_to_entity_list(id)
         return objs
 
-@ns.route('/phenotype/<id>/celllines/')
-class PhenotypeCelllineAssociations(Resource):
-    pass
-
 @ns.route('/phenotype/<id>/diseases/')
 class PhenotypeDiseaseAssociations(Resource):
 
@@ -666,22 +589,6 @@ class PhenotypeDiseaseAssociations(Resource):
         # if fcs is not None:
         #     fcs['closure_bin'] = create_closure_bin(fcs.get('object_closure'))
         return results
-
-@ns.route('/phenotype/<id>/function/')
-class PhenotypeFunctionAssociations(Resource):
-
-    @api.expect(core_parser)
-    @api.marshal_list_with(association)
-    def get(self, id):
-        """
-        Returns biological functions associated with a Phenotype.
-
-        This may come from a combination of asserted knowledge (e.g. abnormal levels of metabolite to corresponding GO activity)
-        or from data-driven approach (cf Translator)
-
-        Results are typically represented as GO classes
-        """
-        pass
 
 
 @ns.route('/phenotype/<id>/genes/')
@@ -734,25 +641,6 @@ class PhenotypeGenotypeAssociations(Resource):
             subject_category='phenotype', object_category='genotype', invert_subject_object=True,
             subject=id, **core_parser.parse_args())
 
-@ns.route('/phenotype/<id>/homologs/')
-@api.doc(params={'id': 'Pheno class CURIE identifier, e.g  WBPhenotype:0000180 (axon morphology variant), MP:0001569 (abnormal circulating bilirubin level)'})
-class PhenotypeHomologAssociations(Resource):
-
-    @api.expect(core_parser)
-    @api.marshal_with(association_results)
-    def get(self, id):
-        pass
-
-
-@ns.route('/phenotype/<id>/interactions/')
-@api.doc(params={'id': 'Pheno class CURIE identifier, e.g  WBPhenotype:0000180 (axon morphology variant), MP:0001569 (abnormal circulating bilirubin level)'})
-class PhenotypeInteractionAssociations(Resource):
-
-    @api.expect(core_parser)
-    @api.marshal_with(association_results)
-    def get(self, id):
-        pass
-
 @ns.route('/phenotype/<id>/literature/')
 @api.doc(params={'id': 'Pheno class CURIE identifier, e.g  WBPhenotype:0000180 (axon morphology variant), MP:0001569 (abnormal circulating bilirubin level)'})
 class PhenotypeLieratureAssociations(Resource):
@@ -768,33 +656,6 @@ class PhenotypeLieratureAssociations(Resource):
             subject_category='phenotype', object_category='publication', invert_subject_object=True,
             subject=id, **core_parser.parse_args()
         )
-
-@ns.route('/phenotype/<id>/models/')
-@api.doc(params={'id': 'Pheno class CURIE identifier, e.g  WBPhenotype:0000180 (axon morphology variant), MP:0001569 (abnormal circulating bilirubin level)'})
-class PhenotypeModelAssociations(Resource):
-
-    @api.expect(core_parser)
-    @api.marshal_with(association_results)
-    def get(self, id):
-        pass
-
-@ns.route('/phenotype/<id>/ortholog/phenotypes/')
-@api.doc(params={'id': 'Pheno class CURIE identifier, e.g  WBPhenotype:0000180 (axon morphology variant), MP:0001569 (abnormal circulating bilirubin level)'})
-class PhenotypeOrthologPhenotypeAssociations(Resource):
-
-    @api.expect(core_parser)
-    @api.marshal_with(association_results)
-    def get(self, id):
-        pass
-
-@ns.route('/phenotype/<id>/ortholog/diseases/')
-@api.doc(params={'id': 'Pheno class CURIE identifier, e.g  WBPhenotype:0000180 (axon morphology variant), MP:0001569 (abnormal circulating bilirubin level)'})
-class PhenotypeOrthologDiseaseAssociations(Resource):
-
-    @api.expect(core_parser)
-    @api.marshal_with(association_results)
-    def get(self, id):
-        pass
 
 @ns.route('/phenotype/<id>/pathways/')
 @api.doc(params={'id': 'Pheno class CURIE identifier, e.g  WBPhenotype:0000180 (axon morphology variant), MP:0001569 (abnormal circulating bilirubin level)'})
@@ -1069,24 +930,6 @@ class VariantGeneAssociations(Resource):
             subject_category='variant', object_category='gene',
             subject=id, **core_parser.parse_args())
 
-@ns.route('/model/<id>/anatomy/')
-@api.doc(params={'id': 'id'})
-class ModelAnatomyAssociations(Resource):
-
-    @api.expect(core_parser)
-    @api.marshal_with(association_results)
-    def get(self, id):
-        pass
-
-@ns.route('/model/<id>/celllines/')
-@api.doc(params={'id': 'id'})
-class ModelCelllineAssociations(Resource):
-
-    @api.expect(core_parser)
-    @api.marshal_with(association_results)
-    def get(self, id):
-        pass
-
 @ns.route('/model/<id>/diseases/')
 @api.doc(params={'id': 'CURIE identifier for a model, e.g. MGI:5573196'})
 class ModelDiseaseAssociations(Resource):
@@ -1102,15 +945,6 @@ class ModelDiseaseAssociations(Resource):
             subject_category='model', object_category='disease',
             subject=id, **core_parser.parse_args()
         )
-
-@ns.route('/model/<id>/function/')
-@api.doc(params={'id': 'id'})
-class ModelFunctionAssociations(Resource):
-
-    @api.expect(core_parser)
-    @api.marshal_with(association_results)
-    def get(self, id):
-        pass
 
 @ns.route('/model/<id>/genes/')
 @api.doc(params={'id': 'CURIE identifier for a model, e.g. MMRRC:042787'})
@@ -1144,24 +978,6 @@ class ModelGenotypeAssociations(Resource):
             subject=id, **core_parser.parse_args()
         )
 
-@ns.route('/model/<id>/homologs/')
-@api.doc(params={'id': 'id'})
-class ModelHomologAssociation(Resource):
-
-    @api.expect(core_parser)
-    @api.marshal_with(association_results)
-    def get(self, id):
-        pass
-
-@ns.route('/model/<id>/interactions/')
-@api.doc(params={'id': 'id'})
-class ModelInteractionAssociations(Resource):
-
-    @api.expect(core_parser)
-    @api.marshal_with(association_results)
-    def get(self, id):
-        pass
-
 @ns.route('/model/<id>/literature/')
 @api.doc(params={'id': 'CURIE identifier for a model, e.g. MMRRC:042787'})
 class ModelLiteratureAssociations(Resource):
@@ -1177,33 +993,6 @@ class ModelLiteratureAssociations(Resource):
             subject_category='model', object_category='publication', invert_subject_object=True,
             subject=id, **core_parser.parse_args()
         )
-
-@ns.route('/model/<id>/ortholog/phenotypes/')
-@api.doc(params={'id': 'id'})
-class ModelOrthologPhenotypeAssociations(Resource):
-
-    @api.expect(core_parser)
-    @api.marshal_with(association_results)
-    def get(self, id):
-        pass
-
-@ns.route('/model/<id>/ortholog/diseases/')
-@api.doc(params={'id': 'id'})
-class ModelOrthologDiseaseAssociations(Resource):
-
-    @api.expect(core_parser)
-    @api.marshal_with(association_results)
-    def get(self, id):
-        pass
-
-@ns.route('/model/<id>/pathways/')
-@api.doc(params={'id': 'id'})
-class ModelPathwayAssociations(Resource):
-
-    @api.expect(core_parser)
-    @api.marshal_with(association_results)
-    def get(self, id):
-        pass
 
 @ns.route('/model/<id>/phenotypes/')
 @api.doc(params={'id': 'id'})
