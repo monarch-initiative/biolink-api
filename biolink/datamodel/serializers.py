@@ -101,7 +101,9 @@ entity_reference = api.model('EntityReference', {
 
 relation = api.inherit('Relation', named_object, {
 })
+
 relation_ref = api.inherit('RelationRef', named_object_core, {
+    'inverse': fields.Boolean(description='is relation inverted', default=False)
 })
 
 publication = api.inherit('Publication', named_object, {
