@@ -15,7 +15,7 @@ def get_simple_parser():
         """
         p = api.parser()
         p.add_argument('category', action='append', help='e.g. gene, disease')
-        p.add_argument('prefix', type=str, required=False, help='ontology prefix: HP, -MONDO')
+        p.add_argument('prefix', action='append', help='ontology prefix: HP, -MONDO')
         p.add_argument('boost_fx', action='append', help='boost function e.g. pow(edges,0.334)')
         p.add_argument('boost_q', action='append', help='boost query e.g. category:genotype^-10')
         p.add_argument('taxon', action='append', help='taxon filter, eg NCBITaxon:9606, includes inferred taxa')
