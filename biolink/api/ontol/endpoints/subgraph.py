@@ -1,7 +1,7 @@
 import logging
 
 from flask import request
-from flask_restplus import Resource
+from flask_restplus import Resource, inputs
 from biolink.api.restplus import api
 from biolink.ontology.ontology_manager import get_ontology
 from ontobio.ontol_factory import OntologyFactory
@@ -17,12 +17,14 @@ ns = api.namespace('ontol', description='extract a subgraph from an ontology')
 
 parser = api.parser()
 parser.add_argument('cnode', action='append', help='Additional classes')
-parser.add_argument('include_meta', type=bool, help='Additional classes')
+parser.add_argument('include_ancestors', type=inputs.boolean, help='Include Ancestors')
+parser.add_argument('include_descendants', type=inputs.boolean, help='Include Descendants')
 parser.add_argument('relation', action='append', default=['subClassOf', 'BFO:0000050'], help='Additional classes')
+parser.add_argument('include_meta', type=inputs.boolean, help='Include metadata in response')
 
 @ns.route('/subgraph/<ontology>/<node>')
-@api.doc(params={'ontology': 'ontology id, e.g. go, uberon, mp, hp)'})
-@api.doc(params={'node': 'class id. E.g. UBERON:0002102'})
+@api.doc(params={'ontology': 'ontology ID, e.g. go, uberon, mp, hp'})
+@api.doc(params={'node': 'class ID, e.g. HP:0001288'})
 class ExtractOntologySubgraphResource(Resource):
 
     @api.expect(parser)
@@ -31,30 +33,23 @@ class ExtractOntologySubgraphResource(Resource):
         Extract a subgraph from an ontology
         """
         args = parser.parse_args()
-
         qnodes = [node]
         if args.cnode is not None:
             qnodes += args.cnode
 
         factory = OntologyFactory()
         ont = get_ontology(ontology)
-        #subont = ont.subontology([id], relations=args.relations)
         relations = args.relation
         print("Traversing: {} using {}".format(qnodes,relations))
         nodes = ont.traverse_nodes(qnodes,
-                                   up=True,
-                                   down=False,
+                                   up=args.include_ancestors,
+                                   down=args.include_descendants,
                                    relations=relations)
 
         subont = ont.subontology(nodes, relations=relations)
-        
+        # TODO: meta is included regardless of whether include_meta is True or False
         ojr = OboJsonGraphRenderer(include_meta=args.include_meta)
         json_obj = ojr.to_json(subont)
-        # TODO: remove this next release of ontobio
-        if not args.include_meta:
-            for g in json_obj['graphs']:
-                for n in g['nodes']:
-                    n['meta']={}
         return json_obj
 
 
