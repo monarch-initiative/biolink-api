@@ -1,7 +1,7 @@
 import logging
 
 from flask import request
-from flask_restplus import Resource
+from flask_restplus import Resource, inputs
 from biolink.datamodel.serializers import association, association_results
 from biolink.api.restplus import api
 from ontobio.golr.golr_associations import get_association, search_associations
@@ -16,8 +16,8 @@ parser.add_argument('subject_taxon', help='SUBJECT TAXON id, e.g. NCBITaxon:9606
 parser.add_argument('evidence', help="""Object id, e.g. ECO:0000501 (for IEA; Includes inferred by default)
                     or a specific publication or other supporting ibject, e.g. ZFIN:ZDB-PUB-060503-2.
                     """)
-parser.add_argument('graphize', type=bool, help='If set, includes graph object in response')
-parser.add_argument('fl_excludes_evidence', type=bool, help='If set, excludes evidence objects in response')
+parser.add_argument('graphize', type=inputs.boolean, default=False, help='If set, includes graph object in response')
+parser.add_argument('fl_excludes_evidence', type=inputs.boolean, default=False, help='If set, excludes evidence objects in response')
 parser.add_argument('page', type=int, required=False, default=1, help='Return results starting with this row number')
 parser.add_argument('rows', type=int, required=False, default=10, help='limit on number of rows')
 parser.add_argument('map_identifiers', help='Prefix to map all IDs to. E.g. NCBIGene, HP, OMIM, DOID')
@@ -25,7 +25,7 @@ parser.add_argument('subject_category', help='e.g. gene, genotype, disease, func
 parser.add_argument('object_category', help='e.g. disease, phenotype, gene')
 parser.add_argument('slim', action='append', help='Map objects up (slim) to a higher level category. Value can be ontology class ID or subset ID')
 
-parser.add_argument('use_compact_associations', type=bool, help='If true, returns results in compact associations format')
+parser.add_argument('use_compact_associations', type=inputs.boolean, default=False, help='If true, returns results in compact associations format')
 
 @ns.route('/from/<subject>')
 @api.doc(params={'subject': 'Return associations emanating from this node, e.g. specifying NCBIGene:84570 will return gene-phenotype, gene-function etc for this gene'})

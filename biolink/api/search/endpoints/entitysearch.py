@@ -1,6 +1,6 @@
 import logging
 
-from flask_restplus import Resource
+from flask_restplus import Resource, inputs
 from biolink.api.restplus import api
 from biolink.datamodel.serializers import search_result, autocomplete_results, lay_results
 from ontobio.golr.golr_query import GolrSearchQuery, GolrLayPersonSearch
@@ -33,7 +33,7 @@ def get_advanced_parser():
         p.add_argument('attribute', action='append', help='positive attributes, e.g. ontology terms, to include in query')
         p.add_argument('negative_attribute', action='append', help='negative attributes, e.g. ontology terms, to exclude in query')
         p.add_argument('weighted_attribute', action='append', help='weighted attributes, specified as a range from 0 to 1 plus an ontology term, e.g. 0.3*HP:0000001')
-        p.add_argument('noise', type=bool, help='If set, uses noise-tolerant querying, e.g owlsim, boqa')
+        p.add_argument('noise', type=inputs.boolean, default=False, help='If set, uses noise-tolerant querying, e.g owlsim, boqa')
         return p
 
 def get_layperson_parser():
