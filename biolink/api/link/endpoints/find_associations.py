@@ -1,7 +1,7 @@
 import logging
 
 from flask import request
-from flask_restplus import Resource
+from flask_restplus import Resource, inputs
 from biolink.datamodel.serializers import association, association_results
 from biolink.api.restplus import api
 from ontobio.golr.golr_associations import get_association, search_associations, GolrFields
@@ -21,8 +21,8 @@ parser.add_argument('object', help='OBJECT id, e.g. HP:0011927. Includes inferre
 parser.add_argument('evidence', help="""Object id, e.g. ECO:0000501 (for IEA; Includes inferred by default)
                     or a specific publication or other supporting ibject, e.g. ZFIN:ZDB-PUB-060503-2.
                     """)
-parser.add_argument('graphize', type=bool, help='If set, includes graph object in response')
-parser.add_argument('fl_excludes_evidence', type=bool, help='If set, excludes evidence objects in response')
+parser.add_argument('graphize', type=inputs.boolean, default=False, help='If set, includes graph object in response')
+parser.add_argument('fl_excludes_evidence', type=inputs.boolean, default=False, help='If set, excludes evidence objects in response')
 parser.add_argument('page', type=int, required=False, default=1, help='Page number')
 parser.add_argument('rows', type=int, required=False, default=10, help='number of rows')
 parser.add_argument('map_identifiers', help='Prefix to map all IDs to. E.g. NCBIGene')
