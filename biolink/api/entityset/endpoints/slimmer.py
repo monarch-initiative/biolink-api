@@ -36,13 +36,16 @@ class EntitySetSlimmer(Resource):
         # currently incomplete because code is not checking for the possibility of >1 subjects
 
         subjects[0] = subjects[0].replace('WormBase:', 'WB:', 1)
+        prots = None
+        if category == 'function':
+            # get proteins for a gene only when the category is 'function'
+            if (subjects[0].startswith('HGNC') or subjects[0].startswith('NCBIGene') or subjects[0].startswith('ENSEMBL:')):
+                sg_dev = SciGraph(url='https://scigraph-data-dev.monarchinitiative.org/scigraph/')
+                prots = sg_dev.gene_to_uniprot_proteins(subjects[0])
+                if len(prots) == 0:
+                    prots = subjects
 
-        if (subjects[0].startswith('HGNC') or subjects[0].startswith('NCBIGene') or subjects[0].startswith('ENSEMBL:')):
-            sg_dev = SciGraph(url='https://scigraph-data-dev.monarchinitiative.org/scigraph/')
-            prots = sg_dev.gene_to_uniprot_proteins(subjects[0])
-            if len(prots) == 0:
-                prots = subjects
-        else:
+        if prots is None:
             prots = subjects
 
         results = map2slim(subjects=prots,
