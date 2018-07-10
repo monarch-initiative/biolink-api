@@ -185,7 +185,6 @@ class GeneDiseaseAssociations(Resource):
         Returns diseases associated with gene
         """
         args = core_parser.parse_args()
-        print(args)
 
         return search_associations(
             subject_category='gene', object_category='disease',
@@ -233,7 +232,7 @@ class GeneAnatomyAssociations(Resource):
         Returns anatomical entities associated with a gene
         """
 
-        results = search_associations(
+        return search_associations(
             subject_category='gene', object_category='anatomical entity',
             subject=id, **core_parser.parse_args()
         )
@@ -308,7 +307,7 @@ class GeneLiteratureAssociations(Resource):
         Returns publications associated with a gene
         """
 
-        results = search_associations(
+        return search_associations(
             subject_category='gene', object_category='publication', invert_subject_object=True,
             subject=id, **core_parser.parse_args()
         )
@@ -324,7 +323,7 @@ class GeneModelAssociations(Resource):
         Returns models associated with a gene
         """
 
-        results = search_associations(
+        return search_associations(
             subject_category='gene', object_category='model', invert_subject_object=True,
             subject=id, **core_parser.parse_args()
         )
@@ -515,7 +514,7 @@ class DiseaseModelAssociations(Resource):
         """
 
         # Note: ontobio automagically sets invert_subject_object when (subject,object) is (disease,model)
-        results = search_associations(
+        return search_associations(
             subject_category='disease', object_category='model',
             subject=id, **core_parser.parse_args()
         )
@@ -531,7 +530,7 @@ class DiseasePathwayAssociations(Resource):
         Returns pathways associated with a disease
         """
 
-        results = search_associations(
+        return search_associations(
             subject_category='disease', object_category='pathway',
             subject=id, **core_parser.parse_args()
         )
@@ -547,7 +546,7 @@ class DiseaseVariantAssociations(Resource):
         Returns variants associated with a disease
         """
 
-        results = search_associations(
+        return search_associations(
             subject_category='disease', object_category='variant', invert_subject_object=True,
             subject=id, **core_parser.parse_args()
         )
@@ -620,10 +619,9 @@ class PhenotypeGeneByTaxonAssociations(Resource):
         For example, + NCBITaxon:10090 (mouse)
 
         """
-        results = select_distinct_subjects(subject_category='gene',
+        return select_distinct_subjects(subject_category='gene',
                                            object_category='phenotype',
                                            subject_taxon=taxid)
-        return results
 
 @ns.route('/phenotype/<id>/genotypes/')
 @api.doc(params={'id': 'Pheno class CURIE identifier, e.g  WBPhenotype:0000180 (axon morphology variant), MP:0001569 (abnormal circulating bilirubin level)'})
@@ -988,7 +986,7 @@ class ModelLiteratureAssociations(Resource):
         Returns publications associated with a model
         """
 
-        results = search_associations(
+        return search_associations(
             subject_category='model', object_category='publication', invert_subject_object=True,
             subject=id, **core_parser.parse_args()
         )
@@ -1020,7 +1018,7 @@ class ModelVariantAssociations(Resource):
         Returns variants associated with a model
         """
 
-        results = search_associations(
+        return search_associations(
             subject_category='model', object_category='variant',
             subject=id, **core_parser.parse_args()
         )
