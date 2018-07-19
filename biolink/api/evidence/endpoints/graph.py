@@ -11,6 +11,8 @@ import pysolr
 #import matplotlib.pyplot as plt
 import networkx as nx
 
+from biolink import USER_AGENT
+
 log = logging.getLogger(__name__)
 
 ns = api.namespace('evidence/graph', description='Operations on evidence graphs')
@@ -35,7 +37,7 @@ class EvidenceGraphObject(Resource):
         ## TODO: restore this next release of OntoBio (0.2.3 or higher)
         ## assoc = get_association(id)
         
-        results = search_associations(fq={'id':id})
+        results = search_associations(fq={'id':id}, user_agent=USER_AGENT)
         assoc = results['associations'][0]
         eg = assoc.get('evidence_graph')
         return [eg]
@@ -53,7 +55,7 @@ class EvidenceGraphImage(Resource):
         """
         args = parser.parse_args()
 
-        assoc = get_association(id)
+        assoc = get_association(id, user_agent=USER_AGENT)
         eg = {'graphs':[assoc.get('evidence_graph')]}
         digraph = convert_json_object(eg)
         #fp = tempfile.TemporaryFile()

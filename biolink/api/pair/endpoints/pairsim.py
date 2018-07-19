@@ -4,7 +4,7 @@ from flask import request
 from flask_restplus import Resource
 from ontobio.golr.golr_sim import subject_pair_simj
 from biolink.api.restplus import api
-import pysolr
+from biolink import USER_AGENT
 
 log = logging.getLogger(__name__)
 
@@ -25,9 +25,12 @@ class PairSimJaccardResource(Resource):
         """
         args = parser.parse_args()
 
-        results = subject_pair_simj(id1,
-                                    id2,
-                                    **args)
+        results = subject_pair_simj(
+            id1,
+            id2,
+            user_agent=USER_AGENT,
+            **args
+        )
         return results
     
 

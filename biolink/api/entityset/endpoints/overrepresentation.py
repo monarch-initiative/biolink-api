@@ -10,6 +10,7 @@ from ontobio.config import get_config
 from ontobio.assoc_factory import AssociationSetFactory
 
 from biolink.api.restplus import api
+from biolink import USER_AGENT
 
 log = logging.getLogger(__name__)
 

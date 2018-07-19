@@ -6,7 +6,7 @@ from biolink.datamodel.serializers import compact_association_set, association_r
 from ontobio.golr.golr_associations import search_associations, GolrFields
 
 from biolink.api.restplus import api
-import pysolr
+from biolink import USER_AGENT
 
 MAX_ROWS=10000
 
@@ -30,11 +30,14 @@ class EntitySetHomologs(Resource):
 
         M=GolrFields()
         rel = 'RO:0002434'  # TODO; allow other types
-        results = search_associations(subjects=args.get('subject'),
-                                      select_fields=[M.SUBJECT, M.RELATION, M.OBJECT],
-                                      use_compact_associations=True,
-                                      relation=rel,
-                                      rows=MAX_ROWS,
-                                      facet_fields=[],
-                                      **args)
+        results = search_associations(
+            subjects=args.get('subject'),
+            select_fields=[M.SUBJECT, M.RELATION, M.OBJECT],
+            use_compact_associations=True,
+            relation=rel,
+            rows=MAX_ROWS,
+            facet_fields=[],
+            user_agent=USER_AGENT,
+            **args
+        )
         return results

@@ -6,7 +6,7 @@ from biolink.datamodel.serializers import compact_association_set, association_r
 from ontobio.golr.golr_associations import search_associations, GolrFields
 
 from biolink.api.restplus import api
-import pysolr
+from biolink import USER_AGENT
 
 MAX_ROWS=10000
 
@@ -33,11 +33,14 @@ class EntitySetSummary(Resource):
         args = parser.parse_args()
 
         M=GolrFields()
-        results = search_associations(subjects=args.get('subject'),
-                                      rows=0,
-                                      facet_fields=[M.OBJECT_CLOSURE, M.IS_DEFINED_BY],
-                                      facet_limit=-1,
-                                      **args)
+        results = search_associations(
+            subjects=args.get('subject'),
+            rows=0,
+            facet_fields=[M.OBJECT_CLOSURE, M.IS_DEFINED_BY],
+            facet_limit=-1,
+            user_agent=USER_AGENT,
+            **args
+        )
         print("RESULTS="+str(results))
         obj_count_dict = results['facet_counts'][M.OBJECT_CLOSURE]
         del results['facet_counts'][M.OBJECT_CLOSURE]
@@ -57,18 +60,16 @@ class EntitySetAssociations(Resource):
         args = parser.parse_args()
 
         M=GolrFields()
-        #results = search_associations(subjects=args.get('subject'),
-        #                              rows=0,
-        #                              pivot_subject_object=True,
-        #                              facet_fields=[],
-        #                              facet_limit=-1,
-        #                              **args)
-        results = search_associations(subjects=args.get('subject'),
-                                      select_fields=[M.SUBJECT, M.RELATION, M.OBJECT],
-                                      use_compact_associations=True,
-                                      rows=MAX_ROWS,
-                                      facet_fields=[],
-                                      **args)
+
+        results = search_associations(
+            subjects=args.get('subject'),
+            select_fields=[M.SUBJECT, M.RELATION, M.OBJECT],
+            use_compact_associations=True,
+            rows=MAX_ROWS,
+            facet_fields=[],
+            user_agent=USER_AGENT,
+            **args
+        )
         return results
 
 #@ns.route('/DEPRECATEDhomologs/')

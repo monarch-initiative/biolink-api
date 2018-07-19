@@ -4,6 +4,7 @@ from flask_restplus import Resource, inputs
 from biolink.api.restplus import api
 from biolink.datamodel.serializers import search_result, autocomplete_results, lay_results
 from ontobio.golr.golr_query import GolrSearchQuery, GolrLayPersonSearch
+from biolink import USER_AGENT
 
 log = logging.getLogger(__name__)
 
@@ -70,7 +71,7 @@ class SearchEntities(Resource):
         Returns list of matching concepts or entities using lexical search
         """
         args = simple_parser.parse_args()
-        q = GolrSearchQuery(term, **args)
+        q = GolrSearchQuery(term, user_agent=USER_AGENT, **args)
         results = q.search()
         return results
 
@@ -101,7 +102,7 @@ class SearchHPOEntities(Resource):
         if input_args['anatomical_system_label'] is not None:
             args['fq']['anatomy_closure_label'] = input_args['anatomical_system_label']
 
-        q = GolrLayPersonSearch(term, **args)
+        q = GolrLayPersonSearch(term, user_agent=USER_AGENT, **args)
         results = q.autocomplete()
         return results
 
@@ -116,7 +117,7 @@ class Autocomplete(Resource):
         Returns list of matching concepts or entities using lexical search
         """
         args = simple_parser.parse_args()
-        q = GolrSearchQuery(term, **args)
+        q = GolrSearchQuery(term, user_agent=USER_AGENT, **args)
         results = q.autocomplete()
         return results
 
