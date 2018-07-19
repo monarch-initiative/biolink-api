@@ -46,6 +46,9 @@ TYPE_INDIVIDUAL = 'individual'
 core_parser_with_rel = core_parser.copy()
 core_parser_with_rel.add_argument('relationship_type', choices=[INVOLVED_IN, INVOLVED_IN_REGULATION_OF, ACTS_UPSTREAM_OF_OR_WITHIN], help="relationship type ('{}', '{}' or '{}')".format(INVOLVED_IN, INVOLVED_IN_REGULATION_OF, ACTS_UPSTREAM_OF_OR_WITHIN))
 
+homolog_parser = core_parser.copy()
+homolog_parser.add_argument('homolog_taxon', help='Taxon CURIE of homolog, e.g. NCBITaxon:9606. Can be intermediate note, includes inferred by default')
+homolog_parser.add_argument('homology_type', choices=['P', 'O', 'LDO'], help='P, O or LDO (paralog, ortholog or least-diverged).')
 
 scigraph = SciGraph('https://scigraph-data.monarchinitiative.org/scigraph/')
 
@@ -112,16 +115,8 @@ class GenericAssociations(Resource):
             **core_parser.parse_args()
         )
 
-@api.doc(params={'id': 'id, e.g. NCBIGene:3630. Equivalent IDs can be used with same results'})
-class AbstractGeneAssociationResource(Resource):
-
-    @api.expect(core_parser)
-    @api.marshal_with(association_results)
-    def get(self, id):
-        pass
-
 @ns.route('/gene/<id>/interactions/')
-class GeneInteractions(AbstractGeneAssociationResource):
+class GeneInteractions(Resource):
 
     @api.expect(core_parser)
     @api.marshal_with(association_results)
@@ -138,12 +133,9 @@ class GeneInteractions(AbstractGeneAssociationResource):
             **core_parser.parse_args()
         )
 
-homolog_parser = core_parser.copy()
-homolog_parser.add_argument('homolog_taxon', help='Taxon CURIE of homolog, e.g. NCBITaxon:9606. Can be intermediate note, includes inferred by default')
-homolog_parser.add_argument('homology_type', choices=['P', 'O', 'LDO'], help='P, O or LDO (paralog, ortholog or least-diverged).')
-
 @ns.route('/gene/<id>/homologs/')
-class GeneHomologAssociations(AbstractGeneAssociationResource):
+@api.doc(params={'id': 'id, e.g. NCBIGene:3630. Equivalent IDs can be used with same results'})
+class GeneHomologAssociations(Resource):
 
     @api.expect(homolog_parser)
     @api.marshal_with(association_results)
@@ -285,7 +277,8 @@ class GeneGenotypeAssociations(Resource):
         )
 
 @ns.route('/gene/<id>/function/')
-class GeneFunctionAssociations(AbstractGeneAssociationResource):
+@api.doc(params={'id': 'id, e.g. NCBIGene:3630. Equivalent IDs can be used with same results'})
+class GeneFunctionAssociations(Resource):
 
     @api.expect(core_parser)
     @api.marshal_with(association_results)
