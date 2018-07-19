@@ -5,7 +5,8 @@ from flask_restplus import Resource, inputs
 from biolink.datamodel.serializers import association, association_results
 from biolink.api.restplus import api
 from ontobio.golr.golr_associations import get_association, search_associations, GolrFields
-import pysolr
+
+from biolink import USER_AGENT
 
 log = logging.getLogger(__name__)
 
@@ -41,7 +42,7 @@ class AssociationObject(Resource):
         """
         args = parser.parse_args()
 
-        return get_association(id)
+        return get_association(id, user_agent=USER_AGENT)
 
 
 @ns.route('/find/')
@@ -55,7 +56,7 @@ class AssociationSearch(Resource):
         """
         args = parser.parse_args()
 
-        return search_associations(**args)
+        return search_associations(user_agent=USER_AGENT, **args)
 
 @ns.route('/find/<subject_category>/')
 @api.doc(params={'object_category': 'CATEGORY of entity at link OBJECT (target), e.g. phenotype, disease'})
@@ -69,7 +70,7 @@ class AssociationBySubjectCategorySearch(Resource):
         """
         args = parser.parse_args()
 
-        return search_associations(subject_category=subject_category, **args)
+        return search_associations(subject_category=subject_category, user_agent=USER_AGENT, **args)
 
 @ns.route('/find/<subject_category>/<object_category>/')
 @api.doc(params={'subject_category': 'CATEGORY of entity at link SUBJECT (source), e.g. gene, disease, genotype'})
@@ -84,7 +85,12 @@ class AssociationBySubjectAndObjectCategorySearch(Resource):
         """
         args = parser.parse_args()
 
-        return search_associations(subject_category=subject_category, object_category=object_category, **args)
+        return search_associations(
+            subject_category=subject_category,
+            object_category=object_category,
+            user_agent=USER_AGENT,
+            **args
+        )
 
     
     

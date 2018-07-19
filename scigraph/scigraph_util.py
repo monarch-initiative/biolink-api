@@ -12,6 +12,8 @@ from scigraph.model.BBOPGraph import *
 from scigraph.model.Concept import *
 from scigraph.model.EntityAnnotationResults import *
 from biomodel.core import NamedObject, BioObject, SynonymPropertyValue
+from ontobio.util.user_agent import get_user_agent
+from biolink import NAME, VERSION
 
 # TODO: modularize into vocab/graph/etc?
 
@@ -223,12 +225,12 @@ class SciGraph:
 
     # Internal wrapper onto requests API
     def get_response(self, path="", q=None, format=None, **params):
-        url = self.url_prefix + path;
+        url = self.url_prefix + path
         if q is not None:
-            url += "/" +q;
+            url += "/" +q
         if format is not None:
-            url = url  + "." + format;
-        r = requests.get(url, params=params)
+            url = url  + "." + format
+        r = requests.get(url, params=params, headers={'User-Agent': get_user_agent(name=NAME, version=VERSION, modules=[requests], caller_name=__name__)})
         return r
 
     # Simple mapping from bbop graphs to domain-specific objects
@@ -341,6 +343,7 @@ class SciGraph:
         # TODO - include closure
         bbg = self.neighbors(id, direction='INCOMING', depth=1)
         return bbg_to_assocs(bbg)
+
 
 
 def bbg_to_assocs(g):

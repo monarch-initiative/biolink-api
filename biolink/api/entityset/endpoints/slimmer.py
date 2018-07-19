@@ -6,7 +6,7 @@ from biolink.datamodel.serializers import association
 from ontobio.golr.golr_associations import map2slim
 from biolink.api.restplus import api
 from scigraph.scigraph_util import SciGraph
-import pysolr
+from biolink import USER_AGENT
 
 log = logging.getLogger(__name__)
 
@@ -48,11 +48,14 @@ class EntitySetSlimmer(Resource):
         if prots is None:
             prots = subjects
 
-        results = map2slim(subjects=prots,
-                           slim=slim,
-                           rows=200,
-                           object_category=category,
-                           **args)
+        results = map2slim(
+            subjects=prots,
+            slim=slim,
+            rows=200,
+            object_category=category,
+            user_agent=USER_AGENT,
+            **args
+        )
         # To the fullest extent possible return HGNC ids
         checked = {}
         for result in results:

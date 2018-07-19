@@ -8,6 +8,7 @@ from ontobio.golr.golr_associations import bulk_fetch
 from ontobio.golr.golr_associations import search_associations
 from ontobio.golr.golr_associations import MAX_ROWS
 from biolink.datamodel.serializers import compact_association_set
+from biolink import USER_AGENT
 
 # https://flask-limiter.readthedocs.io/en/stable/
 from flask import Flask
@@ -44,7 +45,9 @@ class MartGeneAssociationsResource(Resource):
         """
         assocs = bulk_fetch(subject_category='gene',
                             object_category=object_category,
-                            taxon=taxon)
+                            taxon=taxon,
+                            user_agent=USER_AGENT
+                            )
         return assocs
 
 @ns.route('/case/<object_category>/<taxon>')
@@ -68,7 +71,9 @@ class MartCaseAssociationsResource(Resource):
 
         assocs = bulk_fetch(subject_category='case',
                             object_category=object_category,
-                            taxon=taxon)
+                            taxon=taxon,
+                            user_agent=USER_AGENT
+                            )
         return assocs
 
 @ns.route('/disease/<object_category>/<taxon>')
@@ -92,5 +97,7 @@ class MartDiseaseAssociationsResource(Resource):
 
         assocs = bulk_fetch(subject_category='disease',
                             object_category=object_category,
-                            taxon=taxon)
+                            taxon=taxon,
+                            user_agent=USER_AGENT
+                            )
         return assocs

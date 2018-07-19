@@ -5,7 +5,8 @@ from flask_restplus import Resource, inputs
 from biolink.datamodel.serializers import association, association_results
 from biolink.api.restplus import api
 from ontobio.golr.golr_associations import get_association, search_associations
-import pysolr
+
+from biolink import USER_AGENT
 
 log = logging.getLogger(__name__)
 
@@ -39,7 +40,7 @@ class AssociationsFrom(Resource):
         """
         args = parser.parse_args()
 
-        return search_associations(subject=subject, **args)
+        return search_associations(subject=subject, user_agent=USER_AGENT, **args)
 
 @ns.route('/to/<object>')
 @api.doc(params={'object': 'Return associations pointing to this node. E.g. specifying MP:0013765 will return all genes, variants, strains etc annotated with this term. Can also be a biological entity such as a gene'})
@@ -53,7 +54,7 @@ class AssociationsTo(Resource):
         """
         args = parser.parse_args()
 
-        return search_associations(object=object, **args)
+        return search_associations(object=object, user_agent=USER_AGENT, **args)
 
 @ns.route('/between/<subject>/<object>')
 @api.doc(params={'subject': 'E.g. e.g. MGI:1342287'})
@@ -72,7 +73,7 @@ class AssociationsBetween(Resource):
         
         """
         args = parser.parse_args()
-        return search_associations(object=object, **args)
+        return search_associations(object=object, user_agent=USER_AGENT, **args)
     
     
 
