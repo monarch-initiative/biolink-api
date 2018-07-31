@@ -12,10 +12,16 @@ log = logging.getLogger(__name__)
 
 ns = api.namespace('bioentityset/slimmer', description='maps a set of entities to a slim')
 
+INVOLVED_IN = 'involved_in'
+ACTS_UPSTREAM_OF_OR_WITHIN = 'acts_upstream_of_or_within'
+
 parser = api.parser()
 parser.add_argument('subject', action='append', help='Entity ids to be examined, e.g. NCBIGene:9342, NCBIGene:7227, NCBIGene:8131, NCBIGene:157570, NCBIGene:51164, NCBIGene:6689, NCBIGene:6387')
 parser.add_argument('slim', action='append', help='Map objects up (slim) to a higher level category. Value can be ontology class ID (IMPLEMENTED) or subset ID (TODO)')
 parser.add_argument('exclude_automatic_assertions', type=inputs.boolean, default=False, help='If set, excludes associations that involve IEAs (ECO:0000501)')
+parser.add_argument('rows', type=int, required=False, default=100, help='number of rows')
+parser.add_argument('start', type=int, required=False, help='beginning row')
+parser.add_argument('relationship_type', choices=[INVOLVED_IN, ACTS_UPSTREAM_OF_OR_WITHIN], default=ACTS_UPSTREAM_OF_OR_WITHIN, help="relationship type ('{}' or '{}')".format(INVOLVED_IN, ACTS_UPSTREAM_OF_OR_WITHIN))
 
 @ns.route('/<category>')
 class EntitySetSlimmer(Resource):
@@ -51,7 +57,6 @@ class EntitySetSlimmer(Resource):
         results = map2slim(
             subjects=prots,
             slim=slim,
-            rows=200,
             object_category=category,
             user_agent=USER_AGENT,
             **args
