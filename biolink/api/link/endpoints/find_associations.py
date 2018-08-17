@@ -18,6 +18,7 @@ parser = api.parser()
 parser.add_argument('subject', help='Return associations emanating from this node, e.g. NCBIGene:84570, ZFIN:ZDB-GENE-050417-357 (If ID is from an ontology then results would include inferred associations, by default)')
 parser.add_argument('subject_taxon', help='Subject taxon ID, e.g. NCBITaxon:9606 (Includes inferred associations, by default)')
 parser.add_argument('object', help='Return associations pointing to this node, e.g. HP:0011927 (If ID is from an ontology then results would include inferred associations, by default)')
+parser.add_argument('relation', help='Filter by relation CURIE, e.g. RO:0002200 (has_phenotype), RO:0002607 (is marker for), RO:HOM0000017 (orthologous to), etc.')
 parser.add_argument('evidence', help='Object ID, e.g. ECO:0000501 (for IEA; Includes inferred associations, by default), a specific publication or other supporting object, e.g. ZFIN:ZDB-PUB-060503-2')
 parser.add_argument('graphize', type=inputs.boolean, default=False, help='If true, includes graph object in response')
 parser.add_argument('unselect_evidence', type=inputs.boolean, default=False, help='If true, excludes evidence objects in response')
@@ -82,7 +83,6 @@ class AssociationBySubjectAndObjectCategorySearch(Resource):
         Returns list of matching associations between a given Subject and Object category
         """
         args = parser.parse_args()
-
         return search_associations(
             subject_category=subject_category,
             object_category=object_category,
