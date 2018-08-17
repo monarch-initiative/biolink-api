@@ -8,12 +8,17 @@ from ontobio.golr.golr_associations import bulk_fetch
 from ontobio.golr.golr_associations import search_associations
 from ontobio.golr.golr_associations import MAX_ROWS
 from biolink.datamodel.serializers import compact_association_set
+from ontobio.vocabulary.relations import HomologyTypes
 from biolink import USER_AGENT
 
 # https://flask-limiter.readthedocs.io/en/stable/
 from flask import Flask
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+
+homolog_rel = HomologyTypes.Homolog.value
+paralog_rel = HomologyTypes.Paralog.value
+ortholog_rel = HomologyTypes.Ortholog.value
 
 app = Flask(__name__)
 limiter = Limiter(
@@ -100,4 +105,42 @@ class MartDiseaseAssociationsResource(Resource):
                             taxon=taxon,
                             user_agent=USER_AGENT
                             )
+        return assocs
+
+@ns.route('/paralog/<taxon1>/<taxon2>')
+@api.doc(params={'taxon1': 'subject taxon, e.g. NCBITaxon:9606'})
+@api.doc(params={'taxon2': 'object taxon, e.g. NCBITaxon:9606'})
+class MartParalogAssociationsResource(Resource):
+
+    def get(self, taxon1, taxon2):
+        """
+        Bulk download of paralogs
+        """
+        assocs = bulk_fetch(
+            subject_category='gene',
+            object_category='gene',
+            relation=paralog_rel,
+            taxon=taxon1,
+            object_taxon=taxon2,
+            user_agent=USER_AGENT
+        )
+        return assocs
+
+@ns.route('/ortholog/<taxon1>/<taxon2>')
+@api.doc(params={'taxon1': 'subject taxon, e.g. NCBITaxon:9606'})
+@api.doc(params={'taxon2': 'object taxon, e.g. NCBITaxon:10090'})
+class MartOrthologAssociationsResource(Resource):
+
+    def get(self, taxon1, taxon2):
+        """
+        Bulk download of orthologs
+        """
+        assocs = bulk_fetch(
+            subject_category='gene',
+            object_category='gene',
+            relation=ortholog_rel,
+            taxon=taxon1,
+            object_taxon=taxon2,
+            user_agent=USER_AGENT
+        )
         return assocs
