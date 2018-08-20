@@ -20,14 +20,12 @@ ns = api.namespace('bioentity', description='Retrieval of domain entities plus a
 core_parser = api.parser()
 core_parser.add_argument('rows', type=int, required=False, default=100, help='number of rows')
 core_parser.add_argument('start', type=int, required=False, help='beginning row')
-core_parser.add_argument('unselect_evidence', type=inputs.boolean, default=False, help='If set, excludes evidence objects in response')
-core_parser.add_argument('exclude_automatic_assertions', type=inputs.boolean, default=False, help='If set, excludes associations that involve IEAs (ECO:0000501)')
+core_parser.add_argument('unselect_evidence', type=inputs.boolean, default=False, help='If true, excludes evidence objects in response')
+core_parser.add_argument('exclude_automatic_assertions', type=inputs.boolean, default=False, help='If true, excludes associations that involve IEAs (ECO:0000501)')
 core_parser.add_argument('fetch_objects', type=inputs.boolean, default=True, help='If true, returns a distinct set of association.objects (typically ontology terms). This appears at the top level of the results payload')
 core_parser.add_argument('use_compact_associations', type=inputs.boolean, default=False, help='If true, returns results in compact associations format')
 core_parser.add_argument('slim', action='append', help='Map objects up (slim) to a higher level category. Value can be ontology class ID or subset ID')
-core_parser.add_argument('evidence', help="""Object id, e.g. ECO:0000501 (for IEA; Includes inferred by default)
-                    or a specific publication or other supporting ibject, e.g. ZFIN:ZDB-PUB-060503-2.
-                    """)
+core_parser.add_argument('evidence', help='Object id, e.g. ECO:0000501 (for IEA; Includes inferred by default) or a specific publication or other supporting object, e.g. ZFIN:ZDB-PUB-060503-2')
 
 INVOLVED_IN = 'involved_in'
 INVOLVED_IN_REGULATION_OF = 'involved_in_regulation_of'
@@ -44,11 +42,11 @@ TYPE_SUBSTANCE = 'substance'
 TYPE_INDIVIDUAL = 'individual'
 
 core_parser_with_rel = core_parser.copy()
-core_parser_with_rel.add_argument('relationship_type', choices=[INVOLVED_IN, INVOLVED_IN_REGULATION_OF, ACTS_UPSTREAM_OF_OR_WITHIN], help="relationship type ('{}', '{}' or '{}')".format(INVOLVED_IN, INVOLVED_IN_REGULATION_OF, ACTS_UPSTREAM_OF_OR_WITHIN))
+core_parser_with_rel.add_argument('relationship_type', choices=[INVOLVED_IN, INVOLVED_IN_REGULATION_OF, ACTS_UPSTREAM_OF_OR_WITHIN], default=INVOLVED_IN, help="relationship type ('{}', '{}' or '{}')".format(INVOLVED_IN, INVOLVED_IN_REGULATION_OF, ACTS_UPSTREAM_OF_OR_WITHIN))
 
 homolog_parser = core_parser.copy()
-homolog_parser.add_argument('homolog_taxon', help='Taxon CURIE of homolog, e.g. NCBITaxon:9606. Can be intermediate note, includes inferred by default')
-homolog_parser.add_argument('homology_type', choices=['P', 'O', 'LDO'], help='P, O or LDO (paralog, ortholog or least-diverged).')
+homolog_parser.add_argument('homolog_taxon', help='Taxon CURIE of homolog, e.g. NCBITaxon:9606 (Can be an ancestral node in the ontology; includes inferred associations, by default)')
+homolog_parser.add_argument('homology_type', choices=['P', 'O', 'LDO'], help='P (paralog), O (Ortholog) or LDO (least-diverged ortholog)')
 
 scigraph = SciGraph('https://scigraph-data.monarchinitiative.org/scigraph/')
 
@@ -100,7 +98,7 @@ class GenericObjectByType(Resource):
         obj = scigraph.bioobject(id)
         return(obj)
 
-@ns.route('/<id>/associations/')
+@ns.route('/<id>/associations')
 class GenericAssociations(Resource):
 
     @api.expect(core_parser)
@@ -115,7 +113,8 @@ class GenericAssociations(Resource):
             **core_parser.parse_args()
         )
 
-@ns.route('/gene/<id>/interactions/')
+@ns.route('/gene/<id>/interactions')
+@api.doc(params={'id': 'id, e.g. NCBIGene:3630. Equivalent IDs can be used with same results'})
 class GeneInteractions(Resource):
 
     @api.expect(core_parser)
@@ -133,7 +132,7 @@ class GeneInteractions(Resource):
             **core_parser.parse_args()
         )
 
-@ns.route('/gene/<id>/homologs/')
+@ns.route('/gene/<id>/homologs')
 @api.doc(params={'id': 'id, e.g. NCBIGene:3630. Equivalent IDs can be used with same results'})
 class GeneHomologAssociations(Resource):
 
@@ -162,7 +161,7 @@ class GeneHomologAssociations(Resource):
             **homolog_args
         )
 
-@ns.route('/gene/<id>/phenotypes/')
+@ns.route('/gene/<id>/phenotypes')
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:4750. Equivalent IDs can be used with same results'})
 class GenePhenotypeAssociations(Resource):
 
@@ -181,7 +180,7 @@ class GenePhenotypeAssociations(Resource):
             **core_parser.parse_args()
         )
 
-@ns.route('/gene/<id>/diseases/')
+@ns.route('/gene/<id>/diseases')
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:4750. Equivalent IDs can be used with same results'})
 class GeneDiseaseAssociations(Resource):
 
@@ -200,7 +199,7 @@ class GeneDiseaseAssociations(Resource):
             **core_parser.parse_args()
         )
 
-@ns.route('/gene/<id>/pathways/')
+@ns.route('/gene/<id>/pathways')
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:50846. Equivalent IDs can be used with same results'})
 class GenePathwayAssociations(Resource):
 
@@ -219,7 +218,7 @@ class GenePathwayAssociations(Resource):
             **core_parser.parse_args()
         )
 
-@ns.route('/gene/<id>/expression/anatomy/')
+@ns.route('/gene/<id>/expression/anatomy')
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:4750. Equivalent IDs can be used with same results'})
 class GeneExpressionAssociations(Resource):
 
@@ -238,7 +237,7 @@ class GeneExpressionAssociations(Resource):
             **core_parser.parse_args()
         )
 
-@ns.route('/gene/<id>/anatomy/')
+@ns.route('/gene/<id>/anatomy')
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:13434'})
 class GeneAnatomyAssociations(Resource):
 
@@ -257,7 +256,7 @@ class GeneAnatomyAssociations(Resource):
             **core_parser.parse_args()
         )
 
-@ns.route('/gene/<id>/genotypes/')
+@ns.route('/gene/<id>/genotypes')
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. ZFIN:ZDB-GENE-980526-166'})
 class GeneGenotypeAssociations(Resource):
 
@@ -276,8 +275,8 @@ class GeneGenotypeAssociations(Resource):
             **core_parser.parse_args()
         )
 
-@ns.route('/gene/<id>/function/')
-@api.doc(params={'id': 'id, e.g. NCBIGene:3630. Equivalent IDs can be used with same results'})
+@ns.route('/gene/<id>/function')
+@api.doc(params={'id': 'id, e.g. NCBIGene:6469. Equivalent IDs can be used with same results'})
 class GeneFunctionAssociations(Resource):
 
     @api.expect(core_parser)
@@ -328,7 +327,7 @@ class GeneFunctionAssociations(Resource):
                 assocs['associations'] += pr_assocs['associations']
         return assocs
 
-@ns.route('/gene/<id>/literature/')
+@ns.route('/gene/<id>/literature')
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:4750'})
 class GeneLiteratureAssociations(Resource):
 
@@ -348,7 +347,7 @@ class GeneLiteratureAssociations(Resource):
             **core_parser.parse_args()
         )
 
-@ns.route('/gene/<id>/models/')
+@ns.route('/gene/<id>/models')
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:17988'})
 class GeneModelAssociations(Resource):
 
@@ -368,7 +367,7 @@ class GeneModelAssociations(Resource):
             **core_parser.parse_args()
         )
 
-@ns.route('/gene/<id>/ortholog/phenotypes/')
+@ns.route('/gene/<id>/ortholog/phenotypes')
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:4750'})
 class GeneOrthologPhenotypeAssociations(Resource):
 
@@ -388,7 +387,7 @@ class GeneOrthologPhenotypeAssociations(Resource):
         )
 
 
-@ns.route('/gene/<id>/ortholog/diseases/')
+@ns.route('/gene/<id>/ortholog/diseases')
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:4750'})
 class GeneOrthologDiseaseAssociations(Resource):
 
@@ -406,7 +405,7 @@ class GeneOrthologDiseaseAssociations(Resource):
             **core_parser.parse_args()
         )
 
-@ns.route('/gene/<id>/variants/')
+@ns.route('/gene/<id>/variants')
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. HGNC:10896'})
 class GeneVariantAssociations(Resource):
 
@@ -425,7 +424,7 @@ class GeneVariantAssociations(Resource):
             **core_parser.parse_args()
         )
 
-@ns.route('/disease/<id>/phenotypes/')
+@ns.route('/disease/<id>/phenotypes')
 @api.doc(params={'id': 'CURIE identifier of disease, e.g. OMIM:605543, Orphanet:1934, DOID:678. Equivalent IDs can be used with same results'})
 class DiseasePhenotypeAssociations(Resource):
 
@@ -447,7 +446,7 @@ class DiseasePhenotypeAssociations(Resource):
             fcs['closure_bin'] = create_closure_bin(fcs.get('object_closure'))
         return results
 
-@ns.route('/disease/<id>/genes/')
+@ns.route('/disease/<id>/genes')
 @api.doc(params={'id': 'CURIE identifier of disease, e.g. OMIM:605543, DOID:678. Equivalent IDs can be used with same results'})
 class DiseaseGeneAssociations(Resource):
 
@@ -466,7 +465,7 @@ class DiseaseGeneAssociations(Resource):
             **core_parser.parse_args())
 
 
-@ns.route('/disease/<id>/treatment/')
+@ns.route('/disease/<id>/treatment')
 @api.doc(params={'id': 'CURIE identifier of disease, e.g. DOID:2841 (asthma). Equivalent IDs not yet supported'})
 class DiseaseSubstanceAssociations(Resource):
 
@@ -481,7 +480,7 @@ class DiseaseSubstanceAssociations(Resource):
         """
         return condition_to_drug(id)
 
-@ns.route('/disease/<id>/models/')
+@ns.route('/disease/<id>/models')
 @api.doc(params={'id': 'CURIE identifier of disease, e.g. OMIM:605543, DOID:678. Equivalent IDs can be used with same results'})
 class DiseaseModelAssociations(Resource):
 
@@ -516,7 +515,7 @@ class DiseaseModelAssociations(Resource):
 
 @ns.route('/disease/<id>/models/<taxon>')
 @api.doc(params={'id': 'CURIE identifier of disease, e.g. OMIM:605543, DOID:678. Equivalent IDs can be used with same results'})
-@api.doc(params={'taxon': 'CURIE of organism taxonomy class to constrain models, e.g NCBITaxon:6239 (C elegans).\n\n Higher level taxa may be used'})
+@api.doc(params={'taxon': 'CURIE of organism taxonomy class to constrain models, e.g NCBITaxon:10090 (M. musculus).\n\n Higher level taxa may be used'})
 class DiseaseModelTaxonAssociations(Resource):
 
     @api.expect(core_parser)
@@ -539,7 +538,7 @@ class DiseaseModelTaxonAssociations(Resource):
             **core_parser.parse_args()
         )
 
-@ns.route('/disease/<id>/genotypes/')
+@ns.route('/disease/<id>/genotypes')
 @api.doc(params={'id': 'CURIE identifier of disease, e.g. Orphanet:399158, DOID:0080008. Equivalent IDs can be used with same results'})
 class DiseaseGenotypeAssociations(Resource):
 
@@ -559,7 +558,7 @@ class DiseaseGenotypeAssociations(Resource):
             **core_parser.parse_args()
         )
 
-@ns.route('/disease/<id>/literature/')
+@ns.route('/disease/<id>/literature')
 @api.doc(params={'id': 'CURIE identifier of disease, e.g. OMIM:605543, DOID:678. Equivalent IDs can be used with same results'})
 class DiseaseLiteratureAssociations(Resource):
 
@@ -579,7 +578,7 @@ class DiseaseLiteratureAssociations(Resource):
             **core_parser.parse_args()
         )
 
-@ns.route('/disease/<id>/models/')
+@ns.route('/disease/<id>/models')
 @api.doc(params={'id': 'CURIE identifier of disease, e.g. OMIM:605543, DOID:678. Equivalent IDs can be used with same results'})
 class DiseaseModelAssociations(Resource):
 
@@ -599,7 +598,7 @@ class DiseaseModelAssociations(Resource):
             **core_parser.parse_args()
         )
 
-@ns.route('/disease/<id>/pathways/')
+@ns.route('/disease/<id>/pathways')
 @api.doc(params={'id': 'CURIE identifier of disease, e.g. DOID:4450. Equivalent IDs can be used with same results'})
 class DiseasePathwayAssociations(Resource):
 
@@ -618,7 +617,7 @@ class DiseasePathwayAssociations(Resource):
             **core_parser.parse_args()
         )
 
-@ns.route('/disease/<id>/variants/')
+@ns.route('/disease/<id>/variants')
 @api.doc(params={'id': 'CURIE identifier of disease, e.g. OMIM:605543, DOID:678. Equivalent IDs can be used with same results'})
 class DiseaseVariantAssociations(Resource):
 
@@ -638,7 +637,8 @@ class DiseaseVariantAssociations(Resource):
             **core_parser.parse_args()
         )
 
-@ns.route('/phenotype/<id>/anatomy/')
+@ns.route('/phenotype/<id>/anatomy')
+@api.doc(params={'id': 'CURIE identifier of phenotype, e.g. MP:0008521. Equivalent IDs can be used with same results'})
 class PhenotypeAnatomyAssociations(Resource):
     # Note: This depends on https://github.com/biolink/biolink-api/issues/122
     @api.expect(core_parser)
@@ -649,7 +649,6 @@ class PhenotypeAnatomyAssociations(Resource):
 
         Example IDs:
 
-         * ZP:0004204
          * MP:0008521 abnormal Bowman membrane
 
         For example, *abnormal limb development* will map to *limb*
@@ -657,7 +656,8 @@ class PhenotypeAnatomyAssociations(Resource):
         objs = scigraph.phenotype_to_entity_list(id)
         return objs
 
-@ns.route('/phenotype/<id>/diseases/')
+@ns.route('/phenotype/<id>/diseases')
+@api.doc(params={'id': 'CURIE identifier of phenotype, e.g. HP:0007359. Equivalent IDs can be used with same results'})
 class PhenotypeDiseaseAssociations(Resource):
 
     @api.expect(core_parser)
@@ -681,7 +681,7 @@ class PhenotypeDiseaseAssociations(Resource):
         return results
 
 
-@ns.route('/phenotype/<id>/genes/')
+@ns.route('/phenotype/<id>/genes')
 @api.doc(params={'id': 'Pheno class CURIE identifier, e.g  WBPhenotype:0000180 (axon morphology variant), MP:0001569 (abnormal circulating bilirubin level), '})
 class PhenotypeGeneAssociations(Resource):
 
@@ -702,7 +702,7 @@ class PhenotypeGeneAssociations(Resource):
         )
 
 
-@ns.route('/phenotype/<id>/gene/<taxid>/ids/')
+@ns.route('/phenotype/<id>/gene/<taxid>/ids')
 @api.doc(params={'id': 'Pheno class CURIE identifier, e.g  MP:0001569 (abnormal circulating bilirubin level)'})
 @api.doc(params={'taxid': 'Species or high level taxon grouping, e.g  NCBITaxon:10090 (Mus musculus)'})
 class PhenotypeGeneByTaxonAssociations(Resource):
@@ -713,7 +713,7 @@ class PhenotypeGeneByTaxonAssociations(Resource):
         """
         Returns gene ids for all genes for a particular phenotype in a taxon
 
-        For example, + NCBITaxon:10090 (mouse)
+        For example, MP:0001569 + NCBITaxon:10090 (mouse)
 
         """
         return select_distinct_subjects(
@@ -723,7 +723,7 @@ class PhenotypeGeneByTaxonAssociations(Resource):
             user_agent=USER_AGENT
         )
 
-@ns.route('/phenotype/<id>/genotypes/')
+@ns.route('/phenotype/<id>/genotypes')
 @api.doc(params={'id': 'Pheno class CURIE identifier, e.g  WBPhenotype:0000180 (axon morphology variant), MP:0001569 (abnormal circulating bilirubin level)'})
 class PhenotypeGenotypeAssociations(Resource):
 
@@ -743,7 +743,7 @@ class PhenotypeGenotypeAssociations(Resource):
             **core_parser.parse_args()
         )
 
-@ns.route('/phenotype/<id>/literature/')
+@ns.route('/phenotype/<id>/literature')
 @api.doc(params={'id': 'Pheno class CURIE identifier, e.g  WBPhenotype:0000180 (axon morphology variant), MP:0001569 (abnormal circulating bilirubin level)'})
 class PhenotypeLieratureAssociations(Resource):
 
@@ -763,8 +763,8 @@ class PhenotypeLieratureAssociations(Resource):
             **core_parser.parse_args()
         )
 
-@ns.route('/phenotype/<id>/pathways/')
-@api.doc(params={'id': 'Pheno class CURIE identifier, e.g  WBPhenotype:0000180 (axon morphology variant), MP:0001569 (abnormal circulating bilirubin level)'})
+@ns.route('/phenotype/<id>/pathways')
+@api.doc(params={'id': 'Pheno class CURIE identifier, e.g  MP:0001569 (abnormal circulating bilirubin level)'})
 class PhenotypePathwayAssociations(Resource):
 
     @api.expect(core_parser)
@@ -783,7 +783,7 @@ class PhenotypePathwayAssociations(Resource):
             **core_parser.parse_args()
         )
 
-@ns.route('/phenotype/<id>/variants/')
+@ns.route('/phenotype/<id>/variants')
 @api.doc(params={'id': 'Pheno class CURIE identifier, e.g  WBPhenotype:0000180 (axon morphology variant), MP:0001569 (abnormal circulating bilirubin level)'})
 class PhenotypeVariantAssociations(Resource):
 
@@ -803,7 +803,8 @@ class PhenotypeVariantAssociations(Resource):
             **core_parser.parse_args()
         )
 
-@ns.route('/goterm/<id>/genes/')
+@ns.route('/goterm/<id>/genes')
+@api.doc(params={'id': 'CURIE identifier of a GO term, e.g. GO:0044598'})
 class GotermGeneAssociations(Resource):
 
     @api.expect(core_parser_with_rel)
@@ -840,7 +841,7 @@ class GotermGeneAssociations(Resource):
                 user_agent=USER_AGENT,
                 **args)
 
-@ns.route('/pathway/<id>/genes/')
+@ns.route('/pathway/<id>/genes')
 @api.doc(params={'id': 'CURIE any pathway element. E.g. REACT:R-HSA-5387390'})
 class PathwayGeneAssociations(Resource):
 
@@ -859,7 +860,7 @@ class PathwayGeneAssociations(Resource):
             **core_parser.parse_args()
         )
 
-@ns.route('/anatomy/<id>/genes/')
+@ns.route('/anatomy/<id>/genes')
 @api.doc(params={'id': 'CURIE identifier of anatomical entity, e.g. GO:0005634 (nucleus), UBERON:0002037 (cerebellum), CL:0000540 (neuron). Equivalent IDs can be used with same results'})
 class AnatomyGeneAssociations(Resource):
 
@@ -867,7 +868,7 @@ class AnatomyGeneAssociations(Resource):
     @api.marshal_with(association_results)
     def get(self, id):
         """
-        Returns expression events for a gene
+        Returns genes associated with a given anatomy
         """
 
         return search_associations(
@@ -901,7 +902,8 @@ class AnatomyGeneByTaxonAssociations(Resource):
             **core_parser.parse_args()
         )
 
-@ns.route('/substance/<id>/roles/')
+@ns.route('/substance/<id>/roles')
+@api.doc(params={'id': 'CURIE identifier of substance, e.g. CHEBI:40036'})
 class SubstanceRoleAssociations(Resource):
 
     @api.expect(core_parser)
@@ -914,7 +916,8 @@ class SubstanceRoleAssociations(Resource):
         """
         return scigraph.substance_to_role_associations(id)
 
-@ns.route('/substance/<id>/participant_in/')
+@ns.route('/substance/<id>/participant_in')
+@api.doc(params={'id': 'CURIE identifier of substance, e.g. CHEBI:40036'})
 class SubstanceParticipantInAssociations(Resource):
 
     @api.expect(core_parser)
@@ -937,7 +940,8 @@ class SubstanceParticipantInAssociations(Resource):
         return scigraph.substance_participates_in_associations(id)
 
 
-@ns.route('/substance/<id>/treats/')
+@ns.route('/substance/<id>/treats')
+@api.doc(params={'id': 'CURIE identifier of substance, e.g. CHEBI:40036'})
 class SubstanceTreatsAssociations(Resource):
 
     @api.expect(core_parser)
@@ -951,7 +955,7 @@ class SubstanceTreatsAssociations(Resource):
         """
         return condition_to_drug(id)
 
-@ns.route('/genotype/<id>/genotypes/')
+@ns.route('/genotype/<id>/genotypes')
 @api.doc(params={'id': 'CURIE identifier of genotype, e.g. ZFIN:ZDB-FISH-150901-6607'})
 class GenotypeGenotypeAssociations(Resource):
 
@@ -973,7 +977,7 @@ class GenotypeGenotypeAssociations(Resource):
             **core_parser.parse_args()
         )
 
-@ns.route('/genotype/<id>/phenotypes/')
+@ns.route('/genotype/<id>/phenotypes')
 @api.doc(params={'id': 'CURIE identifier of genotype, e.g. ZFIN:ZDB-FISH-150901-4286'})
 class GenotypePhenotypeAssociations(Resource):
 
@@ -992,7 +996,7 @@ class GenotypePhenotypeAssociations(Resource):
             **core_parser.parse_args()
         )
 
-@ns.route('/genotype/<id>/diseases/')
+@ns.route('/genotype/<id>/diseases')
 @api.doc(params={'id': 'CURIE identifier of genotype, e.g. dbSNPIndividual:11441 (if non-human will return models)'})
 class GenotypeDiseaseAssociations(Resource):
 
@@ -1012,7 +1016,7 @@ class GenotypeDiseaseAssociations(Resource):
             **core_parser.parse_args()
         )
 
-@ns.route('/genotype/<id>/genes/')
+@ns.route('/genotype/<id>/genes')
 @api.doc(params={'id': 'CURIE identifier of genotype, e.g. ZFIN:ZDB-FISH-150901-6607'})
 class GenotypeGeneAssociations(Resource):
 
@@ -1034,8 +1038,8 @@ class GenotypeGeneAssociations(Resource):
 
 ##
 
-@ns.route('/variant/<id>/genotypes/')
-@api.doc(params={'id': 'CURIE identifier of variant, e.g. ZFIN:ZDB-ALT-010427-8, ClinVarVariant:39783'})
+@ns.route('/variant/<id>/genotypes')
+@api.doc(params={'id': 'CURIE identifier of variant, e.g. ZFIN:ZDB-ALT-010427-8'})
 class VariantGenotypeAssociations(Resource):
 
     @api.expect(core_parser)
@@ -1054,7 +1058,7 @@ class VariantGenotypeAssociations(Resource):
             **core_parser.parse_args()
         )
 
-@ns.route('/variant/<id>/phenotypes/')
+@ns.route('/variant/<id>/phenotypes')
 @api.doc(params={'id': 'CURIE identifier of variant, e.g. ZFIN:ZDB-ALT-010427-8, ClinVarVariant:39783'})
 class VariantPhenotypeAssociations(Resource):
 
@@ -1073,7 +1077,7 @@ class VariantPhenotypeAssociations(Resource):
             **core_parser.parse_args()
         )
 
-@ns.route('/variant/<id>/genes/')
+@ns.route('/variant/<id>/genes')
 @api.doc(params={'id': 'CURIE identifier of variant, e.g. ZFIN:ZDB-ALT-010427-8, ClinVarVariant:39783'})
 class VariantGeneAssociations(Resource):
 
@@ -1093,7 +1097,7 @@ class VariantGeneAssociations(Resource):
             **core_parser.parse_args()
         )
 
-@ns.route('/model/<id>/diseases/')
+@ns.route('/model/<id>/diseases')
 @api.doc(params={'id': 'CURIE identifier for a model, e.g. MGI:5573196'})
 class ModelDiseaseAssociations(Resource):
 
@@ -1112,7 +1116,7 @@ class ModelDiseaseAssociations(Resource):
             **core_parser.parse_args()
         )
 
-@ns.route('/model/<id>/genes/')
+@ns.route('/model/<id>/genes')
 @api.doc(params={'id': 'CURIE identifier for a model, e.g. MMRRC:042787'})
 class ModelGeneAssociations(Resource):
 
@@ -1131,7 +1135,7 @@ class ModelGeneAssociations(Resource):
             **core_parser.parse_args()
         )
 
-@ns.route('/model/<id>/genotypes/')
+@ns.route('/model/<id>/genotypes')
 @api.doc(params={'id': 'CURIE identifier for a model, e.g. Coriell:NA16660'})
 class ModelGenotypeAssociations(Resource):
 
@@ -1150,8 +1154,8 @@ class ModelGenotypeAssociations(Resource):
             **core_parser.parse_args()
         )
 
-@ns.route('/model/<id>/literature/')
-@api.doc(params={'id': 'CURIE identifier for a model, e.g. MMRRC:042787'})
+@ns.route('/model/<id>/literature')
+@api.doc(params={'id': 'CURIE identifier for a model, e.g. MGI:5644542'})
 class ModelLiteratureAssociations(Resource):
 
     @api.expect(core_parser)
@@ -1170,7 +1174,7 @@ class ModelLiteratureAssociations(Resource):
             **core_parser.parse_args()
         )
 
-@ns.route('/model/<id>/phenotypes/')
+@ns.route('/model/<id>/phenotypes')
 @api.doc(params={'id': 'id'})
 class ModelPhenotypeAssociations(Resource):
 
@@ -1189,7 +1193,7 @@ class ModelPhenotypeAssociations(Resource):
             **core_parser.parse_args()
         )
 
-@ns.route('/model/<id>/variants/')
+@ns.route('/model/<id>/variants')
 @api.doc(params={'id': 'CURIE identifier for a model, e.g. MMRRC:042787'})
 class ModelVariantAssociations(Resource):
 

@@ -31,7 +31,7 @@ parser.add_argument('slim', action='append', help='Map objects up (slim) to a hi
 
 @ns.route('/gene/<object_category>/<taxon>')
 #@limiter.limit("1 per minute")
-@api.doc(params={'object_category': 'CATEGORY of entity at link OBJECT (target), e.g. phenotype, disease'})
+@api.doc(params={'object_category': 'Category of entity at link Object (target), e.g. phenotype, disease'})
 @api.doc(params={'taxon': 'taxon of gene, must be of form NCBITaxon:9606'})
 class MartGeneAssociationsResource(Resource):
 
@@ -43,16 +43,17 @@ class MartGeneAssociationsResource(Resource):
 
         NOTE: this route has a limiter on it, you may be restricted in the number of downloads per hour. Use carefully.
         """
-        assocs = bulk_fetch(subject_category='gene',
-                            object_category=object_category,
-                            taxon=taxon,
-                            user_agent=USER_AGENT
-                            )
+        assocs = bulk_fetch(
+            subject_category='gene',
+            object_category=object_category,
+            taxon=taxon,
+            user_agent=USER_AGENT
+        )
         return assocs
 
 @ns.route('/case/<object_category>/<taxon>')
 #@limiter.limit("1 per minute")
-@api.doc(params={'object_category': 'CATEGORY of entity at link OBJECT (target), e.g. phenotype, disease'})
+@api.doc(params={'object_category': 'Category of entity at link Subject (target), e.g. phenotype, disease'})
 @api.doc(params={'taxon': 'taxon of case, must be of form NCBITaxon:9606'})
 class MartCaseAssociationsResource(Resource):
 
@@ -65,20 +66,21 @@ class MartCaseAssociationsResource(Resource):
         NOTE: this route has a limiter on it, you may be restricted in the number of downloads per hour. Use carefully.
         """
 
-        # TODO temporary workaround
+        # TODO temporary workaround for # https://github.com/monarch-initiative/monarch-app/issues/1448
         if taxon == "NCBITaxon:9606":
             taxon = None
 
-        assocs = bulk_fetch(subject_category='case',
-                            object_category=object_category,
-                            taxon=taxon,
-                            user_agent=USER_AGENT
-                            )
+        assocs = bulk_fetch(
+            subject_category='case',
+            object_category=object_category,
+            taxon=taxon,
+            user_agent=USER_AGENT
+        )
         return assocs
 
 @ns.route('/disease/<object_category>/<taxon>')
 #@limiter.limit("1 per minute")
-@api.doc(params={'object_category': 'CATEGORY of entity at link OBJECT (target), e.g. phenotype, disease'})
+@api.doc(params={'object_category': 'Category of entity at link Object (target), e.g. phenotype, disease'})
 @api.doc(params={'taxon': 'taxon of disease, must be of form NCBITaxon:9606'})
 class MartDiseaseAssociationsResource(Resource):
 
@@ -91,13 +93,14 @@ class MartDiseaseAssociationsResource(Resource):
         NOTE: this route has a limiter on it, you may be restricted in the number of downloads per hour. Use carefully.
         """
 
-        # TODO temporary workaround
+        # TODO temporary workaround for # https://github.com/monarch-initiative/monarch-app/issues/1448
         if taxon == "NCBITaxon:9606":
             taxon = None
 
-        assocs = bulk_fetch(subject_category='disease',
-                            object_category=object_category,
-                            taxon=taxon,
-                            user_agent=USER_AGENT
-                            )
+        assocs = bulk_fetch(
+            subject_category='disease',
+            object_category=object_category,
+            taxon=taxon,
+            user_agent=USER_AGENT
+        )
         return assocs
