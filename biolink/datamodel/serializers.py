@@ -78,7 +78,7 @@ bbop_graph = api.model('Graph', {
 })
 
 named_object_core = api.model('NamedObjectCore', {
-    'id': fields.String(readOnly=True, description='ID or CURIE e.g. MGI:1201606'),
+    'id': fields.String(readOnly=True, description='ID or CURIE e.g. MGI:1201606', required=True),
     'label': fields.String(readOnly=True, description='RDFS Label')
 })
 
@@ -135,13 +135,13 @@ annotation_extension = api.model('AnnotationExtension', {
 })
 
 association = api.model('Association', {
-    'id': fields.String(readOnly=True, description='Association/annotation unique ID'),
+    'id': fields.String(readOnly=True, description='Association/annotation unique ID', required=True),
     'type': fields.String(readOnly=True, description='Type of association, e.g. gene-phenotype'),
-    'subject': fields.Nested(bio_object_core, description='Subject of association (what it is about), e.g. ClinVar:nnn, MGI:1201606'),
+    'subject': fields.Nested(bio_object_core, description='Subject of association (what it is about), e.g. ClinVar:nnn, MGI:1201606', required=True),
     'subject_extensions': fields.List(fields.Nested(annotation_extension, description='Additional properties of the subject in the context of this association.')),
-    'object': fields.Nested(bio_object_core, description='Object (sensu RDF), aka target, e.g. HP:0000448, MP:0002109, DOID:14330'),
+    'object': fields.Nested(bio_object_core, description='Object (sensu RDF), aka target, e.g. HP:0000448, MP:0002109, DOID:14330', required=True),
     'object_extensions': fields.List(fields.Nested(annotation_extension, description='Additional properties of the object in the context of this association. See http://www.biomedcentral.com/1471-2105/15/155')),
-    'relation': fields.Nested(relation_ref, description='Relationship type connecting subject and object'),
+    'relation': fields.Nested(relation_ref, description='Relationship type connecting subject and object', required=True),
     'slim': fields.List(fields.String, description='Objects mapped to a slim'),
     'negated': fields.Boolean(description='True if association is negated'),
     'qualifiers': fields.List(fields.String, description='Qualifier on the association'),
@@ -164,9 +164,9 @@ slimmed_association = api.model('SlimmedAssociation', {
 })
 
 compact_association_set = api.model('CompactAssociationSet', {
-    'subject': fields.String(description='Subject of association (what it is about), e.g. MGI:1201606'),
-    'relation': fields.String(description='Relationship type connecting subject and object list'),
-    'objects': fields.List(fields.String, description='List of O, for a given (S,R) pair, yielding (S,R,O) triples. E.g. list of MPs for (MGI:nnn, has_phenotype)'),
+    'subject': fields.String(description='Subject of association (what it is about), e.g. MGI:1201606', required=True),
+    'relation': fields.String(description='Relationship type connecting subject and object list', required=True),
+    'objects': fields.List(fields.String, description='List of O, for a given (S,R) pair, yielding (S,R,O) triples. E.g. list of MPs for (MGI:nnn, has_phenotype)', required=True),
 })
 
 # A search result that returns a set of associations
