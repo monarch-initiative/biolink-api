@@ -15,6 +15,9 @@ ns = api.namespace('bioentityset/slimmer', description='maps a set of entities t
 INVOLVED_IN = 'involved_in'
 ACTS_UPSTREAM_OF_OR_WITHIN = 'acts_upstream_of_or_within'
 
+FUNCTION_CATEGORY='function'
+PHENOTYPE_CATEGORY='phenotype'
+
 parser = api.parser()
 parser.add_argument('subject', action='append', help='Entity ids to be examined, e.g. NCBIGene:9342, NCBIGene:7227, NCBIGene:8131, NCBIGene:157570, NCBIGene:51164, NCBIGene:6689, NCBIGene:6387')
 parser.add_argument('slim', action='append', help='Map objects up (slim) to a higher level category. Value can be ontology class ID (IMPLEMENTED) or subset ID (TODO)')
@@ -24,6 +27,7 @@ parser.add_argument('start', type=int, required=False, help='beginning row')
 parser.add_argument('relationship_type', choices=[INVOLVED_IN, ACTS_UPSTREAM_OF_OR_WITHIN], default=ACTS_UPSTREAM_OF_OR_WITHIN, help="relationship type ('{}' or '{}')".format(INVOLVED_IN, ACTS_UPSTREAM_OF_OR_WITHIN))
 
 @ns.route('/<category>')
+@api.param('category', 'category type', enum=[FUNCTION_CATEGORY, PHENOTYPE_CATEGORY])
 class EntitySetSlimmer(Resource):
 
     @api.expect(parser)
@@ -38,24 +42,26 @@ class EntitySetSlimmer(Resource):
         del args['subject']
         # Note that GO currently uses UniProt as primary ID for some sources: https://github.com/biolink/biolink-api/issues/66
         # https://github.com/monarch-initiative/dipper/issues/461
-        # nota bene:
-        # currently incomplete because code is not checking for the possibility of >1 subjects
 
-        subjects[0] = subjects[0].replace('WormBase:', 'WB:', 1)
-        prots = None
-        if category == 'function':
+        sg_dev = SciGraph(url='https://scigraph-data-dev.monarchinitiative.org/scigraph/')
+
+        subjects = [x.replace('WormBase:', 'WB:') if 'WormBase:' in x else x for x in subjects]
+        slimmer_subjects = []
+        if category == FUNCTION_CATEGORY:
             # get proteins for a gene only when the category is 'function'
-            if (subjects[0].startswith('HGNC') or subjects[0].startswith('NCBIGene') or subjects[0].startswith('ENSEMBL:')):
-                sg_dev = SciGraph(url='https://scigraph-data-dev.monarchinitiative.org/scigraph/')
-                prots = sg_dev.gene_to_uniprot_proteins(subjects[0])
-                if len(prots) == 0:
-                    prots = subjects
-
-        if prots is None:
-            prots = subjects
+            for s in subjects:
+                if 'HGNC:' in s or 'NCBIGene:' in s or 'ENSEMBL:' in s:
+                    prots = sg_dev.gene_to_uniprot_proteins(s)
+                    if len(prots) == 0:
+                        prots = [s]
+                    slimmer_subjects += prots
+                else:
+                    slimmer_subjects.append(s)
+        else:
+            slimmer_subjects = subjects
 
         results = map2slim(
-            subjects=prots,
+            subjects=slimmer_subjects,
             slim=slim,
             object_category=category,
             user_agent=USER_AGENT,
@@ -69,7 +75,6 @@ class EntitySetSlimmer(Resource):
                 proteinId = association['subject']['id']
                 if taxon == 'NCBITaxon:9606' and proteinId.startswith('UniProtKB:'):
                     if checked.get(proteinId) == None:
-                        sg_dev = SciGraph(url='https://scigraph-data-dev.monarchinitiative.org/scigraph/')
                         genes = sg_dev.uniprot_protein_to_genes(proteinId)
                         for gene in genes:
                             if gene.startswith('HGNC'):
