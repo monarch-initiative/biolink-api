@@ -107,9 +107,9 @@ class SciGraph:
 
         Returns a BBOPGraph
         """
-        g1 = self.neighbors(id, {'relationshipType':'subClassOf', 'blankNodes':'false', 'direction':'OUTGOING','depth':20})
-        g2 = self.neighbors(id, {'relationshipType':'subClassOf', 'direction':'INCOMING','depth':1})
-        g3 = self.neighbors(id, {'relationshipType':'equivalentClass', 'depth':1})
+        g1 = self.neighbors(id, relationshipType='subClassOf', blankNodes=False, direction='OUTGOING',depth=20)
+        g2 = self.neighbors(id, relationshipType='subClassOf', direction='INCOMING', depth=1)
+        g3 = self.neighbors(id, relationshipType='equivalentClass', depth=1)
         g1.merge(g2)
         g1.merge(g3)
         return g1
@@ -125,7 +125,7 @@ class SciGraph:
         g=BBOPGraph()
         while len(nodes)>0:
             n = nodes.pop()
-            nextg = self.neighbors(n, {'blankNodes':True, 'direction':'OUTGOING','depth':1})
+            nextg = self.neighbors(n, params={'blankNodes':True, 'direction':'OUTGOING','depth':1})
             for nn in nextg.nodes:
                 if nn.id.startswith("_:"):
                     n.append(nn.id)
@@ -140,7 +140,7 @@ class SciGraph:
         visited=[]
         while len(ids)>0:
             id = ids.pop()
-            nextg = self.neighbors(id, {'blankNodes':False, relationshipType: relationshipType, 'direction':'OUTGOING','depth':1})
+            nextg = self.neighbors(id, blankNodes=False, relationshipType=relationshipType, direction='OUTGOING',depth=1)
             for edge in nextg.edges:
                 next_id = edge.obj
                 if next_id not in visited:
