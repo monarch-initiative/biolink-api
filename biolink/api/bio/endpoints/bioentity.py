@@ -442,7 +442,7 @@ class DiseasePhenotypeAssociations(Resource):
             **core_parser.parse_args()
         )
         fcs = results.get('facet_counts')
-        if fcs is not None:
+        if fcs:
             fcs['closure_bin'] = create_closure_bin(fcs.get('object_closure'))
         return results
 
