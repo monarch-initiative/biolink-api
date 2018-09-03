@@ -17,17 +17,18 @@ ACTS_UPSTREAM_OF_OR_WITHIN = 'acts_upstream_of_or_within'
 
 FUNCTION_CATEGORY='function'
 PHENOTYPE_CATEGORY='phenotype'
+ANATOMY_CATEGORY='anatomy'
 
 parser = api.parser()
-parser.add_argument('subject', action='append', help='Entity ids to be examined, e.g. NCBIGene:9342, NCBIGene:7227, NCBIGene:8131, NCBIGene:157570, NCBIGene:51164, NCBIGene:6689, NCBIGene:6387')
-parser.add_argument('slim', action='append', help='Map objects up (slim) to a higher level category. Value can be ontology class ID (IMPLEMENTED) or subset ID (TODO)')
+parser.add_argument('subject', action='append', help='Entity ids to be examined, e.g. NCBIGene:9342, NCBIGene:7227, NCBIGene:8131, NCBIGene:157570, NCBIGene:51164, NCBIGene:6689, NCBIGene:6387', required=True)
+parser.add_argument('slim', action='append', help='Map objects up (slim) to a higher level category. Value can be ontology class ID (IMPLEMENTED) or subset ID (TODO)', required=True)
 parser.add_argument('exclude_automatic_assertions', type=inputs.boolean, default=False, help='If set, excludes associations that involve IEAs (ECO:0000501)')
 parser.add_argument('rows', type=int, required=False, default=100, help='number of rows')
 parser.add_argument('start', type=int, required=False, help='beginning row')
 parser.add_argument('relationship_type', choices=[INVOLVED_IN, ACTS_UPSTREAM_OF_OR_WITHIN], default=ACTS_UPSTREAM_OF_OR_WITHIN, help="relationship type ('{}' or '{}')".format(INVOLVED_IN, ACTS_UPSTREAM_OF_OR_WITHIN))
 
 @ns.route('/<category>')
-@api.param('category', 'category type', enum=[FUNCTION_CATEGORY, PHENOTYPE_CATEGORY])
+@api.param('category', 'category type', enum=[FUNCTION_CATEGORY, PHENOTYPE_CATEGORY, ANATOMY_CATEGORY])
 class EntitySetSlimmer(Resource):
 
     @api.expect(parser)
@@ -60,6 +61,9 @@ class EntitySetSlimmer(Resource):
         else:
             slimmer_subjects = subjects
 
+        if category == ANATOMY_CATEGORY:
+            category = 'anatomical entity'
+
         results = map2slim(
             subjects=slimmer_subjects,
             slim=slim,
@@ -67,6 +71,7 @@ class EntitySetSlimmer(Resource):
             user_agent=USER_AGENT,
             **args
         )
+
         # To the fullest extent possible return HGNC ids
         checked = {}
         for result in results:
