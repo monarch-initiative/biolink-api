@@ -13,9 +13,21 @@ from ..closure_bins import create_closure_bin
 
 from biolink import USER_AGENT
 
+from ontobio.golr.golr_query import run_solr_text_on, ESOLR, ESOLRDoc, replace
+from ontobio.config import get_config
+import json
+
+
 log = logging.getLogger(__name__)
 
 ns = api.namespace('bioentity', description='Retrieval of domain entities plus associations')
+
+
+basic_parser = api.parser()
+basic_parser.add_argument('start', type=int, required=False, default=0, help='beginning row')
+basic_parser.add_argument('rows', type=int, required=False, default=100, help='number of rows')
+basic_parser.add_argument('evidence', action='append', help='Object id, e.g. ECO:0000501 (for IEA; Includes inferred by default) or a specific publication or other supporting object, e.g. ZFIN:ZDB-PUB-060503-2')
+
 
 core_parser = api.parser()
 core_parser.add_argument('rows', type=int, required=False, default=100, help='number of rows')
@@ -803,6 +815,7 @@ class PhenotypeVariantAssociations(Resource):
             **core_parser.parse_args()
         )
 
+@api.deprecated
 @ns.route('/goterm/<id>/genes')
 @api.doc(params={'id': 'CURIE identifier of a GO term, e.g. GO:0044598'})
 class GotermGeneAssociations(Resource):
@@ -840,6 +853,170 @@ class GotermGeneAssociations(Resource):
                 invert_subject_object=True,
                 user_agent=USER_AGENT,
                 **args)
+
+
+@ns.route('/function/<id>/genes')
+@api.doc(params={'id': 'CURIE identifier of a GO term, e.g. GO:0044598'})
+class FunctionGeneAssociations(Resource):
+
+    @api.expect(core_parser_with_rel)
+    @api.marshal_with(association_results)
+    def get(self, id):
+        """
+        Returns genes associated to a GO term
+        """
+        args = core_parser_with_rel.parse_args()
+        if args['relationship_type'] == ACTS_UPSTREAM_OF_OR_WITHIN:
+            return search_associations(
+                subject_category='gene',
+                object_category='function',
+                fq = {'regulates_closure': id},
+                invert_subject_object=True,
+                user_agent=USER_AGENT,
+                **args)
+        elif args['relationship_type'] == INVOLVED_IN_REGULATION_OF:
+            # Temporary fix until https://github.com/geneontology/amigo/pull/469
+            # and https://github.com/owlcollab/owltools/issues/241 are resolved
+            return search_associations(
+                subject_category = 'gene',
+                object_category = 'function',
+                fq = {'regulates_closure': id, '-isa_partof_closure': id},
+                invert_subject_object=True,
+                user_agent=USER_AGENT,
+                **args)
+        elif args['relationship_type'] == INVOLVED_IN:
+            return search_associations(
+                subject_category='gene',
+                object_category='function',
+                subject=id,
+                invert_subject_object=True,
+                user_agent=USER_AGENT,
+                **args)
+
+
+@ns.route('/function/<id>')
+@api.doc(params={'id': 'CURIE identifier of a function term (e.g. GO:0044598)'})
+class FunctionAssociations(Resource):
+
+    @api.expect(basic_parser)
+    def get(self, id):
+        """
+        Returns annotations associated to a function term
+        """
+
+        # annotation_class,aspect
+        fields = "date,assigned_by,bioentity_label,bioentity_name,synonym,taxon,taxon_label,panther_family,panther_family_label,evidence,evidence_type,reference,annotation_extension_class,annotation_extension_class_label"
+        query_filters = "annotation_class%5E2&qf=annotation_class_label_searchable%5E1&qf=bioentity%5E2&qf=bioentity_label_searchable%5E1&qf=bioentity_name_searchable%5E1&qf=annotation_extension_class%5E2&qf=annotation_extension_class_label_searchable%5E1&qf=reference_searchable%5E1&qf=panther_family_searchable%5E1&qf=panther_family_label_searchable%5E1&qf=bioentity_isoform%5E1"
+        args = basic_parser.parse_args()
+
+        evidences = args['evidence']
+        evidence = ""
+        if evidences is not None:
+            evidence = "&fq=evidence_closure:("
+            for ev in evidences:
+                evidence += "\"" + ev + "\","
+            evidence = evidence[:-1]
+            evidence += ")"
+
+        taxon_restrictions = ""
+        cfg = get_config()
+        if cfg.taxon_restriction is not None:
+            taxon_restrictions = "&fq=taxon_subset_closure:("
+            for c in cfg.taxon_restriction:
+                taxon_restrictions += "\"" + c + "\","
+            taxon_restrictions = taxon_restrictions[:-1]
+            taxon_restrictions += ")"
+
+
+        optionals = "&defType=edismax&start=" + str(args['start']) + "&rows=" + str(args['rows']) + evidence + taxon_restrictions
+        data = run_solr_text_on(ESOLR.GOLR, ESOLRDoc.ANNOTATION, id, query_filters, fields, optionals)
+        
+        return data
+
+
+@ns.route('/function/<id>/taxons')
+@api.doc(params={'id': 'CURIE identifier of a GO term, e.g. GO:0044598'})
+class FunctionTaxonAssociations(Resource):
+
+    @api.expect(basic_parser)
+    def get(self, id):
+        """
+        Returns taxons associated to a GO term
+        """
+
+        fields = "taxon,taxon_label"
+        query_filters = "annotation_class%5E2&qf=annotation_class_label_searchable%5E1&qf=bioentity%5E2&qf=bioentity_label_searchable%5E1&qf=bioentity_name_searchable%5E1&qf=annotation_extension_class%5E2&qf=annotation_extension_class_label_searchable%5E1&qf=reference_searchable%5E1&qf=panther_family_searchable%5E1&qf=panther_family_label_searchable%5E1&qf=bioentity_isoform%5E1"
+        args = basic_parser.parse_args()
+
+        evidences = args['evidence']
+        evidence = ""
+        if evidences is not None:
+            evidence = "&fq=evidence_closure:("
+            for ev in evidences:
+                evidence += "\"" + ev + "\","
+            evidence = evidence[:-1]
+            evidence += ")"
+
+        taxon_restrictions = ""
+        cfg = get_config()
+        if cfg.taxon_restriction is not None:
+            taxon_restrictions = "&fq=taxon_subset_closure:("
+            for c in cfg.taxon_restriction:
+                taxon_restrictions += "\"" + c + "\","
+            taxon_restrictions = taxon_restrictions[:-1]
+            taxon_restrictions += ")"
+        
+
+        optionals = "&defType=edismax&start=" + str(args['start']) + "&rows=" + str(args['rows']) + evidence + taxon_restrictions
+        data = run_solr_text_on(ESOLR.GOLR, ESOLRDoc.ANNOTATION, id, query_filters, fields, optionals)
+        
+        return data
+
+
+@ns.route('/function/<id>/literature')
+@api.doc(params={'id': 'CURIE identifier of a GO term, e.g. GO:0044598'})
+class FunctionLiteratureAssociations(Resource):
+
+    @api.expect(basic_parser)
+    def get(self, id):
+        """
+        Returns publications associated to a GO term
+        """
+
+        fields = "reference"
+        query_filters = "annotation_class%5E2&qf=annotation_class_label_searchable%5E1&qf=bioentity%5E2&qf=bioentity_label_searchable%5E1&qf=bioentity_name_searchable%5E1&qf=annotation_extension_class%5E2&qf=annotation_extension_class_label_searchable%5E1&qf=reference_searchable%5E1&qf=panther_family_searchable%5E1&qf=panther_family_label_searchable%5E1&qf=bioentity_isoform%5E1"
+        args = basic_parser.parse_args()
+
+        evidences = args['evidence']
+        evidence = ""
+        if evidences is not None:
+            evidence = "&fq=evidence_closure:("
+            for ev in evidences:
+                evidence += "\"" + ev + "\","
+            evidence = evidence[:-1]
+            evidence += ")"
+
+        taxon_restrictions = ""
+        cfg = get_config()
+        if cfg.taxon_restriction is not None:
+            taxon_restrictions = "&fq=taxon_subset_closure:("
+            for c in cfg.taxon_restriction:
+                taxon_restrictions += "\"" + c + "\","
+            taxon_restrictions = taxon_restrictions[:-1]
+            taxon_restrictions += ")"
+
+
+        optionals = "&defType=edismax&start=" + str(args['start']) + "&rows=" + str(args['rows']) + evidence + taxon_restrictions
+        data = run_solr_text_on(ESOLR.GOLR, ESOLRDoc.ANNOTATION, id, query_filters, fields, optionals)
+        
+        list = []
+        for elt in data:
+            for ref in elt['reference']:
+                list.append(ref)
+
+        return { "references": list }
+
+
 
 @ns.route('/pathway/<id>/genes')
 @api.doc(params={'id': 'CURIE any pathway element. E.g. REACT:R-HSA-5387390'})

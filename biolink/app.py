@@ -11,6 +11,8 @@ from biolink.api.link.endpoints.associations_from import ns as associations_from
 from biolink.api.link.endpoints.find_associations import ns as find_associations_namespace
 from biolink.api.search.endpoints.entitysearch import ns as entity_search_namespace
 
+from biolink.api.ontol.endpoints.ontology_endpoint import ns as ontology_endpoint_namespace
+
 from biolink.api.ontol.endpoints.subgraph import ns as ontol_subgraph_namespace
 from biolink.api.ontol.endpoints.termstats import ns as ontol_termstats_namespace
 from biolink.api.ontol.endpoints.labeler import ns as ontol_labeler
