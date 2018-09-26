@@ -26,22 +26,25 @@ parser.add_argument('slim', action='append', help='Map objects up (slim) to a hi
 parser.add_argument('exclude_automatic_assertions', type=inputs.boolean, default=False, help='If set, excludes associations that involve IEAs (ECO:0000501)')
 parser.add_argument('rows', type=int, required=False, default=100, help='number of rows')
 parser.add_argument('start', type=int, required=False, help='beginning row')
-parser.add_argument('relationship_type', choices=[INVOLVED_IN, ACTS_UPSTREAM_OF_OR_WITHIN], default=ACTS_UPSTREAM_OF_OR_WITHIN, help="relationship type ('{}' or '{}')".format(INVOLVED_IN, ACTS_UPSTREAM_OF_OR_WITHIN))
 
-@ns.route('/<category>')
-@api.param('category', 'category type', enum=[FUNCTION_CATEGORY, PHENOTYPE_CATEGORY, ANATOMY_CATEGORY])
-class EntitySetSlimmer(Resource):
+@ns.route('/function')
+@api.param('relationship_type', "relationship type ('{}' or '{}')".format(INVOLVED_IN, ACTS_UPSTREAM_OF_OR_WITHIN), enum=[INVOLVED_IN, ACTS_UPSTREAM_OF_OR_WITHIN], default=ACTS_UPSTREAM_OF_OR_WITHIN)
+class EntitySetFunctionSlimmer(Resource):
 
-    @api.expect(parser)
-    def get(self, category):
+    function_parser = parser.copy()
+    function_parser.add_argument('relationship_type', choices=[INVOLVED_IN, ACTS_UPSTREAM_OF_OR_WITHIN], default=ACTS_UPSTREAM_OF_OR_WITHIN, help="relationship type ('{}' or '{}')".format(INVOLVED_IN, ACTS_UPSTREAM_OF_OR_WITHIN))
+
+    @api.expect(function_parser)
+    def get(self):
         """
-        Summarize a set of objects
+        For a given gene(s), summarize its annotations over a defined set of slim
         """
-        args = parser.parse_args()
+        args = self.function_parser.parse_args()
         slim = args.get('slim')
         del args['slim']
         subjects = args.get('subject')
         del args['subject']
+
         # Note that GO currently uses UniProt as primary ID for some sources: https://github.com/biolink/biolink-api/issues/66
         # https://github.com/monarch-initiative/dipper/issues/461
 
@@ -49,26 +52,19 @@ class EntitySetSlimmer(Resource):
 
         subjects = [x.replace('WormBase:', 'WB:') if 'WormBase:' in x else x for x in subjects]
         slimmer_subjects = []
-        if category == FUNCTION_CATEGORY:
-            # get proteins for a gene only when the category is 'function'
-            for s in subjects:
-                if 'HGNC:' in s or 'NCBIGene:' in s or 'ENSEMBL:' in s:
-                    prots = sg_dev.gene_to_uniprot_proteins(s)
-                    if len(prots) == 0:
-                        prots = [s]
-                    slimmer_subjects += prots
-                else:
-                    slimmer_subjects.append(s)
-        else:
-            slimmer_subjects = subjects
-
-        if category == ANATOMY_CATEGORY:
-            category = 'anatomical entity'
+        for s in subjects:
+            if 'HGNC:' in s or 'NCBIGene:' in s or 'ENSEMBL:' in s:
+                prots = sg_dev.gene_to_uniprot_proteins(s)
+                if len(prots) == 0:
+                    prots = [s]
+                slimmer_subjects += prots
+            else:
+                slimmer_subjects.append(s)
 
         results = map2slim(
             subjects=slimmer_subjects,
             slim=slim,
-            object_category=category,
+            object_category='function',
             user_agent=USER_AGENT,
             **args
         )
@@ -88,4 +84,53 @@ class EntitySetSlimmer(Resource):
                                 checked[proteinId] = gene
                     else:
                         association['subject']['id'] = checked[proteinId]
+
+        return results
+
+@ns.route('/anatomy')
+class EntitySetAnatomySlimmer(Resource):
+
+    @api.expect(parser)
+    def get(self):
+        """
+        For a given gene(s), summarize its annotations over a defined set of slim
+        """
+        args = parser.parse_args()
+        slim = args.get('slim')
+        del args['slim']
+        subjects = args.get('subject')
+        del args['subject']
+
+        subjects = [x.replace('WormBase:', 'WB:') if 'WormBase:' in x else x for x in subjects]
+        results = map2slim(
+            subjects=subjects,
+            slim=slim,
+            object_category='anatomical entity',
+            user_agent=USER_AGENT,
+            **args
+        )
+        return results
+
+@ns.route('/phenotype')
+class EntitySetPhenotypeSlimmer(Resource):
+
+    @api.expect(parser)
+    def get(self):
+        """
+        For a given gene(s), summarize its annotations over a defined set of slim
+        """
+        args = parser.parse_args()
+        slim = args.get('slim')
+        del args['slim']
+        subjects = args.get('subject')
+        del args['subject']
+
+        subjects = [x.replace('WormBase:', 'WB:') if 'WormBase:' in x else x for x in subjects]
+        results = map2slim(
+            subjects=subjects,
+            slim=slim,
+            object_category='phenotype',
+            user_agent=USER_AGENT,
+            **args
+        )
         return results
