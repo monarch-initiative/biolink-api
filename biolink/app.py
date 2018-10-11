@@ -51,6 +51,7 @@ from biolink.api.restplus import api
 from biolink.database import db
 
 app = Flask(__name__)
+app.url_map.strict_slashes = False
 CORS(app)
 logging.config.fileConfig('logging.conf')
 log = logging.getLogger(__name__)
