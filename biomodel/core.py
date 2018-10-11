@@ -435,9 +435,11 @@ class BioObject(NamedObject):
     def __init__(self,
                  id=None,
                  taxon=None,
+                 association_counts=None,
                  **kwargs):
         super(BioObject, self).__init__(id, **kwargs)
         self.taxon=taxon
+        self.association_counts=association_counts
 
 
     """
@@ -457,6 +459,8 @@ class BioObject(NamedObject):
             obj.taxon = Taxon.from_json(json_obj['taxon'])
         if 'description' in json_obj:
             obj.description = json_obj['description']
+        if 'association_counts' in json_obj:
+            obj.association_counts = json_obj['association_counts']
         return obj
 
 class AnnotationExtension():

@@ -10,7 +10,7 @@ from scigraph.scigraph_util import SciGraph
 from biowikidata.wd_sparql import doid_to_wikidata, resolve_to_wikidata, condition_to_drug
 from ontobio.vocabulary.relations import HomologyTypes
 from ..closure_bins import create_closure_bin
-
+from ..association_counts import get_association_counts
 from biolink import USER_AGENT
 
 from ontobio.golr.golr_query import run_solr_text_on, ESOLR, ESOLRDoc, replace
@@ -85,13 +85,22 @@ def get_object_genotype(id, **args):
 @api.doc(params={'id': 'id, e.g. NCBIGene:84570'})
 class GenericObject(Resource):
 
-    @api.expect(core_parser)
+    parser = core_parser.copy()
+    parser.add_argument('get_association_counts', help='Get association counts', type=inputs.boolean, default=False)
+
+    @api.expect(parser)
     @api.marshal_with(bio_object)
     def get(self, id):
         """
         Returns basic info on object of any type
         """
+        args = self.parser.parse_args()
         obj = scigraph.bioobject(id)
+        if args['get_association_counts']:
+            counts = get_association_counts(id)
+            # TODO
+            obj.__setattr__('association_stats', counts)
+
         return(obj)
 
 @ns.route('/<type>/<id>')
@@ -101,13 +110,19 @@ class GenericObject(Resource):
                                            TYPE_SUBSTANCE, TYPE_INDIVIDUAL])
 class GenericObjectByType(Resource):
 
-    @api.expect(core_parser)
+    @api.expect(GenericObject.parser)
     @api.marshal_with(bio_object)
     def get(self, id, type):
         """
         Return basic info on an object for a given type
         """
+        args = GenericObject.parser.parse_args()
         obj = scigraph.bioobject(id)
+        if args['get_association_counts']:
+            counts = get_association_counts(id)
+            # TODO
+            obj.__setattr__('association_stats', counts)
+
         return(obj)
 
 @ns.route('/<id>/associations')
