@@ -99,7 +99,7 @@ class GenericObject(Resource):
         if args['get_association_counts']:
             counts = get_association_counts(id)
             # TODO
-            obj.__setattr__('association_stats', counts)
+            obj.__setattr__('association_counts', counts)
 
         return(obj)
 
@@ -121,7 +121,7 @@ class GenericObjectByType(Resource):
         if args['get_association_counts']:
             counts = get_association_counts(id)
             # TODO
-            obj.__setattr__('association_stats', counts)
+            obj.__setattr__('association_counts', counts)
 
         return(obj)
 
