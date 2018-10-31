@@ -24,7 +24,7 @@ parser = api.parser()
 parser.add_argument('subject', action='append', help='Entity ids to be examined, e.g. NCBIGene:9342, NCBIGene:7227, NCBIGene:8131, NCBIGene:157570, NCBIGene:51164, NCBIGene:6689, NCBIGene:6387', required=True)
 parser.add_argument('slim', action='append', help='Map objects up (slim) to a higher level category. Value can be ontology class ID (IMPLEMENTED) or subset ID (TODO)', required=True)
 parser.add_argument('exclude_automatic_assertions', type=inputs.boolean, default=False, help='If set, excludes associations that involve IEAs (ECO:0000501)')
-parser.add_argument('rows', type=int, required=False, default=100, help='number of rows')
+parser.add_argument('rows', type=int, required=False, default=-1, help='number of rows')
 parser.add_argument('start', type=int, required=False, help='beginning row')
 
 @ns.route('/function')
