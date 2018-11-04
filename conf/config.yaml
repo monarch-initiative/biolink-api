@@ -37,4 +37,33 @@ ontologies:
   - id: monarch
     handle: data/monarch.json
     pre_load: true
+biolink_modules:
+  - 'biolink.api.bio.endpoints.bioentity'
+  - 'biolink.api.link.endpoints.associations_from'
+  - 'biolink.api.link.endpoints.find_associations'
+  - 'biolink.api.search.endpoints.entitysearch'
+  - 'biolink.api.ontol.endpoints.ontology_endpoint'
+  - 'biolink.api.ontol.endpoints.subgraph'
+  - 'biolink.api.ontol.endpoints.termstats'
+  - 'biolink.api.ontol.endpoints.labeler'
+  - 'biolink.api.ontol.endpoints.enrichment'
+  - 'biolink.api.entityset.endpoints.summary'
+  - 'biolink.api.entityset.endpoints.slimmer'
+  - 'biolink.api.entityset.endpoints.geneset_homologs'
+  - 'biolink.api.entityset.endpoints.overrepresentation'
+  - 'biolink.api.nlp.endpoints.annotate'
+  - 'biolink.api.graph.endpoints.node'
+  - 'biolink.api.ontol.endpoints.subgraph'
+  - 'biolink.api.mart.endpoints.mart'
+  - 'biolink.api.cam.endpoints.cam_endpoint'
+  - 'biolink.api.owl.endpoints.ontology'
+  - 'biolink.api.patient.endpoints.individual'
+  - 'biolink.api.identifier.endpoints.prefixes'
+  - 'biolink.api.identifier.endpoints.mapper'
+  - 'biolink.api.genome.endpoints.region'
+  - 'biolink.api.pair.endpoints.pairsim'
+  - 'biolink.api.evidence.endpoints.graph'
+  - 'biolink.api.relations.endpoints.relation_usage'
+  - 'biolink.api.variation.endpoints.variantset'
+  - 'biolink.api.pub.endpoints.pubs'
 
