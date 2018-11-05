@@ -1002,7 +1002,6 @@ class AnatomyGeneAssociations(Resource):
         """
         Returns genes associated with a given anatomy
         """
-        print("ARGS: {}".format(core_parser.parse_args))
         return search_associations(
             subject_category='gene',
             object_category='anatomical entity',
