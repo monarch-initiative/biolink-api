@@ -8,12 +8,9 @@ import pysolr
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('nlp/annotate', description='annotate text using named entities')
-
 parser = api.parser()
 parser.add_argument('category', action='append', help='E.g. phenotype')
 
-@ns.route('/<text>')
 class Annotate(Resource):
 
     @api.expect(parser)

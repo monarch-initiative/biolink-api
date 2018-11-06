@@ -11,8 +11,6 @@ import pysolr
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('variation/set', description='Operations related to sets of variants')
-
 pagination_arguments = reqparse.RequestParser()
 pagination_arguments.add_argument('page', type=int, required=False, default=1, help='Page number')
 pagination_arguments.add_argument('per_page', type=int, required=False, choices=[2, 10, 20, 30, 40, 50],
@@ -41,8 +39,6 @@ page_of_variantsets = api.inherit('Page of variant sets', pagination, {
     'items': fields.List(fields.Nested(variantset))
 })
 
-
-@ns.route('/')
 class VariantSetsCollection(Resource):
 
     @api.expect(pagination_arguments)
@@ -68,8 +64,6 @@ class VariantSetsCollection(Resource):
         create_variantset(request.json)
         return None, 201
 
-
-@ns.route('/<id>')
 @api.response(404, 'VariantSet not found.')
 class VariantSetItem(Resource):
 
@@ -98,10 +92,6 @@ class VariantSetItem(Resource):
         delete_post(id)
         return None, 204
 
-
-#@ns.route('/archive/<int:year>/')
-#@ns.route('/archive/<int:year>/<int:month>/')
-@ns.route('/archive/<int:year>/<int:month>/<int:day>/')
 class VariantSetsArchiveCollection(Resource):
 
     @api.expect(pagination_arguments, validate=True)
@@ -126,7 +116,6 @@ class VariantSetsArchiveCollection(Resource):
 
         return posts_page
 
-@ns.route('/analyze/<id>')
 class VariantAnalyze(Resource):
 
     #@api.expect(parser)

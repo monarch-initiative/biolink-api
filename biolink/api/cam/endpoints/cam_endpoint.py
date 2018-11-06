@@ -8,13 +8,10 @@ from causalmodels.lego_sparql_util import lego_query, ModelQuery
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('cam', description='Operations on causal activity models (LEGO)')
-
 parser = api.parser()
 parser.add_argument('title', help='string to search for in title of model')
 parser.add_argument('contributor', help='string to search for in contributor of model')
 
-@ns.route('/model/')
 class ModelCollection(Resource):
 
     #@api.expect(parser)
@@ -31,7 +28,6 @@ class ModelCollection(Resource):
         FILTER(?p != json_model:)
         }""", limit=1000)
 
-@ns.route('/model/query/')
 class ModelQuery(Resource):
 
     @api.expect(parser)
@@ -47,7 +43,6 @@ class ModelQuery(Resource):
         sparql = mq.gen_sparql()
         return lego_query(sparql, limit=100)
     
-@ns.route('/model/properties/')
 class ModelProperties(Resource):
 
     @api.expect(parser)
@@ -63,8 +58,7 @@ class ModelProperties(Resource):
         FILTER(?p != json_model:)
         }""", limit=1000)
 
-@ns.route('/model/contributors/')
-class ModelContibutors(Resource):
+class ModelContributors(Resource):
 
     #@api.expect(parser)
     def get(self):
@@ -78,7 +72,6 @@ class ModelContibutors(Resource):
            dc:contributor ?v
         }""", limit=1000)
 
-@ns.route('/instances/')
 class ModelInstances(Resource):
 
     #@api.expect(parser)
@@ -92,7 +85,6 @@ class ModelInstances(Resource):
         {?i rdfs:isDefinedBy ?model 
         }""", limit=1000)
     
-@ns.route('/model/property_values/')
 class ModelPropertyValues(Resource):
 
     @api.expect(parser)
@@ -108,7 +100,6 @@ class ModelPropertyValues(Resource):
         FILTER(?p != json_model:)
         }""", limit=1000)
     
-@ns.route('/model/<id>')
 class ModelObject(Resource):
 
     #@api.expect(parser)
@@ -126,7 +117,6 @@ class ModelObject(Resource):
 
         return []
 
-@ns.route('/instance/<id>')
 class InstanceObject(Resource):
 
     @api.expect(parser)
@@ -142,7 +132,6 @@ class InstanceObject(Resource):
 
         return []
     
-@ns.route('/activity/')
 class ActivityCollection(Resource):
 
     @api.expect(parser)
@@ -159,7 +148,6 @@ class ActivityCollection(Resource):
         }
         """)
     
-@ns.route('/physical_interaction/')
 class PhysicalInteraction(Resource):
 
     @api.expect(parser)

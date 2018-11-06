@@ -12,8 +12,6 @@ import pysolr
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('ontol', description='extract a subgraph from an ontology')
-
 parser = api.parser()
 parser.add_argument('cnode', action='append', help='Additional classes')
 parser.add_argument('include_ancestors', type=inputs.boolean, default=True, help='Include Ancestors')
@@ -21,7 +19,6 @@ parser.add_argument('include_descendants', type=inputs.boolean, help='Include De
 parser.add_argument('relation', action='append', default=['subClassOf', 'BFO:0000050'], help='Additional classes')
 parser.add_argument('include_meta', type=inputs.boolean, default=False, help='Include metadata in response')
 
-@ns.route('/subgraph/<ontology>/<node>')
 @api.doc(params={'ontology': 'ontology ID, e.g. go, uberon, mp, hp'})
 @api.doc(params={'node': 'class ID, e.g. HP:0001288'})
 class ExtractOntologySubgraphResource(Resource):

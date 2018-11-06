@@ -9,12 +9,9 @@ import pysolr
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('ontol/labeler', description='Assigns labels to ids')
-
 parser = api.parser()
 parser.add_argument('id', action='append', help='List of ids')
 
-@ns.route('/')
 class OntolLabelerResource(Resource):
 
     @api.expect(parser)

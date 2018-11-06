@@ -8,12 +8,9 @@ import pysolr
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('ontol/enrichment', description='foo bar')
-
 parser = api.parser()
 parser.add_argument('bioentity_ids', help='List of ids')
 
-@ns.route('/')
 class Foo(Resource):
 
     @api.expect(parser)

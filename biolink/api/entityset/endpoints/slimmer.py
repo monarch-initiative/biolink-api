@@ -11,8 +11,6 @@ from biolink import USER_AGENT
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('bioentityset/slimmer', description='maps a set of entities to a slim')
-
 INVOLVED_IN = 'involved_in'
 ACTS_UPSTREAM_OF_OR_WITHIN = 'acts_upstream_of_or_within'
 
@@ -27,7 +25,6 @@ parser.add_argument('exclude_automatic_assertions', type=inputs.boolean, default
 parser.add_argument('rows', type=int, required=False, default=100, help='number of rows')
 parser.add_argument('start', type=int, required=False, help='beginning row')
 
-@ns.route('/function')
 @api.param('relationship_type', "relationship type ('{}' or '{}')".format(INVOLVED_IN, ACTS_UPSTREAM_OF_OR_WITHIN), enum=[INVOLVED_IN, ACTS_UPSTREAM_OF_OR_WITHIN], default=ACTS_UPSTREAM_OF_OR_WITHIN)
 class EntitySetFunctionSlimmer(Resource):
 
@@ -87,7 +84,6 @@ class EntitySetFunctionSlimmer(Resource):
 
         return results
 
-@ns.route('/anatomy')
 class EntitySetAnatomySlimmer(Resource):
 
     @api.expect(parser)
@@ -111,7 +107,6 @@ class EntitySetAnatomySlimmer(Resource):
         )
         return results
 
-@ns.route('/phenotype')
 class EntitySetPhenotypeSlimmer(Resource):
 
     @api.expect(parser)

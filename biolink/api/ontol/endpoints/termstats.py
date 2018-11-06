@@ -9,14 +9,11 @@ from biolink import USER_AGENT
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('ontol', description='ontology operations')
-
 parser = api.parser()
 parser.add_argument('evidence', help="""Object id, e.g. ECO:0000501 (for IEA; Includes inferred by default)
                     or a specific publication or other supporting ibject, e.g. ZFIN:ZDB-PUB-060503-2.
                     """)
 
-@ns.route('/information_content/<subject_category>/<object_category>/<subject_taxon>')
 class InformationContentResource(Resource):
 
     @api.expect(parser)

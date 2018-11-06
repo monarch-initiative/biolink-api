@@ -12,8 +12,6 @@ MAX_ROWS=10000
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('bioentityset', description='operations over sets of entities')
-
 parser = api.parser()
 
 parser.add_argument('subject', action='append', help='Entity ids to be examined, e.g. NCBIGene:9342, NCBIGene:7227, NCBIGene:8131, NCBIGene:157570, NCBIGene:51164, NCBIGene:6689, NCBIGene:6387')
@@ -21,7 +19,6 @@ parser.add_argument('background', action='append', help='Entity ids in backgroun
 parser.add_argument('object_category', help='E.g. phenotype, function')
 parser.add_argument('object_slim', help='Slim or subset to which the descriptors are to be mapped, NOT IMPLEMENTED')
 
-@ns.route('/descriptor/counts/')
 class EntitySetSummary(Resource):
 
     @api.expect(parser)
@@ -46,8 +43,6 @@ class EntitySetSummary(Resource):
         del results['facet_counts'][M.OBJECT_CLOSURE]
         return {'results':obj_count_dict, 'facets': results['facet_counts']}
 
-    
-@ns.route('/associations/')
 class EntitySetAssociations(Resource):
 
     @api.expect(parser)
@@ -96,8 +91,6 @@ class EntitySetAssociations(Resource):
 #        return results
     
 
-    
-@ns.route('/graph/')
 class EntitySetGraphResource(Resource):
 
     @api.expect(parser)
