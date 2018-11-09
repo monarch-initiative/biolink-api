@@ -8,12 +8,9 @@ import pysolr
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('owl/ontology', description='OWL-level operations on an ontology')
-
 parser = api.parser()
 #parser.add_argument('subject_taxon', help='SUBJECT TAXON id, e.g. NCBITaxon:9606. Includes inferred by default')
 
-@ns.route('/dlquery/<query>')
 class DLQuery(Resource):
 
     @api.expect(parser)
@@ -29,7 +26,6 @@ class DLQuery(Resource):
 
         return []
 
-@ns.route('/sparql/<query>')
 class SparqlQuery(Resource):
 
     @api.expect(parser)

@@ -46,9 +46,6 @@ subgraph_params.add_argument('include_meta', type=inputs.boolean, default=False,
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('ontology', description='Operations on Ontology Terms and Subsets')
-
-@ns.route('/term/<id>')
 @api.doc(params={'id': 'CURIE identifier of a GO term, e.g. GO:0003677'})
 class OntologyTerm(Resource):
 
@@ -60,8 +57,6 @@ class OntologyTerm(Resource):
         results = run_sparql_on(query, EOntology.GO)
         return transform(results[0], ['synonyms', 'relatedSynonyms', 'alternativeIds', 'xrefs', 'subsets'])
 
-
-@ns.route('/term/<id>/graph')
 @api.doc(params={'id': 'CURIE identifier of a GO term, e.g. GO:0000981'})
 class OntologyTermGraph(Resource):
 
@@ -103,7 +98,6 @@ class OntologyTermGraph(Resource):
 
 #         return None
 
-@ns.route('/term/<id>/subgraph')
 @api.doc(params={'id': 'CURIE identifier of a GO term, e.g. GO:0007275'})
 class OntologyTermSubgraph(Resource):
 
@@ -132,8 +126,6 @@ class OntologyTermSubgraph(Resource):
         json_obj = ojr.to_json(subont, include_meta=args.include_meta)
         return json_obj
 
-
-@ns.route('/term/<id>/subsets')
 @api.doc(params={'id': 'CURIE identifier of a GO term, e.g. GO:0006259'})
 class OntologyTermSubsets(Resource):
 
@@ -147,7 +139,6 @@ class OntologyTermSubsets(Resource):
         results = replace(results, "subset", "OBO:go#", "")
         return results
 
-@ns.route('/subset/<id>')
 @api.doc(params={'id': 'name of a slim subset, e.g. goslim_agr, goslim_generic'})
 class OntologySubset(Resource):
 
@@ -204,7 +195,6 @@ class OntologySubset(Resource):
 #         """
 #         return None
 
-@ns.route('/shared/<subject>/<object>')
 @api.doc(params={'subject': 'CURIE identifier of a GO term, e.g. GO:0006259',
                  'object': 'CURIE identifier of a GO term, e.g. GO:0046483' })
 class OntologyTermsSharedAncestor(Resource):

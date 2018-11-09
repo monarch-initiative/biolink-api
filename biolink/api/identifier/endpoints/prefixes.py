@@ -8,11 +8,8 @@ import pysolr
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('identifier/prefixes', description='identifier prefixes')
-
 parser = api.parser()
 
-@ns.route('/')
 class PrefixCollection(Resource):
 
     @api.expect(parser)
@@ -22,7 +19,6 @@ class PrefixCollection(Resource):
         """
         return get_prefixes()
 
-@ns.route('/expand/<id>')
 @api.doc(params={'id': 'ID of entity to be contracted to URI, e.g "MGI:1"'})
 class PrefixExpand(Resource):
 
@@ -33,7 +29,6 @@ class PrefixExpand(Resource):
         """
         return expand_uri(id)
 
-@ns.route('/contract/<path:uri>')
 @api.doc(params={'uri': 'URI of entity to be contracted to identifier/CURIE, e.g "http://www.informatics.jax.org/accession/MGI:1"'})
 class PrefixContract(Resource):
 

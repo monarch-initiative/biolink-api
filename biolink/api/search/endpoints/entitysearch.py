@@ -8,8 +8,6 @@ from biolink import USER_AGENT
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('search', description='Search for entities')
-
 def get_simple_parser():
         """
         A simple flaskrest parser object that includes basic http params
@@ -60,7 +58,6 @@ simple_parser = get_simple_parser()
 adv_parser = get_advanced_parser()
 layperson_parser = get_layperson_parser()
 
-@ns.route('/entity/<term>')
 @api.doc(params={'term': 'search string, e.g. shh, parkinson, femur'})
 class SearchEntities(Resource):
 
@@ -75,7 +72,6 @@ class SearchEntities(Resource):
         results = q.search()
         return results
 
-@ns.route('/entity/hpo-pl/<term>')
 @api.doc(params={'term': 'search string, e.g. muscle atrophy, frequent infections'})
 class SearchHPOEntities(Resource):
 
@@ -106,8 +102,6 @@ class SearchHPOEntities(Resource):
         results = q.autocomplete()
         return results
 
-
-@ns.route('/entity/autocomplete/<term>')
 class Autocomplete(Resource):
 
     @api.expect(simple_parser)

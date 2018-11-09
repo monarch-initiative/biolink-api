@@ -10,8 +10,6 @@ from biolink import USER_AGENT
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('association', description='Retrieve associations between entities')
-
 parser = api.parser()
 parser.add_argument('subject_category', help='Category of entity at link Subject (source), e.g. gene, disease, phenotype')
 parser.add_argument('object_category', help='Category of entity at link Object (target), e.g. gene, disease, phenotype')
@@ -26,7 +24,6 @@ parser.add_argument('map_identifiers', help='Prefix to map all IDs to, e.g. NCBI
 parser.add_argument('slim', action='append', help='Map objects up (slim) to a higher level category. Value can be ontology class ID or subset ID')
 parser.add_argument('use_compact_associations', type=inputs.boolean, default=False, help='If true, returns results in compact associations format')
 
-@ns.route('/from/<subject>')
 @api.doc(params={'subject': 'Return associations emanating from this node, e.g. NCBIGene:84570, ZFIN:ZDB-GENE-050417-357 (If ID is from an ontology then results would include inferred associations, by default)'})
 class AssociationsFrom(Resource):
 
@@ -40,7 +37,6 @@ class AssociationsFrom(Resource):
 
         return search_associations(subject=subject, user_agent=USER_AGENT, **args)
 
-@ns.route('/to/<object>')
 @api.doc(params={'object': 'Return associations pointing to this node, e.g. specifying MP:0013765 will return all genes, variants, strains, etc. annotated with this term. Can also be a biological entity such as a gene'})
 class AssociationsTo(Resource):
 
@@ -54,7 +50,6 @@ class AssociationsTo(Resource):
 
         return search_associations(object=object, user_agent=USER_AGENT, **args)
 
-@ns.route('/between/<subject>/<object>')
 @api.doc(params={'subject': 'Return associations emanating from this node, e.g. MGI:1342287 (If ID is from an ontology then results would include inferred associations, by default)'})
 @api.doc(params={'object': 'Return associations pointing to this node, e.g. MP:0013765. Can also be a biological entity such as a gene'})
 class AssociationsBetween(Resource):

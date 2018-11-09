@@ -14,8 +14,6 @@ from biolink import USER_AGENT
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('bioentityset', description='operations over sets of entities')
-
 parser = api.parser()
 
 parser.add_argument('subject', action='append', help='Entity ids to be examined, e.g. NCBIGene:9342, NCBIGene:7227, NCBIGene:8131, NCBIGene:157570, NCBIGene:51164, NCBIGene:6689, NCBIGene:6387')
@@ -26,7 +24,6 @@ parser.add_argument('max_p_value', default='0.05', help='Exclude results with p-
 parser.add_argument('ontology', help='ontology id. Must be obo id. Examples: go, mp, hp, uberon (optional: will be inferred if left blank)')
 parser.add_argument('taxon', help='must be NCBITaxon CURIE. Example: NCBITaxon:9606')
 
-@ns.route('/overrepresentation/')
 @api.doc(params={'object_category': 'CATEGORY of entity at link OBJECT (target), e.g. function, phenotype, disease'})
 class OverRepresentation(Resource):
 

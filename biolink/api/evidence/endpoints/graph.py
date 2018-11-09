@@ -15,12 +15,9 @@ from biolink import USER_AGENT
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('evidence/graph', description='Operations on evidence graphs')
-
 parser = api.parser()
 #parser.add_argument('subject_taxon', help='SUBJECT TAXON id, e.g. NCBITaxon:9606. Includes inferred by default')
 
-@ns.route('/<id>')
 @api.doc(params={'id': 'association id, e.g. cfef92b7-bfa3-44c2-a537-579078d2de37'})
 class EvidenceGraphObject(Resource):
 
@@ -42,7 +39,6 @@ class EvidenceGraphObject(Resource):
         eg = assoc.get('evidence_graph')
         return [eg]
 
-@ns.route('/<id>/image')
 @api.doc(params={'id': 'association id, e.g. cfef92b7-bfa3-44c2-a537-579078d2de37'})
 class EvidenceGraphImage(Resource):
 
