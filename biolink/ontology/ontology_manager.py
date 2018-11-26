@@ -1,26 +1,23 @@
 import logging
 
 from ontobio.ontol_factory import OntologyFactory
-from ontobio.config import get_config
+from biolink.settings import get_biolink_config
 
-cfg = get_config()
+cfg = get_biolink_config()
 omap = {}
 
 def get_ontology(id):
     handle = id
-    print("HANDLE={}".format(handle))
-    for c in cfg.ontologies:
-        print("ONT={}".format(c))
-        # temporary. TODO fix
-        if not isinstance(c,dict):
-            if c.id == id:
-                handle = c.handle
-                print("Using handle={} for {}".format(handle, id))
+    for c in cfg['ontologies']:
+        if c['id'] == id:
+            logging.info("getting handle for id: {} from cfg".format(id))
+            handle = c['handle']
 
     if handle not in omap:
-        print("Creating a new ontology object for {}".format(handle))
-        omap[handle] = OntologyFactory().create(handle)
+        logging.info("Creating a new ontology object for {}".format(handle))
+        ofa = OntologyFactory()
+        omap[handle] = ofa.create(handle)
     else:
-        print("Using cached for {}".format(handle))
+        logging.info("Using cached for {}".format(handle))
     return omap[handle]
 
