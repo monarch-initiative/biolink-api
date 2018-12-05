@@ -35,7 +35,7 @@ class ExtractOntologySubgraphResource(Resource):
 
         ont = get_ontology(ontology)
         relations = args.relation
-        print("Traversing: {} using {}".format(qnodes,relations))
+        log.info("Traversing: {} using {}".format(qnodes,relations))
         nodes = ont.traverse_nodes(qnodes,
                                    up=args.include_ancestors,
                                    down=args.include_descendants,
@@ -59,7 +59,7 @@ class ExtractOntologySubgraphResource(Resource):
 
         ont = get_ontology(ontology)
         relations = args.relation
-        print("Traversing: {} using {}".format(qnodes,relations))
+        log.info("Traversing: {} using {}".format(qnodes,relations))
         nodes = ont.traverse_nodes(qnodes,
                                    up=args.include_ancestors,
                                    down=args.include_descendants,
@@ -70,27 +70,3 @@ class ExtractOntologySubgraphResource(Resource):
         json_obj = ojr.to_json(subont, include_meta=args.include_meta)
 
         return json_obj
-
-# @ns.route('/testme/<ontology>')
-# class TestMe(Resource):
-
-#     @api.expect(parser)
-#     def get(self, ontology):
-#         """
-#         TEST
-#         """
-
-#         ont = get_ontology(ontology)
-#         return {'z': 'foo',
-#                 'nodes': len(ont.nodes())}
-
-
-    
-    
-from flask import g
-def get_db():
-    db = getattr(g, '_database', None)
-    if db is None:
-        logging.info("INITIAL SETUP")
-        db = g._database = 10
-    return db
