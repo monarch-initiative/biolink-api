@@ -11,10 +11,13 @@ TODO:
 Return objects following the biolink/OBAN association model
 
 """
-from SPARQLWrapper import SPARQLWrapper, JSON
-import logging
+import SPARQLWrapper, logging
 
-sparql = SPARQLWrapper("http://query.wikidata.org/sparql")
+from biolink import NAME, VERSION
+from ontobio.util.user_agent import get_user_agent
+
+USER_AGENT = get_user_agent(name=NAME, version=VERSION, modules=[SPARQLWrapper], caller_name=__name__)
+sparql = SPARQLWrapper.SPARQLWrapper("http://query.wikidata.org/sparql", agent=USER_AGENT)
 
 class PrefixMap:
     """
@@ -64,7 +67,7 @@ def run_sparql_query(q,limit=10):
     full_sparql = "{}\n{}\nLIMIT {}".format(prefix_map.gen_header(),q,limit)
     logging.info("FULL:"+full_sparql)
     sparql.setQuery(full_sparql)
-    sparql.setReturnFormat(JSON)
+    sparql.setReturnFormat(SPARQLWrapper.JSON)
     results = sparql.query().convert()
     return results
 

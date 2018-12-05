@@ -4,18 +4,16 @@ from flask import request
 from flask_restplus import Resource
 from biolink.api.restplus import api
 from ontobio.golr.golr_associations import calculate_information_content
-import pysolr
+
+from biolink import USER_AGENT
 
 log = logging.getLogger(__name__)
-
-ns = api.namespace('ontol', description='ontology operations')
 
 parser = api.parser()
 parser.add_argument('evidence', help="""Object id, e.g. ECO:0000501 (for IEA; Includes inferred by default)
                     or a specific publication or other supporting ibject, e.g. ZFIN:ZDB-PUB-060503-2.
                     """)
 
-@ns.route('/information_content/<subject_category>/<object_category>/<subject_taxon>')
 class InformationContentResource(Resource):
 
     @api.expect(parser)
@@ -32,10 +30,13 @@ class InformationContentResource(Resource):
 
         """
         args = parser.parse_args()
-        return calculate_information_content(subject_category=subject_category,
-                                             object_category=object_category,
-                                             subject_taxon=subject_taxon,
-                                             **args)
+        return calculate_information_content(
+            subject_category=subject_category,
+            object_category=object_category,
+            subject_taxon=subject_taxon,
+            user_agent=USER_AGENT,
+            **args
+        )
 
 
     

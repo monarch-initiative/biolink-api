@@ -11,14 +11,13 @@ import pysolr
 #import matplotlib.pyplot as plt
 import networkx as nx
 
-log = logging.getLogger(__name__)
+from biolink import USER_AGENT
 
-ns = api.namespace('evidence/graph', description='Operations on evidence graphs')
+log = logging.getLogger(__name__)
 
 parser = api.parser()
 #parser.add_argument('subject_taxon', help='SUBJECT TAXON id, e.g. NCBITaxon:9606. Includes inferred by default')
 
-@ns.route('/<id>')
 @api.doc(params={'id': 'association id, e.g. cfef92b7-bfa3-44c2-a537-579078d2de37'})
 class EvidenceGraphObject(Resource):
 
@@ -35,12 +34,11 @@ class EvidenceGraphObject(Resource):
         ## TODO: restore this next release of OntoBio (0.2.3 or higher)
         ## assoc = get_association(id)
         
-        results = search_associations(fq={'id':id})
+        results = search_associations(fq={'id':id}, user_agent=USER_AGENT)
         assoc = results['associations'][0]
         eg = assoc.get('evidence_graph')
         return [eg]
 
-@ns.route('/<id>/image')
 @api.doc(params={'id': 'association id, e.g. cfef92b7-bfa3-44c2-a537-579078d2de37'})
 class EvidenceGraphImage(Resource):
 
@@ -53,7 +51,7 @@ class EvidenceGraphImage(Resource):
         """
         args = parser.parse_args()
 
-        assoc = get_association(id)
+        assoc = get_association(id, user_agent=USER_AGENT)
         eg = {'graphs':[assoc.get('evidence_graph')]}
         digraph = convert_json_object(eg)
         #fp = tempfile.TemporaryFile()

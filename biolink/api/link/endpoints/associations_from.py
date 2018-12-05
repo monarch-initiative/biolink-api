@@ -1,34 +1,30 @@
 import logging
 
 from flask import request
-from flask_restplus import Resource
+from flask_restplus import Resource, inputs
 from biolink.datamodel.serializers import association, association_results
 from biolink.api.restplus import api
 from ontobio.golr.golr_associations import get_association, search_associations
-import pysolr
+
+from biolink import USER_AGENT
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('association', description='Retrieve associations between entities')
-
 parser = api.parser()
-parser.add_argument('subject_taxon', help='SUBJECT TAXON id, e.g. NCBITaxon:9606. Includes inferences by default (higher level taxa can be used)')
-parser.add_argument('evidence', help="""Object id, e.g. ECO:0000501 (for IEA; Includes inferred by default)
-                    or a specific publication or other supporting ibject, e.g. ZFIN:ZDB-PUB-060503-2.
-                    """)
-parser.add_argument('graphize', type=bool, help='If set, includes graph object in response')
-parser.add_argument('fl_excludes_evidence', type=bool, help='If set, excludes evidence objects in response')
-parser.add_argument('page', type=int, required=False, default=1, help='Return results starting with this row number')
-parser.add_argument('rows', type=int, required=False, default=10, help='limit on number of rows')
-parser.add_argument('map_identifiers', help='Prefix to map all IDs to. E.g. NCBIGene, HP, OMIM, DOID')
-parser.add_argument('subject_category', help='e.g. gene, genotype, disease, function (todo: use enum)')
-parser.add_argument('object_category', help='e.g. disease, phenotype, gene')
+parser.add_argument('subject_category', help='Category of entity at link Subject (source), e.g. gene, disease, phenotype')
+parser.add_argument('object_category', help='Category of entity at link Object (target), e.g. gene, disease, phenotype')
+parser.add_argument('subject_taxon', help='Subject taxon ID, e.g. NCBITaxon:9606 (Includes inferred associations, by default)')
+parser.add_argument('relation', help='Filter by relation CURIE, e.g. RO:0002200 (has_phenotype), RO:0002607 (is marker for), RO:HOM0000017 (orthologous to), etc.')
+parser.add_argument('evidence', help='Object ID, e.g. ECO:0000501 (for IEA; Includes inferred associations, by default), a specific publication or other supporting object, e.g. ZFIN:ZDB-PUB-060503-2')
+parser.add_argument('graphize', type=inputs.boolean, default=False, help='If true, includes graph object in response')
+parser.add_argument('unselect_evidence', type=inputs.boolean, default=False, help='If true, excludes evidence objects in response')
+parser.add_argument('start', type=int, required=False, default=0, help='beginning row')
+parser.add_argument('rows', type=int, required=False, default=10, help='number of rows')
+parser.add_argument('map_identifiers', help='Prefix to map all IDs to, e.g. NCBIGene')
 parser.add_argument('slim', action='append', help='Map objects up (slim) to a higher level category. Value can be ontology class ID or subset ID')
+parser.add_argument('use_compact_associations', type=inputs.boolean, default=False, help='If true, returns results in compact associations format')
 
-parser.add_argument('use_compact_associations', type=bool, help='If true, returns results in compact associations format')
-
-@ns.route('/from/<subject>')
-@api.doc(params={'subject': 'Return associations emanating from this node, e.g. specifying NCBIGene:84570 will return gene-phenotype, gene-function etc for this gene'})
+@api.doc(params={'subject': 'Return associations emanating from this node, e.g. NCBIGene:84570, ZFIN:ZDB-GENE-050417-357 (If ID is from an ontology then results would include inferred associations, by default)'})
 class AssociationsFrom(Resource):
 
     @api.expect(parser)
@@ -39,10 +35,9 @@ class AssociationsFrom(Resource):
         """
         args = parser.parse_args()
 
-        return search_associations(subject=subject, **args)
+        return search_associations(subject=subject, user_agent=USER_AGENT, **args)
 
-@ns.route('/to/<object>')
-@api.doc(params={'object': 'Return associations pointing to this node. E.g. specifying MP:0013765 will return all genes, variants, strains etc annotated with this term. Can also be a biological entity such as a gene'})
+@api.doc(params={'object': 'Return associations pointing to this node, e.g. specifying MP:0013765 will return all genes, variants, strains, etc. annotated with this term. Can also be a biological entity such as a gene'})
 class AssociationsTo(Resource):
 
     @api.expect(parser)
@@ -53,11 +48,10 @@ class AssociationsTo(Resource):
         """
         args = parser.parse_args()
 
-        return search_associations(object=object, **args)
+        return search_associations(object=object, user_agent=USER_AGENT, **args)
 
-@ns.route('/between/<subject>/<object>')
-@api.doc(params={'subject': 'E.g. e.g. MGI:1342287'})
-@api.doc(params={'object': 'E.g. e.g. MP:0013765, can also be a biological entity such as a gene'})
+@api.doc(params={'subject': 'Return associations emanating from this node, e.g. MGI:1342287 (If ID is from an ontology then results would include inferred associations, by default)'})
+@api.doc(params={'object': 'Return associations pointing to this node, e.g. MP:0013765. Can also be a biological entity such as a gene'})
 class AssociationsBetween(Resource):
 
     @api.expect(parser)
@@ -72,7 +66,7 @@ class AssociationsBetween(Resource):
         
         """
         args = parser.parse_args()
-        return search_associations(object=object, **args)
+        return search_associations(object=object, user_agent=USER_AGENT, **args)
     
     
 

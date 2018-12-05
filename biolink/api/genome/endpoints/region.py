@@ -8,11 +8,8 @@ import pysolr
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('genome/features/', description='Operations to retrieve sequence features')
-
 parser = api.parser()
 
-@ns.route('/within/<build>/<reference>/<begin>/<end>')
 class FeaturesWithinResource(Resource):
 
     

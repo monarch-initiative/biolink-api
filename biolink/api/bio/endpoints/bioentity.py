@@ -1,7 +1,7 @@
 import logging
 
 from flask import request
-from flask_restplus import Resource
+from flask_restplus import Resource, inputs
 from biolink.datamodel.serializers import node, named_object, bio_object, association_results, association, publication, gene, substance, genotype, allele, search_result
 #import biolink.datamodel.serializers
 from biolink.api.restplus import api
@@ -11,23 +11,30 @@ from biowikidata.wd_sparql import doid_to_wikidata, resolve_to_wikidata, conditi
 from ontobio.vocabulary.relations import HomologyTypes
 from ..closure_bins import create_closure_bin
 
-import pysolr
+from biolink import USER_AGENT
+
+from ontobio.golr.golr_query import run_solr_text_on, ESOLR, ESOLRDoc, replace
+from ontobio.config import get_config
+import json
+
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('bioentity', description='Retrieval of domain entities plus associations')
+basic_parser = api.parser()
+basic_parser.add_argument('start', type=int, required=False, default=0, help='beginning row')
+basic_parser.add_argument('rows', type=int, required=False, default=100, help='number of rows')
+basic_parser.add_argument('evidence', action='append', help='Object id, e.g. ECO:0000501 (for IEA; Includes inferred by default) or a specific publication or other supporting object, e.g. ZFIN:ZDB-PUB-060503-2')
+
 
 core_parser = api.parser()
 core_parser.add_argument('rows', type=int, required=False, default=100, help='number of rows')
 core_parser.add_argument('start', type=int, required=False, help='beginning row')
-core_parser.add_argument('unselect_evidence', type=bool, help='If set, excludes evidence objects in response')
-core_parser.add_argument('exclude_automatic_assertions', default=False, type=bool, help='If set, excludes associations that involve IEAs (ECO:0000501)')
-core_parser.add_argument('fetch_objects', type=bool, default=True, help='If true, returns a distinct set of association.objects (typically ontology terms). This appears at the top level of the results payload')
-core_parser.add_argument('use_compact_associations', type=bool, default=False, help='If true, returns results in compact associations format')
+core_parser.add_argument('unselect_evidence', type=inputs.boolean, default=False, help='If true, excludes evidence objects in response')
+core_parser.add_argument('exclude_automatic_assertions', type=inputs.boolean, default=False, help='If true, excludes associations that involve IEAs (ECO:0000501)')
+core_parser.add_argument('fetch_objects', type=inputs.boolean, default=True, help='If true, returns a distinct set of association.objects (typically ontology terms). This appears at the top level of the results payload')
+core_parser.add_argument('use_compact_associations', type=inputs.boolean, default=False, help='If true, returns results in compact associations format')
 core_parser.add_argument('slim', action='append', help='Map objects up (slim) to a higher level category. Value can be ontology class ID or subset ID')
-core_parser.add_argument('evidence', help="""Object id, e.g. ECO:0000501 (for IEA; Includes inferred by default)
-                    or a specific publication or other supporting ibject, e.g. ZFIN:ZDB-PUB-060503-2.
-                    """)
+core_parser.add_argument('evidence', help='Object id, e.g. ECO:0000501 (for IEA; Includes inferred by default) or a specific publication or other supporting object, e.g. ZFIN:ZDB-PUB-060503-2')
 
 INVOLVED_IN = 'involved_in'
 INVOLVED_IN_REGULATION_OF = 'involved_in_regulation_of'
@@ -44,8 +51,11 @@ TYPE_SUBSTANCE = 'substance'
 TYPE_INDIVIDUAL = 'individual'
 
 core_parser_with_rel = core_parser.copy()
-core_parser_with_rel.add_argument('relationship_type', choices=[INVOLVED_IN, INVOLVED_IN_REGULATION_OF, ACTS_UPSTREAM_OF_OR_WITHIN], help="relationship type ('{}', '{}' or '{}')".format(INVOLVED_IN, INVOLVED_IN_REGULATION_OF, ACTS_UPSTREAM_OF_OR_WITHIN))
+core_parser_with_rel.add_argument('relationship_type', choices=[INVOLVED_IN, INVOLVED_IN_REGULATION_OF, ACTS_UPSTREAM_OF_OR_WITHIN], default=INVOLVED_IN, help="relationship type ('{}', '{}' or '{}')".format(INVOLVED_IN, INVOLVED_IN_REGULATION_OF, ACTS_UPSTREAM_OF_OR_WITHIN))
 
+homolog_parser = core_parser.copy()
+homolog_parser.add_argument('homolog_taxon', help='Taxon CURIE of homolog, e.g. NCBITaxon:9606 (Can be an ancestral node in the ontology; includes inferred associations, by default)')
+homolog_parser.add_argument('homology_type', choices=['P', 'O', 'LDO'], help='P (paralog), O (Ortholog) or LDO (least-diverged ortholog)')
 
 scigraph = SciGraph('https://scigraph-data.monarchinitiative.org/scigraph/')
 
@@ -53,22 +63,21 @@ homol_rel = HomologyTypes.Homolog.value
 
 def get_object_gene(id, **args):
         obj = scigraph.bioobject(id, 'Gene')
-        obj.phenotype_associations = search_associations(subject=id, object_category='phenotype', **args)['associations']
-        obj.homology_associations = search_associations(subject=id, rel=homol_rel, object_category='gene', **args)['associations']
-        obj.disease_associations = search_associations(subject=id, object_category='disease', **args)['associations']
-        obj.genotype_associations = search_associations(subject=id, invert_subject_object=True, object_category='genotype', **args)['associations']
+        obj.phenotype_associations = search_associations(subject=id, object_category='phenotype', user_agent=USER_AGENT, **args)['associations']
+        obj.homology_associations = search_associations(subject=id, rel=homol_rel, object_category='gene', user_agent=USER_AGENT, **args)['associations']
+        obj.disease_associations = search_associations(subject=id, object_category='disease', user_agent=USER_AGENT, **args)['associations']
+        obj.genotype_associations = search_associations(subject=id, invert_subject_object=True, object_category='genotype', user_agent=USER_AGENT, **args)['associations']
 
         return(obj)
 
 def get_object_genotype(id, **args):
         obj = scigraph.bioobject(id, 'Genotype')
-        obj.phenotype_associations = search_associations(subject=id, object_category='phenotype', **args)['associations']
-        obj.disease_associations = search_associations(subject=id, object_category='disease', **args)['associations']
-        obj.gene_associations = search_associations(subject=id, object_category='gene', **args)['associations']
+        obj.phenotype_associations = search_associations(subject=id, object_category='phenotype', user_agent=USER_AGENT, **args)['associations']
+        obj.disease_associations = search_associations(subject=id, object_category='disease', user_agent=USER_AGENT, **args)['associations']
+        obj.gene_associations = search_associations(subject=id, object_category='gene', user_agent=USER_AGENT, **args)['associations']
 
         return(obj)
 
-@ns.route('/<id>')
 @api.doc(params={'id': 'id, e.g. NCBIGene:84570'})
 class GenericObject(Resource):
 
@@ -81,7 +90,6 @@ class GenericObject(Resource):
         obj = scigraph.bioobject(id)
         return(obj)
 
-@ns.route('/<type>/<id>')
 @api.param('id', 'id, e.g. NCBIGene:84570')
 @api.param('type', 'bioentity type', enum=[TYPE_GENE, TYPE_VARIANT, TYPE_GENOTYPE, TYPE_PHENOTYPE,
                                            TYPE_DISEASE, TYPE_GOTERM, TYPE_PATHWAY, TYPE_ANATOMY,
@@ -97,7 +105,6 @@ class GenericObjectByType(Resource):
         obj = scigraph.bioobject(id, type)
         return(obj)
 
-@ns.route('/<id>/associations/')
 class GenericAssociations(Resource):
 
     @api.expect(core_parser)
@@ -106,18 +113,14 @@ class GenericAssociations(Resource):
         """
         Returns associations for an entity regardless of the type
         """
-        return search_associations(subject=id, **core_parser.parse_args())
+        return search_associations(
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
 
 @api.doc(params={'id': 'id, e.g. NCBIGene:3630. Equivalent IDs can be used with same results'})
-class AbstractGeneAssociationResource(Resource):
-
-    @api.expect(core_parser)
-    @api.marshal_with(association_results)
-    def get(self, id):
-        pass
-
-@ns.route('/gene/<id>/interactions/')
-class GeneInteractions(AbstractGeneAssociationResource):
+class GeneInteractions(Resource):
 
     @api.expect(core_parser)
     @api.marshal_with(association_results)
@@ -126,15 +129,16 @@ class GeneInteractions(AbstractGeneAssociationResource):
         Returns interactions for a gene
         """
         return search_associations(
-            subject_category='gene', object_category='gene',
-            relation='RO:0002434', subject=id, **core_parser.parse_args())
+            subject_category='gene',
+            object_category='gene',
+            relation='RO:0002434',
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
 
-homolog_parser = core_parser.copy()
-homolog_parser.add_argument('homolog_taxon', help='Taxon CURIE of homolog, e.g. NCBITaxon:9606. Can be intermediate note, includes inferred by default')
-homolog_parser.add_argument('homology_type', choices=['P', 'O', 'LDO'], help='P, O or LDO (paralog, ortholog or least-diverged).')
-
-@ns.route('/gene/<id>/homologs/')
-class GeneHomologAssociations(AbstractGeneAssociationResource):
+@api.doc(params={'id': 'id, e.g. NCBIGene:3630. Equivalent IDs can be used with same results'})
+class GeneHomologAssociations(Resource):
 
     @api.expect(homolog_parser)
     @api.marshal_with(association_results)
@@ -151,14 +155,16 @@ class GeneHomologAssociations(AbstractGeneAssociationResource):
         logging.info("looking for homologs to {}".format(id))
 
         homolog_args = homolog_parser.parse_args()
-        results = search_associations(
-            subject_category='gene', object_category='gene',
-            relation=homol_rel, subject=id,
+        return search_associations(
+            subject_category='gene',
+            object_category='gene',
+            relation=homol_rel,
+            subject=id,
             object_taxon=homolog_args.homolog_taxon,
-            **homolog_parser.parse_args())
-        return results
+            user_agent=USER_AGENT,
+            **homolog_args
+        )
 
-@ns.route('/gene/<id>/phenotypes/')
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:4750. Equivalent IDs can be used with same results'})
 class GenePhenotypeAssociations(Resource):
 
@@ -168,13 +174,15 @@ class GenePhenotypeAssociations(Resource):
         """
         Returns phenotypes associated with gene
         """
-        args = core_parser.parse_args()
 
         return search_associations(
-            subject_category='gene', object_category='phenotype',
-            subject=id, **core_parser.parse_args())
+            subject_category='gene',
+            object_category='phenotype',
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
 
-@ns.route('/gene/<id>/diseases/')
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:4750. Equivalent IDs can be used with same results'})
 class GeneDiseaseAssociations(Resource):
 
@@ -184,14 +192,15 @@ class GeneDiseaseAssociations(Resource):
         """
         Returns diseases associated with gene
         """
-        args = core_parser.parse_args()
-        print(args)
 
         return search_associations(
-            subject_category='gene', object_category='disease',
-            subject=id, **core_parser.parse_args())
+            subject_category='gene',
+            object_category='disease',
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
 
-@ns.route('/gene/<id>/pathways/')
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:50846. Equivalent IDs can be used with same results'})
 class GenePathwayAssociations(Resource):
 
@@ -201,13 +210,15 @@ class GenePathwayAssociations(Resource):
         """
         Returns pathways associated with gene
         """
-        args = core_parser.parse_args()
 
         return search_associations(
-            subject_category='gene', object_category='pathway',
-            subject=id, **core_parser.parse_args())
+            subject_category='gene',
+            object_category='pathway',
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
 
-@ns.route('/gene/<id>/expression/anatomy/')
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:4750. Equivalent IDs can be used with same results'})
 class GeneExpressionAssociations(Resource):
 
@@ -219,10 +230,13 @@ class GeneExpressionAssociations(Resource):
         """
 
         return search_associations(
-            subject_category='gene', object_category='anatomical entity',
-            subject=id, **core_parser.parse_args())
+            subject_category='gene',
+            object_category='anatomical entity',
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
 
-@ns.route('/gene/<id>/anatomy/')
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:13434'})
 class GeneAnatomyAssociations(Resource):
 
@@ -233,12 +247,14 @@ class GeneAnatomyAssociations(Resource):
         Returns anatomical entities associated with a gene
         """
 
-        results = search_associations(
-            subject_category='gene', object_category='anatomical entity',
-            subject=id, **core_parser.parse_args()
+        return search_associations(
+            subject_category='gene',
+            object_category='anatomical entity',
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
         )
 
-@ns.route('/gene/<id>/genotypes/')
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. ZFIN:ZDB-GENE-980526-166'})
 class GeneGenotypeAssociations(Resource):
 
@@ -249,11 +265,16 @@ class GeneGenotypeAssociations(Resource):
         Returns genotypes associated with a gene
         """
         return search_associations(
-            subject_category='gene', object_category='genotype', invert_subject_object=True,
-            subject=id, **core_parser.parse_args())
+            subject_category='gene',
+            object_category='genotype',
+            invert_subject_object=True,
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
 
-@ns.route('/gene/<id>/function/')
-class GeneFunctionAssociations(AbstractGeneAssociationResource):
+@api.doc(params={'id': 'id, e.g. NCBIGene:6469. Equivalent IDs can be used with same results'})
+class GeneFunctionAssociations(Resource):
 
     @api.expect(core_parser)
     @api.marshal_with(association_results)
@@ -280,7 +301,10 @@ class GeneFunctionAssociations(AbstractGeneAssociationResource):
 
         assocs = search_associations(
             object_category='function',
-            subject=id, **core_parser.parse_args())
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
 
         # If there are no associations for the given ID, try other IDs.
         # Note the AmiGO instance does *not* support equivalent IDs
@@ -292,12 +316,14 @@ class GeneFunctionAssociations(AbstractGeneAssociationResource):
             prots = sg_dev.gene_to_uniprot_proteins(id)
             for prot in prots:
                 pr_assocs = search_associations(
-                        object_category='function',
-                        subject=prot, **core_parser.parse_args())
+                    object_category='function',
+                    subject=prot,
+                    user_agent=USER_AGENT,
+                    **core_parser.parse_args()
+                )
                 assocs['associations'] += pr_assocs['associations']
         return assocs
 
-@ns.route('/gene/<id>/literature/')
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:4750'})
 class GeneLiteratureAssociations(Resource):
 
@@ -308,12 +334,15 @@ class GeneLiteratureAssociations(Resource):
         Returns publications associated with a gene
         """
 
-        results = search_associations(
-            subject_category='gene', object_category='publication', invert_subject_object=True,
-            subject=id, **core_parser.parse_args()
+        return search_associations(
+            subject_category='gene',
+            object_category='publication',
+            invert_subject_object=True,
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
         )
 
-@ns.route('/gene/<id>/models/')
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:17988'})
 class GeneModelAssociations(Resource):
 
@@ -324,12 +353,15 @@ class GeneModelAssociations(Resource):
         Returns models associated with a gene
         """
 
-        results = search_associations(
-            subject_category='gene', object_category='model', invert_subject_object=True,
-            subject=id, **core_parser.parse_args()
+        return search_associations(
+            subject_category='gene',
+            object_category='model',
+            invert_subject_object=True,
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
         )
 
-@ns.route('/gene/<id>/ortholog/phenotypes/')
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:4750'})
 class GeneOrthologPhenotypeAssociations(Resource):
 
@@ -342,11 +374,13 @@ class GeneOrthologPhenotypeAssociations(Resource):
         """
 
         return search_associations(
-            fq={'subject_ortholog_closure': id}, object_category='phenotype', **core_parser.parse_args()
+            fq={'subject_ortholog_closure': id},
+            object_category='phenotype',
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
         )
 
 
-@ns.route('/gene/<id>/ortholog/diseases/')
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:4750'})
 class GeneOrthologDiseaseAssociations(Resource):
 
@@ -358,10 +392,12 @@ class GeneOrthologDiseaseAssociations(Resource):
         """
 
         return search_associations(
-            fq={'subject_ortholog_closure': id}, object_category='disease', **core_parser.parse_args()
+            fq={'subject_ortholog_closure': id},
+            object_category='disease',
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
         )
 
-@ns.route('/gene/<id>/variants/')
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. HGNC:10896'})
 class GeneVariantAssociations(Resource):
 
@@ -372,10 +408,14 @@ class GeneVariantAssociations(Resource):
         Returns variants associated with a gene
         """
         return search_associations(
-            subject_category='gene', object_category='variant', invert_subject_object=True,
-            subject=id, **core_parser.parse_args())
+            subject_category='gene',
+            object_category='variant',
+            invert_subject_object=True,
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
 
-@ns.route('/disease/<id>/phenotypes/')
 @api.doc(params={'id': 'CURIE identifier of disease, e.g. OMIM:605543, Orphanet:1934, DOID:678. Equivalent IDs can be used with same results'})
 class DiseasePhenotypeAssociations(Resource):
 
@@ -385,16 +425,18 @@ class DiseasePhenotypeAssociations(Resource):
         """
         Returns phenotypes associated with disease
         """
-
         results = search_associations(
-                subject_category='disease', object_category='phenotype',
-                subject=id, **core_parser.parse_args())
+            subject_category='disease',
+            object_category='phenotype',
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
         fcs = results.get('facet_counts')
-        if fcs is not None:
+        if fcs:
             fcs['closure_bin'] = create_closure_bin(fcs.get('object_closure'))
         return results
 
-@ns.route('/disease/<id>/genes/')
 @api.doc(params={'id': 'CURIE identifier of disease, e.g. OMIM:605543, DOID:678. Equivalent IDs can be used with same results'})
 class DiseaseGeneAssociations(Resource):
 
@@ -404,13 +446,15 @@ class DiseaseGeneAssociations(Resource):
         """
         Returns genes associated with a disease
         """
-        args = core_parser.parse_args()
         return search_associations(
-            subject_category='disease', object_category='gene',
-            subject=id, invert_subject_object=True, **core_parser.parse_args())
+            subject_category='disease',
+            object_category='gene',
+            subject=id,
+            invert_subject_object=True,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args())
 
 
-@ns.route('/disease/<id>/treatment/')
 @api.doc(params={'id': 'CURIE identifier of disease, e.g. DOID:2841 (asthma). Equivalent IDs not yet supported'})
 class DiseaseSubstanceAssociations(Resource):
 
@@ -425,7 +469,6 @@ class DiseaseSubstanceAssociations(Resource):
         """
         return condition_to_drug(id)
 
-@ns.route('/disease/<id>/models/')
 @api.doc(params={'id': 'CURIE identifier of disease, e.g. OMIM:605543, DOID:678. Equivalent IDs can be used with same results'})
 class DiseaseModelAssociations(Resource):
 
@@ -450,12 +493,16 @@ class DiseaseModelAssociations(Resource):
         """
 
         return search_associations(
-            subject_category='disease', object_category='model',
-            subject=id, invert_subject_object=True, **core_parser.parse_args())
+            subject_category='disease',
+            object_category='model',
+            subject=id,
+            invert_subject_object=True,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
 
-@ns.route('/disease/<id>/models/<taxon>')
 @api.doc(params={'id': 'CURIE identifier of disease, e.g. OMIM:605543, DOID:678. Equivalent IDs can be used with same results'})
-@api.doc(params={'taxon': 'CURIE of organism taxonomy class to constrain models, e.g NCBITaxon:6239 (C elegans).\n\n Higher level taxa may be used'})
+@api.doc(params={'taxon': 'CURIE of organism taxonomy class to constrain models, e.g NCBITaxon:10090 (M. musculus).\n\n Higher level taxa may be used'})
 class DiseaseModelTaxonAssociations(Resource):
 
     @api.expect(core_parser)
@@ -467,13 +514,17 @@ class DiseaseModelTaxonAssociations(Resource):
         See /disease/<id>/models route for full details
 
         """
-        # TODO: invert
-        return search_associations(
-            subject_category='disease', object_category='model',
-            subject=id, invert_subject_object=True,
-            object_taxon=taxon, **core_parser.parse_args())
 
-@ns.route('/disease/<id>/genotypes/')
+        return search_associations(
+            subject_category='disease',
+            object_category='model',
+            subject=id,
+            invert_subject_object=True,
+            object_taxon=taxon,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
+
 @api.doc(params={'id': 'CURIE identifier of disease, e.g. Orphanet:399158, DOID:0080008. Equivalent IDs can be used with same results'})
 class DiseaseGenotypeAssociations(Resource):
 
@@ -485,10 +536,14 @@ class DiseaseGenotypeAssociations(Resource):
         """
 
         return search_associations(
-            subject_category='disease', object_category='genotype', invert_subject_object=True,
-            subject=id, **core_parser.parse_args())
+            subject_category='disease',
+            object_category='genotype',
+            invert_subject_object=True,
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
 
-@ns.route('/disease/<id>/literature/')
 @api.doc(params={'id': 'CURIE identifier of disease, e.g. OMIM:605543, DOID:678. Equivalent IDs can be used with same results'})
 class DiseaseLiteratureAssociations(Resource):
 
@@ -500,11 +555,14 @@ class DiseaseLiteratureAssociations(Resource):
         """
 
         return search_associations(
-            subject_category='disease', object_category='publication', invert_subject_object=True,
-            subject=id, **core_parser.parse_args()
+            subject_category='disease',
+            object_category='publication',
+            invert_subject_object=True,
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
         )
 
-@ns.route('/disease/<id>/models/')
 @api.doc(params={'id': 'CURIE identifier of disease, e.g. OMIM:605543, DOID:678. Equivalent IDs can be used with same results'})
 class DiseaseModelAssociations(Resource):
 
@@ -516,12 +574,14 @@ class DiseaseModelAssociations(Resource):
         """
 
         # Note: ontobio automagically sets invert_subject_object when (subject,object) is (disease,model)
-        results = search_associations(
-            subject_category='disease', object_category='model',
-            subject=id, **core_parser.parse_args()
+        return search_associations(
+            subject_category='disease',
+            object_category='model',
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
         )
 
-@ns.route('/disease/<id>/pathways/')
 @api.doc(params={'id': 'CURIE identifier of disease, e.g. DOID:4450. Equivalent IDs can be used with same results'})
 class DiseasePathwayAssociations(Resource):
 
@@ -532,12 +592,14 @@ class DiseasePathwayAssociations(Resource):
         Returns pathways associated with a disease
         """
 
-        results = search_associations(
-            subject_category='disease', object_category='pathway',
-            subject=id, **core_parser.parse_args()
+        return search_associations(
+            subject_category='disease',
+            object_category='pathway',
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
         )
 
-@ns.route('/disease/<id>/variants/')
 @api.doc(params={'id': 'CURIE identifier of disease, e.g. OMIM:605543, DOID:678. Equivalent IDs can be used with same results'})
 class DiseaseVariantAssociations(Resource):
 
@@ -548,12 +610,16 @@ class DiseaseVariantAssociations(Resource):
         Returns variants associated with a disease
         """
 
-        results = search_associations(
-            subject_category='disease', object_category='variant', invert_subject_object=True,
-            subject=id, **core_parser.parse_args()
+        return search_associations(
+            subject_category='disease',
+            object_category='variant',
+            invert_subject_object=True,
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
         )
 
-@ns.route('/phenotype/<id>/anatomy/')
+@api.doc(params={'id': 'CURIE identifier of phenotype, e.g. MP:0008521. Equivalent IDs can be used with same results'})
 class PhenotypeAnatomyAssociations(Resource):
     # Note: This depends on https://github.com/biolink/biolink-api/issues/122
     @api.expect(core_parser)
@@ -564,7 +630,6 @@ class PhenotypeAnatomyAssociations(Resource):
 
         Example IDs:
 
-         * ZP:0004204
          * MP:0008521 abnormal Bowman membrane
 
         For example, *abnormal limb development* will map to *limb*
@@ -572,7 +637,7 @@ class PhenotypeAnatomyAssociations(Resource):
         objs = scigraph.phenotype_to_entity_list(id)
         return objs
 
-@ns.route('/phenotype/<id>/diseases/')
+@api.doc(params={'id': 'CURIE identifier of phenotype, e.g. HP:0007359. Equivalent IDs can be used with same results'})
 class PhenotypeDiseaseAssociations(Resource):
 
     @api.expect(core_parser)
@@ -583,15 +648,19 @@ class PhenotypeDiseaseAssociations(Resource):
         """
 
         results = search_associations(
-                subject_category='phenotype', object_category='disease', invert_subject_object=True,
-                subject=id, **core_parser.parse_args())
+            subject_category='phenotype',
+            object_category='disease',
+            invert_subject_object=True,
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
         # fcs = results.get('facet_counts')
         # if fcs is not None:
         #     fcs['closure_bin'] = create_closure_bin(fcs.get('object_closure'))
         return results
 
 
-@ns.route('/phenotype/<id>/genes/')
 @api.doc(params={'id': 'Pheno class CURIE identifier, e.g  WBPhenotype:0000180 (axon morphology variant), MP:0001569 (abnormal circulating bilirubin level), '})
 class PhenotypeGeneAssociations(Resource):
 
@@ -603,11 +672,15 @@ class PhenotypeGeneAssociations(Resource):
 
         """
         return search_associations(
-            subject_category='phenotype', object_category='gene', invert_subject_object=True,
-            subject=id, **core_parser.parse_args())
+            subject_category='phenotype',
+            object_category='gene',
+            invert_subject_object=True,
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
 
 
-@ns.route('/phenotype/<id>/gene/<taxid>/ids/')
 @api.doc(params={'id': 'Pheno class CURIE identifier, e.g  MP:0001569 (abnormal circulating bilirubin level)'})
 @api.doc(params={'taxid': 'Species or high level taxon grouping, e.g  NCBITaxon:10090 (Mus musculus)'})
 class PhenotypeGeneByTaxonAssociations(Resource):
@@ -618,15 +691,16 @@ class PhenotypeGeneByTaxonAssociations(Resource):
         """
         Returns gene ids for all genes for a particular phenotype in a taxon
 
-        For example, + NCBITaxon:10090 (mouse)
+        For example, MP:0001569 + NCBITaxon:10090 (mouse)
 
         """
-        results = select_distinct_subjects(subject_category='gene',
-                                           object_category='phenotype',
-                                           subject_taxon=taxid)
-        return results
+        return select_distinct_subjects(
+            subject_category='gene',
+            object_category='phenotype',
+            subject_taxon=taxid,
+            user_agent=USER_AGENT
+        )
 
-@ns.route('/phenotype/<id>/genotypes/')
 @api.doc(params={'id': 'Pheno class CURIE identifier, e.g  WBPhenotype:0000180 (axon morphology variant), MP:0001569 (abnormal circulating bilirubin level)'})
 class PhenotypeGenotypeAssociations(Resource):
 
@@ -638,10 +712,14 @@ class PhenotypeGenotypeAssociations(Resource):
         """
 
         return search_associations(
-            subject_category='phenotype', object_category='genotype', invert_subject_object=True,
-            subject=id, **core_parser.parse_args())
+            subject_category='phenotype',
+            object_category='genotype',
+            invert_subject_object=True,
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
 
-@ns.route('/phenotype/<id>/literature/')
 @api.doc(params={'id': 'Pheno class CURIE identifier, e.g  WBPhenotype:0000180 (axon morphology variant), MP:0001569 (abnormal circulating bilirubin level)'})
 class PhenotypeLieratureAssociations(Resource):
 
@@ -653,12 +731,15 @@ class PhenotypeLieratureAssociations(Resource):
         """
 
         return search_associations(
-            subject_category='phenotype', object_category='publication', invert_subject_object=True,
-            subject=id, **core_parser.parse_args()
+            subject_category='phenotype',
+            object_category='publication',
+            invert_subject_object=True,
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
         )
 
-@ns.route('/phenotype/<id>/pathways/')
-@api.doc(params={'id': 'Pheno class CURIE identifier, e.g  WBPhenotype:0000180 (axon morphology variant), MP:0001569 (abnormal circulating bilirubin level)'})
+@api.doc(params={'id': 'Pheno class CURIE identifier, e.g  MP:0001569 (abnormal circulating bilirubin level)'})
 class PhenotypePathwayAssociations(Resource):
 
     @api.expect(core_parser)
@@ -669,11 +750,14 @@ class PhenotypePathwayAssociations(Resource):
         """
 
         return search_associations(
-            subject_category='phenotype', object_category='pathway', invert_subject_object=True,
-            subject=id, **core_parser.parse_args()
+            subject_category='phenotype',
+            object_category='pathway',
+            invert_subject_object=True,
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
         )
 
-@ns.route('/phenotype/<id>/variants/')
 @api.doc(params={'id': 'Pheno class CURIE identifier, e.g  WBPhenotype:0000180 (axon morphology variant), MP:0001569 (abnormal circulating bilirubin level)'})
 class PhenotypeVariantAssociations(Resource):
 
@@ -685,10 +769,16 @@ class PhenotypeVariantAssociations(Resource):
         """
 
         return search_associations(
-            subject_category='phenotype', object_category='variant', invert_subject_object=True,
-            subject=id, **core_parser.parse_args())
+            subject_category='phenotype',
+            object_category='variant',
+            invert_subject_object=True,
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
 
-@ns.route('/goterm/<id>/genes/')
+@api.deprecated
+@api.doc(params={'id': 'CURIE identifier of a GO term, e.g. GO:0044598'})
 class GotermGeneAssociations(Resource):
 
     @api.expect(core_parser_with_rel)
@@ -700,22 +790,191 @@ class GotermGeneAssociations(Resource):
         args = core_parser_with_rel.parse_args()
         if args['relationship_type'] == ACTS_UPSTREAM_OF_OR_WITHIN:
             return search_associations(
-                subject_category='gene', object_category='function',
+                subject_category='gene',
+                object_category='function',
                 fq = {'regulates_closure': id},
-                invert_subject_object=True, **args)
+                invert_subject_object=True,
+                user_agent=USER_AGENT,
+                **args)
         elif args['relationship_type'] == INVOLVED_IN_REGULATION_OF:
             # Temporary fix until https://github.com/geneontology/amigo/pull/469
             # and https://github.com/owlcollab/owltools/issues/241 are resolved
             return search_associations(
-                subject_category = 'gene', object_category = 'function',
+                subject_category = 'gene',
+                object_category = 'function',
                 fq = {'regulates_closure': id, '-isa_partof_closure': id},
-                invert_subject_object=True, **args)
+                invert_subject_object=True,
+                user_agent=USER_AGENT,
+                **args)
         elif args['relationship_type'] == INVOLVED_IN:
             return search_associations(
-                subject_category='gene', object_category='function',
-                subject=id, invert_subject_object=True, **core_parser.parse_args())
+                subject_category='gene',
+                object_category='function',
+                subject=id,
+                invert_subject_object=True,
+                user_agent=USER_AGENT,
+                **args)
 
-@ns.route('/pathway/<id>/genes/')
+
+@api.doc(params={'id': 'CURIE identifier of a GO term, e.g. GO:0044598'})
+class FunctionGeneAssociations(Resource):
+
+    @api.expect(core_parser_with_rel)
+    @api.marshal_with(association_results)
+    def get(self, id):
+        """
+        Returns genes associated to a GO term
+        """
+        args = core_parser_with_rel.parse_args()
+        if args['relationship_type'] == ACTS_UPSTREAM_OF_OR_WITHIN:
+            return search_associations(
+                subject_category='gene',
+                object_category='function',
+                fq = {'regulates_closure': id},
+                invert_subject_object=True,
+                user_agent=USER_AGENT,
+                **args)
+        elif args['relationship_type'] == INVOLVED_IN_REGULATION_OF:
+            # Temporary fix until https://github.com/geneontology/amigo/pull/469
+            # and https://github.com/owlcollab/owltools/issues/241 are resolved
+            return search_associations(
+                subject_category = 'gene',
+                object_category = 'function',
+                fq = {'regulates_closure': id, '-isa_partof_closure': id},
+                invert_subject_object=True,
+                user_agent=USER_AGENT,
+                **args)
+        elif args['relationship_type'] == INVOLVED_IN:
+            return search_associations(
+                subject_category='gene',
+                object_category='function',
+                subject=id,
+                invert_subject_object=True,
+                user_agent=USER_AGENT,
+                **args)
+
+
+@api.doc(params={'id': 'CURIE identifier of a function term (e.g. GO:0044598)'})
+class FunctionAssociations(Resource):
+
+    @api.expect(basic_parser)
+    def get(self, id):
+        """
+        Returns annotations associated to a function term
+        """
+
+        # annotation_class,aspect
+        fields = "date,assigned_by,bioentity_label,bioentity_name,synonym,taxon,taxon_label,panther_family,panther_family_label,evidence,evidence_type,reference,annotation_extension_class,annotation_extension_class_label"
+        query_filters = "annotation_class%5E2&qf=annotation_class_label_searchable%5E1&qf=bioentity%5E2&qf=bioentity_label_searchable%5E1&qf=bioentity_name_searchable%5E1&qf=annotation_extension_class%5E2&qf=annotation_extension_class_label_searchable%5E1&qf=reference_searchable%5E1&qf=panther_family_searchable%5E1&qf=panther_family_label_searchable%5E1&qf=bioentity_isoform%5E1"
+        args = basic_parser.parse_args()
+
+        evidences = args['evidence']
+        evidence = ""
+        if evidences is not None:
+            evidence = "&fq=evidence_closure:("
+            for ev in evidences:
+                evidence += "\"" + ev + "\","
+            evidence = evidence[:-1]
+            evidence += ")"
+
+        taxon_restrictions = ""
+        cfg = get_config()
+        if cfg.taxon_restriction is not None:
+            taxon_restrictions = "&fq=taxon_subset_closure:("
+            for c in cfg.taxon_restriction:
+                taxon_restrictions += "\"" + c + "\","
+            taxon_restrictions = taxon_restrictions[:-1]
+            taxon_restrictions += ")"
+
+
+        optionals = "&defType=edismax&start=" + str(args['start']) + "&rows=" + str(args['rows']) + evidence + taxon_restrictions
+        data = run_solr_text_on(ESOLR.GOLR, ESOLRDoc.ANNOTATION, id, query_filters, fields, optionals)
+        
+        return data
+
+
+@api.doc(params={'id': 'CURIE identifier of a GO term, e.g. GO:0044598'})
+class FunctionTaxonAssociations(Resource):
+
+    @api.expect(basic_parser)
+    def get(self, id):
+        """
+        Returns taxons associated to a GO term
+        """
+
+        fields = "taxon,taxon_label"
+        query_filters = "annotation_class%5E2&qf=annotation_class_label_searchable%5E1&qf=bioentity%5E2&qf=bioentity_label_searchable%5E1&qf=bioentity_name_searchable%5E1&qf=annotation_extension_class%5E2&qf=annotation_extension_class_label_searchable%5E1&qf=reference_searchable%5E1&qf=panther_family_searchable%5E1&qf=panther_family_label_searchable%5E1&qf=bioentity_isoform%5E1"
+        args = basic_parser.parse_args()
+
+        evidences = args['evidence']
+        evidence = ""
+        if evidences is not None:
+            evidence = "&fq=evidence_closure:("
+            for ev in evidences:
+                evidence += "\"" + ev + "\","
+            evidence = evidence[:-1]
+            evidence += ")"
+
+        taxon_restrictions = ""
+        cfg = get_config()
+        if cfg.taxon_restriction is not None:
+            taxon_restrictions = "&fq=taxon_subset_closure:("
+            for c in cfg.taxon_restriction:
+                taxon_restrictions += "\"" + c + "\","
+            taxon_restrictions = taxon_restrictions[:-1]
+            taxon_restrictions += ")"
+        
+
+        optionals = "&defType=edismax&start=" + str(args['start']) + "&rows=" + str(args['rows']) + evidence + taxon_restrictions
+        data = run_solr_text_on(ESOLR.GOLR, ESOLRDoc.ANNOTATION, id, query_filters, fields, optionals)
+        
+        return data
+
+
+@api.doc(params={'id': 'CURIE identifier of a GO term, e.g. GO:0044598'})
+class FunctionLiteratureAssociations(Resource):
+
+    @api.expect(basic_parser)
+    def get(self, id):
+        """
+        Returns publications associated to a GO term
+        """
+
+        fields = "reference"
+        query_filters = "annotation_class%5E2&qf=annotation_class_label_searchable%5E1&qf=bioentity%5E2&qf=bioentity_label_searchable%5E1&qf=bioentity_name_searchable%5E1&qf=annotation_extension_class%5E2&qf=annotation_extension_class_label_searchable%5E1&qf=reference_searchable%5E1&qf=panther_family_searchable%5E1&qf=panther_family_label_searchable%5E1&qf=bioentity_isoform%5E1"
+        args = basic_parser.parse_args()
+
+        evidences = args['evidence']
+        evidence = ""
+        if evidences is not None:
+            evidence = "&fq=evidence_closure:("
+            for ev in evidences:
+                evidence += "\"" + ev + "\","
+            evidence = evidence[:-1]
+            evidence += ")"
+
+        taxon_restrictions = ""
+        cfg = get_config()
+        if cfg.taxon_restriction is not None:
+            taxon_restrictions = "&fq=taxon_subset_closure:("
+            for c in cfg.taxon_restriction:
+                taxon_restrictions += "\"" + c + "\","
+            taxon_restrictions = taxon_restrictions[:-1]
+            taxon_restrictions += ")"
+
+
+        optionals = "&defType=edismax&start=" + str(args['start']) + "&rows=" + str(args['rows']) + evidence + taxon_restrictions
+        data = run_solr_text_on(ESOLR.GOLR, ESOLRDoc.ANNOTATION, id, query_filters, fields, optionals)
+        
+        list = []
+        for elt in data:
+            for ref in elt['reference']:
+                list.append(ref)
+
+        return { "references": list }
+
+
+
 @api.doc(params={'id': 'CURIE any pathway element. E.g. REACT:R-HSA-5387390'})
 class PathwayGeneAssociations(Resource):
 
@@ -725,13 +984,15 @@ class PathwayGeneAssociations(Resource):
         """
         Returns genes associated with a pathway
         """
-        args = core_parser.parse_args()
 
         return search_associations(
-            subject_category='gene', object_category='pathway',
-            object=id, **core_parser.parse_args())
+            subject_category='gene',
+            object_category='pathway',
+            object=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
 
-@ns.route('/anatomy/<id>/genes/')
 @api.doc(params={'id': 'CURIE identifier of anatomical entity, e.g. GO:0005634 (nucleus), UBERON:0002037 (cerebellum), CL:0000540 (neuron). Equivalent IDs can be used with same results'})
 class AnatomyGeneAssociations(Resource):
 
@@ -739,14 +1000,16 @@ class AnatomyGeneAssociations(Resource):
     @api.marshal_with(association_results)
     def get(self, id):
         """
-        Returns expression events for a gene
+        Returns genes associated with a given anatomy
         """
-
         return search_associations(
-            subject_category='gene', object_category='anatomical entity',
-            object=id, **core_parser.parse_args())
+            subject_category='gene',
+            object_category='anatomical entity',
+            object=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
 
-@ns.route('/anatomy/<id>/genes/<taxid>')
 @api.doc(params={'id': 'CURIE identifier of anatomical entity, e.g. GO:0005634 (nucleus), UBERON:0002037 (cerebellum), CL:0000540 (neuron). Equivalent IDs can be used with same results'})
 @api.doc(params={'taxid': 'Species or high level taxon grouping, e.g  NCBITaxon:10090 (Mus musculus)'})
 class AnatomyGeneByTaxonAssociations(Resource):
@@ -761,12 +1024,15 @@ class AnatomyGeneByTaxonAssociations(Resource):
 
         """
         return search_associations(
-                subject_category='gene',
-                object_category='anatomical entity',
-                subject_taxon=taxid,
-                object=id, **core_parser.parse_args())
+            subject_category='gene',
+            object_category='anatomical entity',
+            subject_taxon=taxid,
+            object=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
 
-@ns.route('/substance/<id>/roles/')
+@api.doc(params={'id': 'CURIE identifier of substance, e.g. CHEBI:40036'})
 class SubstanceRoleAssociations(Resource):
 
     @api.expect(core_parser)
@@ -779,7 +1045,7 @@ class SubstanceRoleAssociations(Resource):
         """
         return scigraph.substance_to_role_associations(id)
 
-@ns.route('/substance/<id>/participant_in/')
+@api.doc(params={'id': 'CURIE identifier of substance, e.g. CHEBI:40036'})
 class SubstanceParticipantInAssociations(Resource):
 
     @api.expect(core_parser)
@@ -802,7 +1068,7 @@ class SubstanceParticipantInAssociations(Resource):
         return scigraph.substance_participates_in_associations(id)
 
 
-@ns.route('/substance/<id>/treats/')
+@api.doc(params={'id': 'CURIE identifier of substance, e.g. CHEBI:40036'})
 class SubstanceTreatsAssociations(Resource):
 
     @api.expect(core_parser)
@@ -816,7 +1082,6 @@ class SubstanceTreatsAssociations(Resource):
         """
         return condition_to_drug(id)
 
-@ns.route('/genotype/<id>/genotypes/')
 @api.doc(params={'id': 'CURIE identifier of genotype, e.g. ZFIN:ZDB-FISH-150901-6607'})
 class GenotypeGenotypeAssociations(Resource):
 
@@ -831,10 +1096,13 @@ class GenotypeGenotypeAssociations(Resource):
 
         # TODO: invert
         return search_associations(
-            subject_category='genotype', object_category='genotype',
-            subject=id, **core_parser.parse_args())
+            subject_category='genotype',
+            object_category='genotype',
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
 
-@ns.route('/genotype/<id>/phenotypes/')
 @api.doc(params={'id': 'CURIE identifier of genotype, e.g. ZFIN:ZDB-FISH-150901-4286'})
 class GenotypePhenotypeAssociations(Resource):
 
@@ -846,10 +1114,13 @@ class GenotypePhenotypeAssociations(Resource):
         """
 
         return search_associations(
-            subject_category='genotype', object_category='phenotype',
-            subject=id, **core_parser.parse_args())
+            subject_category='genotype',
+            object_category='phenotype',
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
 
-@ns.route('/genotype/<id>/diseases/')
 @api.doc(params={'id': 'CURIE identifier of genotype, e.g. dbSNPIndividual:11441 (if non-human will return models)'})
 class GenotypeDiseaseAssociations(Resource):
 
@@ -862,10 +1133,13 @@ class GenotypeDiseaseAssociations(Resource):
 
         # TODO: invert
         return search_associations(
-            subject_category='genotype', object_category='disease',
-            subject=id, **core_parser.parse_args())
+            subject_category='genotype',
+            object_category='disease',
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
 
-@ns.route('/genotype/<id>/genes/')
 @api.doc(params={'id': 'CURIE identifier of genotype, e.g. ZFIN:ZDB-FISH-150901-6607'})
 class GenotypeGeneAssociations(Resource):
 
@@ -878,13 +1152,16 @@ class GenotypeGeneAssociations(Resource):
 
         # TODO: invert
         return search_associations(
-            subject_category='genotype', object_category='gene',
-            subject=id, **core_parser.parse_args())
+            subject_category='genotype',
+            object_category='gene',
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
 
 ##
 
-@ns.route('/variant/<id>/genotypes/')
-@api.doc(params={'id': 'CURIE identifier of variant, e.g. ZFIN:ZDB-ALT-010427-8, ClinVarVariant:39783'})
+@api.doc(params={'id': 'CURIE identifier of variant, e.g. ZFIN:ZDB-ALT-010427-8'})
 class VariantGenotypeAssociations(Resource):
 
     @api.expect(core_parser)
@@ -896,10 +1173,13 @@ class VariantGenotypeAssociations(Resource):
 
         # TODO: invert
         return search_associations(
-            subject_category='variant', object_category='genotype',
-            subject=id, **core_parser.parse_args())
+            subject_category='variant',
+            object_category='genotype',
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
 
-@ns.route('/variant/<id>/phenotypes/')
 @api.doc(params={'id': 'CURIE identifier of variant, e.g. ZFIN:ZDB-ALT-010427-8, ClinVarVariant:39783'})
 class VariantPhenotypeAssociations(Resource):
 
@@ -911,10 +1191,13 @@ class VariantPhenotypeAssociations(Resource):
         """
 
         return search_associations(
-            subject_category='variant', object_category='phenotype',
-            subject=id, **core_parser.parse_args())
+            subject_category='variant',
+            object_category='phenotype',
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
 
-@ns.route('/variant/<id>/genes/')
 @api.doc(params={'id': 'CURIE identifier of variant, e.g. ZFIN:ZDB-ALT-010427-8, ClinVarVariant:39783'})
 class VariantGeneAssociations(Resource):
 
@@ -927,10 +1210,13 @@ class VariantGeneAssociations(Resource):
 
         # TODO: invert
         return search_associations(
-            subject_category='variant', object_category='gene',
-            subject=id, **core_parser.parse_args())
+            subject_category='variant',
+            object_category='gene',
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
 
-@ns.route('/model/<id>/diseases/')
 @api.doc(params={'id': 'CURIE identifier for a model, e.g. MGI:5573196'})
 class ModelDiseaseAssociations(Resource):
 
@@ -942,11 +1228,13 @@ class ModelDiseaseAssociations(Resource):
         """
 
         return search_associations(
-            subject_category='model', object_category='disease',
-            subject=id, **core_parser.parse_args()
+            subject_category='model',
+            object_category='disease',
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
         )
 
-@ns.route('/model/<id>/genes/')
 @api.doc(params={'id': 'CURIE identifier for a model, e.g. MMRRC:042787'})
 class ModelGeneAssociations(Resource):
 
@@ -958,11 +1246,13 @@ class ModelGeneAssociations(Resource):
         """
 
         return search_associations(
-            subject_category='model', object_category='gene',
-            subject=id, **core_parser.parse_args()
+            subject_category='model',
+            object_category='gene',
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
         )
 
-@ns.route('/model/<id>/genotypes/')
 @api.doc(params={'id': 'CURIE identifier for a model, e.g. Coriell:NA16660'})
 class ModelGenotypeAssociations(Resource):
 
@@ -974,12 +1264,14 @@ class ModelGenotypeAssociations(Resource):
         """
 
         return search_associations(
-            subject_category='model', object_category='genotype',
-            subject=id, **core_parser.parse_args()
+            subject_category='model',
+            object_category='genotype',
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
         )
 
-@ns.route('/model/<id>/literature/')
-@api.doc(params={'id': 'CURIE identifier for a model, e.g. MMRRC:042787'})
+@api.doc(params={'id': 'CURIE identifier for a model, e.g. MGI:5644542'})
 class ModelLiteratureAssociations(Resource):
 
     @api.expect(core_parser)
@@ -989,12 +1281,15 @@ class ModelLiteratureAssociations(Resource):
         Returns publications associated with a model
         """
 
-        results = search_associations(
-            subject_category='model', object_category='publication', invert_subject_object=True,
-            subject=id, **core_parser.parse_args()
+        return search_associations(
+            subject_category='model',
+            object_category='publication',
+            invert_subject_object=True,
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
         )
 
-@ns.route('/model/<id>/phenotypes/')
 @api.doc(params={'id': 'id'})
 class ModelPhenotypeAssociations(Resource):
 
@@ -1006,11 +1301,13 @@ class ModelPhenotypeAssociations(Resource):
         """
 
         return search_associations(
-            subject_category='model', object_category='phenotype',
-            subject=id, **core_parser.parse_args()
+            subject_category='model',
+            object_category='phenotype',
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
         )
 
-@ns.route('/model/<id>/variants/')
 @api.doc(params={'id': 'CURIE identifier for a model, e.g. MMRRC:042787'})
 class ModelVariantAssociations(Resource):
 
@@ -1021,7 +1318,10 @@ class ModelVariantAssociations(Resource):
         Returns variants associated with a model
         """
 
-        results = search_associations(
-            subject_category='model', object_category='variant',
-            subject=id, **core_parser.parse_args()
+        return search_associations(
+            subject_category='model',
+            object_category='variant',
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
         )

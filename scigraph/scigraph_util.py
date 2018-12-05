@@ -12,6 +12,8 @@ from scigraph.model.BBOPGraph import *
 from scigraph.model.Concept import *
 from scigraph.model.EntityAnnotationResults import *
 from biomodel.core import NamedObject, BioObject, SynonymPropertyValue
+from ontobio.util.user_agent import get_user_agent
+from biolink import NAME, VERSION
 
 # TODO: modularize into vocab/graph/etc?
 
@@ -122,9 +124,9 @@ class SciGraph:
 
         Returns a BBOPGraph
         """
-        g1 = self.neighbors(id, {'relationshipType':'subClassOf', 'blankNodes':'false', 'direction':'OUTGOING','depth':20})
-        g2 = self.neighbors(id, {'relationshipType':'subClassOf', 'direction':'INCOMING','depth':1})
-        g3 = self.neighbors(id, {'relationshipType':'equivalentClass', 'depth':1})
+        g1 = self.neighbors(id, relationshipType='subClassOf', blankNodes=False, direction='OUTGOING',depth=20)
+        g2 = self.neighbors(id, relationshipType='subClassOf', direction='INCOMING', depth=1)
+        g3 = self.neighbors(id, relationshipType='equivalentClass', depth=1)
         g1.merge(g2)
         g1.merge(g3)
         return g1
@@ -140,7 +142,7 @@ class SciGraph:
         g=BBOPGraph()
         while len(nodes)>0:
             n = nodes.pop()
-            nextg = self.neighbors(n, {'blankNodes':True, 'direction':'OUTGOING','depth':1})
+            nextg = self.neighbors(n, params={'blankNodes':True, 'direction':'OUTGOING','depth':1})
             for nn in nextg.nodes:
                 if nn.id.startswith("_:"):
                     n.append(nn.id)
@@ -155,7 +157,7 @@ class SciGraph:
         visited=[]
         while len(ids)>0:
             id = ids.pop()
-            nextg = self.neighbors(id, {'blankNodes':False, relationshipType: relationshipType, 'direction':'OUTGOING','depth':1})
+            nextg = self.neighbors(id, blankNodes=False, relationshipType=relationshipType, direction='OUTGOING',depth=1)
             for edge in nextg.edges:
                 next_id = edge.obj
                 if next_id not in visited:
@@ -240,12 +242,12 @@ class SciGraph:
 
     # Internal wrapper onto requests API
     def get_response(self, path="", q=None, format=None, **params):
-        url = self.url_prefix + path;
+        url = self.url_prefix + path
         if q is not None:
-            url += "/" +q;
+            url += "/" +q
         if format is not None:
-            url = url  + "." + format;
-        r = requests.get(url, params=params)
+            url = url  + "." + format
+        r = requests.get(url, params=params, headers={'User-Agent': get_user_agent(name=NAME, version=VERSION, modules=[requests], caller_name=__name__)})
         return r
 
     # Simple mapping from bbop graphs to domain-specific objects
@@ -358,6 +360,7 @@ class SciGraph:
         # TODO - include closure
         bbg = self.neighbors(id, direction='INCOMING', depth=1)
         return bbg_to_assocs(bbg)
+
 
 
 def bbg_to_assocs(g):

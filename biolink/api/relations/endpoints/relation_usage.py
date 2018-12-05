@@ -5,13 +5,11 @@ from flask_restplus import Resource
 from biolink.datamodel.serializers import association, association_results
 from biolink.api.restplus import api
 from ontobio.golr.golr_associations import get_association, search_associations, GolrFields
-import pysolr
+from biolink import USER_AGENT
 
 log = logging.getLogger(__name__)
 
 M=GolrFields()
-
-ns = api.namespace('relation/usage', description='Usage of different relationship types')
 
 parser = api.parser()
 parser.add_argument('subject_taxon', help='SUBJECT TAXON id, e.g. NCBITaxon:9606. Includes inferred by default')
@@ -19,8 +17,6 @@ parser.add_argument('evidence', help="""Object id, e.g. ECO:0000501 (for IEA; In
                     or a specific publication or other supporting ibject, e.g. ZFIN:ZDB-PUB-060503-2.
                     """)
 
-
-@ns.route('/')
 class RelationUsageResource(Resource):
 
     @api.expect(parser)
@@ -31,12 +27,14 @@ class RelationUsageResource(Resource):
         """
         args = parser.parse_args()
 
-        return search_associations(rows=0,
-                                   facet_fields=[M.RELATION],
-                                   facet_pivot_fields=[M.SUBJECT_CATEGORY, M.OBJECT_CATEGORY, M.RELATION],
-                                   **args)
+        return search_associations(
+            rows=0,
+            facet_fields=[M.RELATION],
+            facet_pivot_fields=[M.SUBJECT_CATEGORY, M.OBJECT_CATEGORY, M.RELATION],
+            user_agent=USER_AGENT,
+            **args
+        )
 
-@ns.route('/between/<subject_category>/<object_category>')
 class RelationUsageBetweenResource(Resource):
 
     @api.expect(parser)
@@ -47,13 +45,15 @@ class RelationUsageBetweenResource(Resource):
         """
         args = parser.parse_args()
 
-        return search_associations(rows=0,
-                                   subject_category=subject_category,
-                                   object_category=object_category,
-                                   facet_fields=[M.RELATION, M.RELATION_LABEL],
-                                   **args)
-    
-@ns.route('/pivot/')
+        return search_associations(
+            rows=0,
+            subject_category=subject_category,
+            object_category=object_category,
+            facet_fields=[M.RELATION, M.RELATION_LABEL],
+            user_agent=USER_AGENT,
+            **args
+        )
+
 class RelationUsagePivotResource(Resource):
 
     @api.expect(parser)
@@ -64,13 +64,14 @@ class RelationUsagePivotResource(Resource):
         """
         args = parser.parse_args()
 
-        return search_associations(rows=0,
-                                   facet_fields=[M.RELATION],
-                                   facet_pivot_fields=[M.SUBJECT_CATEGORY, M.OBJECT_CATEGORY, M.RELATION],
-                                   **args)
-    
-    
-@ns.route('/pivot/label')
+        return search_associations(
+            rows=0,
+            facet_fields=[M.RELATION],
+            facet_pivot_fields=[M.SUBJECT_CATEGORY, M.OBJECT_CATEGORY, M.RELATION],
+            user_agent=USER_AGENT,
+            **args
+        )
+
 class RelationUsagePivotLabelResource(Resource):
 
     @api.expect(parser)
@@ -81,10 +82,13 @@ class RelationUsagePivotLabelResource(Resource):
         """
         args = parser.parse_args()
 
-        return search_associations(rows=0,
-                                   facet_fields=[M.RELATION_LABEL],
-                                   facet_pivot_fields=[M.SUBJECT_CATEGORY, M.OBJECT_CATEGORY, M.RELATION_LABEL],
-                                   **args)
+        return search_associations(
+            rows=0,
+            facet_fields=[M.RELATION_LABEL],
+            facet_pivot_fields=[M.SUBJECT_CATEGORY, M.OBJECT_CATEGORY, M.RELATION_LABEL],
+            user_agent=USER_AGENT,
+            **args
+        )
     
     
     
