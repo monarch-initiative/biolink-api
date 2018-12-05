@@ -47,6 +47,29 @@ class ExtractOntologySubgraphResource(Resource):
 
         return json_obj
 
+    @api.expect(parser)
+    def post(self, ontology, node):
+        """
+        Extract a subgraph from an ontology
+        """
+        args = parser.parse_args()
+        qnodes = [node]
+        if args.cnode is not None:
+            qnodes += args.cnode
+
+        ont = get_ontology(ontology)
+        relations = args.relation
+        print("Traversing: {} using {}".format(qnodes,relations))
+        nodes = ont.traverse_nodes(qnodes,
+                                   up=args.include_ancestors,
+                                   down=args.include_descendants,
+                                   relations=relations)
+
+        subont = ont.subontology(nodes, relations=relations)
+        ojr = OboJsonGraphRenderer()
+        json_obj = ojr.to_json(subont, include_meta=args.include_meta)
+
+        return json_obj
 
 # @ns.route('/testme/<ontology>')
 # class TestMe(Resource):
@@ -60,7 +83,7 @@ class ExtractOntologySubgraphResource(Resource):
 #         ont = get_ontology(ontology)
 #         return {'z': 'foo',
 #                 'nodes': len(ont.nodes())}
-    
+
 
     
     
