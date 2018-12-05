@@ -62,7 +62,7 @@ class SciGraph:
         nodes = response.json()['nodes']
         return self.make_NamedObject(**nodes[0])
 
-    def bioobject(self, id, node_type, class_name='BioObject', **params):
+    def bioobject(self, id, node_type=None, class_name='BioObject', **params):
         """
         Get a node in a graph and translates it to biomodels datamodel
 
