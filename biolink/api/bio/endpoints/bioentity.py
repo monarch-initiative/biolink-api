@@ -102,7 +102,7 @@ class GenericObjectByType(Resource):
         """
         Return basic info on an object for a given type
         """
-        obj = scigraph.bioobject(id)
+        obj = scigraph.bioobject(id, type)
         return(obj)
 
 class GenericAssociations(Resource):

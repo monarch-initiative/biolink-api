@@ -20,7 +20,8 @@ from biolink import NAME, VERSION
 HAS_PART = 'http://purl.obolibrary.org/obo/BFO_0000051'
 INHERES_IN = 'http://purl.obolibrary.org/obo/RO_0000052'
 HAS_ROLE = 'http://purl.obolibrary.org/obo/RO_0000087'
-IN_TAXON = 'http://purl.obolibrary.org/obo/RO_0002162'
+IN_TAXON = 'RO:0002162'
+HAS_DISPOSITION = 'RO:0000091'
 ENCODES = 'RO:0002205'
 HAS_DBXREF = 'OIO:hasDbXref'
 
@@ -37,7 +38,7 @@ class SciGraph:
         if url is not None:
             self.url_prefix = url
         else:
-            self.url_prefix = "http://scigraph-ontology.monarchinitiative.org/scigraph/"
+            self.url_prefix = "http://scigraph-data.monarchinitiative.org/scigraph/"
         return
 
     def neighbors(self, id=None, **params):
@@ -61,7 +62,7 @@ class SciGraph:
         nodes = response.json()['nodes']
         return self.make_NamedObject(**nodes[0])
 
-    def bioobject(self, id=None, class_name='BioObject', **params):
+    def bioobject(self, id, node_type=None, class_name='BioObject', **params):
         """
         Get a node in a graph and translates it to biomodels datamodel
 
@@ -75,29 +76,45 @@ class SciGraph:
 
         Returns: biomodel.BioObject or subclass
         """
-
         response = self.get_response(
             "dynamic/cliqueLeader", q=id, format="json",
             depth=1, **params
         )
 
         nodes = response.json()['nodes']
-        obj = self.make_NamedObject(**nodes[0], class_name=class_name)
+        bio_object = self.make_NamedObject(**nodes[0], class_name=class_name)
 
-        response_for_taxon = self.get_response(
-            "graph/neighbors", q=obj.id, format="json",
-            depth=1, relationshipType=IN_TAXON
+        response = self.get_response(
+            "graph/neighbors", q=bio_object.id, format="json",
+            depth=1, direction="OUTGOING"
         )
+        graph = BBOPGraph(response.json())
 
-        taxon = None
-        for n in response_for_taxon.json()['nodes']:
-            if n['id'] == obj.id:
-                pass
-            else:
-                taxon = self.make_NamedObject(**n)
-        obj.taxon = taxon
+        bio_object.taxon = None
+        taxon_edge = [edge for edge in graph.edges if edge.pred == IN_TAXON]
+        for tax_edge in taxon_edge:
+            bio_object.taxon = self.make_NamedObject(
+                **graph.get_node(tax_edge.obj).as_dict()
+            )
 
-        return obj
+        # Type specific
+        if node_type == 'disease':
+            bio_object.inheritance = []
+            bio_object.clinical_modifiers = []
+            disposition_edges = [edge for edge in graph.edges
+                                 if edge.pred == HAS_DISPOSITION]
+            for disposition_edge in disposition_edges:
+                disposition = graph.get_node(disposition_edge.obj)
+                if 'inheritance' in disposition.meta.category_list:
+                    bio_object.inheritance.append(
+                        self.make_NamedObject(**disposition.as_dict())
+                    )
+                else:
+                    bio_object.clinical_modifiers.append(
+                        self.make_NamedObject(**disposition.as_dict())
+                    )
+
+        return bio_object
 
     def graph(self, id=None, depth=0):
         """
