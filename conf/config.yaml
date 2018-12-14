@@ -383,3 +383,12 @@ route_mapping:
            resource: biolink.api.variation.endpoints.variantset.VariantSetsArchiveCollection
          - route: /analyze/<id>
            resource: biolink.api.variation.endpoints.variantset.VariantAnalyze
+    - name: sim
+      description: Perform semantic similarity, ranking, and classification
+      routes:
+          - route: /score/
+            resource: biolink.api.sim.endpoints.annotation_score.AnnotationScore
+          - route: /search/
+            resource: biolink.api.sim.endpoints.semanticsim.SimSearch
+          - route: /compare/
+            resource: biolink.api.sim.endpoints.semanticsim.SimCompare
