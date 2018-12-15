@@ -1,4 +1,5 @@
 from flask_restplus import Resource
+from flask import request
 from ontobio.sim.api.owlsim2 import OwlSim2Api
 from ontobio.sim.phenosim_engine import PhenoSimEngine
 from biolink.api.restplus import api
@@ -45,7 +46,7 @@ def get_search_parser():
     )
     sim_search_parser.add_argument(
         'taxon',
-        type=str,
+        type=int,
         required=False,
         help='ncbi taxon id'
     )
@@ -80,10 +81,10 @@ class SimCompare(Resource):
         """
         Compare a reference profile vs one or more profiles
         """
-
+        data = request.json
         return sim_engine.compare(
-            reference_ids=compare_input['ref_id'],
-            query_profiles=compare_input['query_id']
+            reference_ids=data['reference_ids'],
+            query_profiles=data['query_ids']
         )
 
     @api.expect(sim_compare_parser)
@@ -95,6 +96,6 @@ class SimCompare(Resource):
         input_args = sim_compare_parser.parse_args()
 
         return sim_engine.compare(
-            reference_ids=input_args['reference_ids'],
-            query_profiles=[input_args['query_ids']]
+            reference_ids=input_args['ref_id'],
+            query_profiles=[input_args['query_id']]
         )

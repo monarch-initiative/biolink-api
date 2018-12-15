@@ -1,4 +1,5 @@
 import yaml
+from os import path
 
 # Flask settings
 FLASK_SERVER_NAME = 'localhost:8888'
@@ -14,7 +15,7 @@ RESTPLUS_ERROR_404_HELP = False
 SQLALCHEMY_DATABASE_URI = 'sqlite:///db.sqlite'
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-CONFIG = 'conf/config.yaml'
+CONFIG = path.join(path.dirname(path.abspath(__file__)), '../conf/config.yaml')
 biolink_config = None
 
 def get_biolink_config():

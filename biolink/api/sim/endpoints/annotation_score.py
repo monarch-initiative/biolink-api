@@ -1,4 +1,5 @@
 from flask_restplus import Resource
+from flask import request
 from ontobio.sim.annotation_scorer import AnnotationScorer
 from ontobio.sim.api.owlsim2 import OwlSim2Api
 from biolink.api.restplus import api
@@ -24,9 +25,10 @@ class AnnotationScore(Resource):
         """
         Get annotation score
         """
-        phenotypes = [feature['id'] for feature in sufficiency_input['features']
+        data = request.json
+        phenotypes = [feature['id'] for feature in data['features']
                       if feature['isPresent'] is True]
-        absent_phenotypes = [feature['id'] for feature in sufficiency_input['features']
+        absent_phenotypes = [feature['id'] for feature in data['features']
                              if feature['isPresent'] is False]
 
         return annotation_scorer.get_annotation_sufficiency(

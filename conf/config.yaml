@@ -386,9 +386,9 @@ route_mapping:
     - name: sim
       description: Perform semantic similarity, ranking, and classification
       routes:
-          - route: /score/
+          - route: /score
             resource: biolink.api.sim.endpoints.annotation_score.AnnotationScore
-          - route: /search/
+          - route: /search
             resource: biolink.api.sim.endpoints.semanticsim.SimSearch
-          - route: /compare/
+          - route: /compare
             resource: biolink.api.sim.endpoints.semanticsim.SimCompare

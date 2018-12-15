@@ -55,7 +55,7 @@ pairwise_match = api.model('PairwiseMatch', {
 })
 
 sim_match = api.inherit('SimMatch', typed_node, {
-    'rank': fields.Integer(description='rank'),
+    'rank': fields.String(description='rank'),
     'score': fields.Float(description='sim score'),
     'significance': fields.String(description='p-value'),
     'pairwise_match': fields.List(fields.Nested(pairwise_match, description='list of pairwise matches'))
