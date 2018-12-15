@@ -20,12 +20,12 @@ basic_property_value = api.inherit('DefinitionPropertyValue', abstract_property_
 })
 
 meta = api.model('Meta', {
-    'definition': fields.Nested(definition_property_value), description='definition plus source'),
+    'definition': fields.Nested(definition_property_value, description='definition plus source'),
     'comments': fields.List(fields.String(readOnly=True), description='comments'),
     'subsets': fields.List(fields.String(readOnly=True), description='subsets (slims)'),
-    'xrefs': fields.List(fields.Nested(xref_property_value)), description='xrefs plus source'),
-    'synonyms': fields.List(fields.Nested(synonym_property_value)), description='synonyms plus scope, type and source'),
-    'basic_property_values': fields.List(fields.Nested(basic_property_value)), description='synonyms plus scope, type and source'),
+    'xrefs': fields.List(fields.Nested(xref_property_value), description='xrefs plus source'),
+    'synonyms': fields.List(fields.Nested(synonym_property_value), description='synonyms plus scope, type and source'),
+    'basic_property_values': fields.List(fields.Nested(basic_property_value), description='synonyms plus scope, type and source'),
 })
 
 
@@ -48,4 +48,3 @@ graph = api.model('Graph', {
 graph_document = api.model('GraphDocument', {
     'graphs': fields.List(fields.Nested(graph), description='all graphs'),
 })
-

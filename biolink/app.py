@@ -1,5 +1,5 @@
 import logging.config
-import os
+from os import path
 
 import flask as f
 from flask import Flask, Blueprint, request
@@ -14,7 +14,8 @@ from biolink.database import db
 app = Flask(__name__)
 app.url_map.strict_slashes = False
 CORS(app)
-logging.config.fileConfig('logging.conf')
+log_file_path = path.join(path.dirname(path.abspath(__file__)), '../logging.conf')
+logging.config.fileConfig(log_file_path)
 log = logging.getLogger(__name__)
 
 

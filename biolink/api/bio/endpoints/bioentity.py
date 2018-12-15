@@ -1,13 +1,13 @@
 import logging
 
 from flask import request
-from flask_restplus import Resource, inputs
-from biolink.datamodel.serializers import node, named_object, bio_object, association_results, association, publication, gene, substance, genotype, allele, search_result
+from flask_restplus import Resource, inputs, marshal
+from biolink.datamodel.serializers import node, named_object, bio_object, association_results, association, disease_object
 #import biolink.datamodel.serializers
 from biolink.api.restplus import api
-from ontobio.golr.golr_associations import search_associations, search_associations_go, select_distinct_subjects, get_homologs
+from ontobio.golr.golr_associations import search_associations, select_distinct_subjects
 from scigraph.scigraph_util import SciGraph
-from biowikidata.wd_sparql import doid_to_wikidata, resolve_to_wikidata, condition_to_drug
+from biowikidata.wd_sparql import condition_to_drug
 from ontobio.vocabulary.relations import HomologyTypes
 from ..closure_bins import create_closure_bin
 
@@ -88,7 +88,7 @@ class GenericObject(Resource):
         Returns basic info on object of any type
         """
         obj = scigraph.bioobject(id)
-        return(obj)
+        return obj
 
 @api.param('id', 'id, e.g. NCBIGene:84570')
 @api.param('type', 'bioentity type', enum=[TYPE_GENE, TYPE_VARIANT, TYPE_GENOTYPE, TYPE_PHENOTYPE,
@@ -97,13 +97,15 @@ class GenericObject(Resource):
 class GenericObjectByType(Resource):
 
     @api.expect(core_parser)
-    @api.marshal_with(bio_object)
     def get(self, id, type):
         """
         Return basic info on an object for a given type
         """
-        obj = scigraph.bioobject(id, type)
-        return(obj)
+        if type == TYPE_DISEASE:
+            ret_val = marshal(scigraph.bioobject(id, type), disease_object), 200
+        else:
+            ret_val = marshal(scigraph.bioobject(id, type), bio_object), 200
+        return ret_val
 
 class GenericAssociations(Resource):
 
