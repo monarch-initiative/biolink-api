@@ -177,13 +177,22 @@ class GenePhenotypeAssociations(Resource):
         Returns phenotypes associated with gene
         """
 
-        return search_associations(
+        results = search_associations(
             subject_category='gene',
             object_category='phenotype',
             subject=id,
+            facet_limit=100000,
             user_agent=USER_AGENT,
             **core_parser.parse_args()
         )
+
+        fcs = results.get('facet_counts')
+        if fcs:
+            closure_bin, slim_facet = create_closure_bin(fcs.get('object_closure'))
+            fcs['closure_bin'] = closure_bin
+            fcs['object_closure'] = slim_facet
+
+        return results
 
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:4750. Equivalent IDs can be used with same results'})
 class GeneDiseaseAssociations(Resource):
@@ -431,12 +440,15 @@ class DiseasePhenotypeAssociations(Resource):
             subject_category='disease',
             object_category='phenotype',
             subject=id,
+            facet_limit=100000,
             user_agent=USER_AGENT,
             **core_parser.parse_args()
         )
         fcs = results.get('facet_counts')
         if fcs:
-            fcs['closure_bin'] = create_closure_bin(fcs.get('object_closure'))
+            closure_bin, slim_facet = create_closure_bin(fcs.get('object_closure'))
+            fcs['closure_bin'] = closure_bin
+            fcs['object_closure'] = slim_facet
         return results
 
 @api.doc(params={'id': 'CURIE identifier of disease, e.g. OMIM:605543, DOID:678. Equivalent IDs can be used with same results'})
@@ -1115,13 +1127,22 @@ class GenotypePhenotypeAssociations(Resource):
         Returns phenotypes associated with a genotype
         """
 
-        return search_associations(
+        results = search_associations(
             subject_category='genotype',
             object_category='phenotype',
             subject=id,
+            facet_limit=100000,
             user_agent=USER_AGENT,
             **core_parser.parse_args()
         )
+
+        fcs = results.get('facet_counts')
+        if fcs:
+            closure_bin, slim_facet = create_closure_bin(fcs.get('object_closure'))
+            fcs['closure_bin'] = closure_bin
+            fcs['object_closure'] = slim_facet
+
+        return results
 
 @api.doc(params={'id': 'CURIE identifier of genotype, e.g. dbSNPIndividual:11441 (if non-human will return models)'})
 class GenotypeDiseaseAssociations(Resource):
@@ -1192,13 +1213,22 @@ class VariantPhenotypeAssociations(Resource):
         Returns phenotypes associated with a variant
         """
 
-        return search_associations(
+        results = search_associations(
             subject_category='variant',
             object_category='phenotype',
             subject=id,
+            facet_limit=100000,
             user_agent=USER_AGENT,
             **core_parser.parse_args()
         )
+
+        fcs = results.get('facet_counts')
+        if fcs:
+            closure_bin, slim_facet = create_closure_bin(fcs.get('object_closure'))
+            fcs['closure_bin'] = closure_bin
+            fcs['object_closure'] = slim_facet
+
+        return results
 
 @api.doc(params={'id': 'CURIE identifier of variant, e.g. ZFIN:ZDB-ALT-010427-8, ClinVarVariant:39783'})
 class VariantGeneAssociations(Resource):
@@ -1302,13 +1332,22 @@ class ModelPhenotypeAssociations(Resource):
         Returns phenotypes associated with a model
         """
 
-        return search_associations(
+        results = search_associations(
             subject_category='model',
             object_category='phenotype',
             subject=id,
+            facet_limit=100000,
             user_agent=USER_AGENT,
             **core_parser.parse_args()
         )
+
+        fcs = results.get('facet_counts')
+        if fcs:
+            closure_bin, slim_facet = create_closure_bin(fcs.get('object_closure'))
+            fcs['closure_bin'] = closure_bin
+            fcs['object_closure'] = slim_facet
+
+        return results
 
 @api.doc(params={'id': 'CURIE identifier for a model, e.g. MMRRC:042787'})
 class ModelVariantAssociations(Resource):
