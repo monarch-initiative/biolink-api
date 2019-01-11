@@ -34,10 +34,14 @@ def create_closure_bin(fcmap={}):
 
     It is assumed that the input dict is complete (with closed world assumption).
     i.e. grouping terms already included, and if not included assume = 0
+
+    Return: Tuple of two dictionaries, a label-count map and id-count map
     """
     lmap = {}
-    for v in closure_map.values():
-        lmap[v] = 0
+    idmap = {}
+    for curie, label in closure_map.items():
+        lmap[label] = 0
+        idmap[curie] = 0
     for k,v in fcmap.items():
         if k in closure_map:
             label = closure_map[k]
@@ -49,4 +53,5 @@ def create_closure_bin(fcmap={}):
                     continue
 
             lmap[label] = v
-    return lmap
+            idmap[k] = v
+    return lmap, idmap
