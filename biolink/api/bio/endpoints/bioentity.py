@@ -431,12 +431,14 @@ class DiseasePhenotypeAssociations(Resource):
             subject_category='disease',
             object_category='phenotype',
             subject=id,
+            facet_limit=100000,
             user_agent=USER_AGENT,
             **core_parser.parse_args()
         )
         fcs = results.get('facet_counts')
         if fcs:
             fcs['closure_bin'] = create_closure_bin(fcs.get('object_closure'))
+            fcs['object_closure'] = {}  # Avoid huge response object
         return results
 
 @api.doc(params={'id': 'CURIE identifier of disease, e.g. OMIM:605543, DOID:678. Equivalent IDs can be used with same results'})
