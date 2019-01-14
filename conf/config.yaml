@@ -36,7 +36,7 @@ ontologies:
     pre_load: false
   - id: mondo
     handle: mondo
-    pre_load: true
+    pre_load: false
 #  - id: monarch
 #    handle: data/monarch.json
 #    pre_load: false
