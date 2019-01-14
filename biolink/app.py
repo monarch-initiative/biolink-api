@@ -6,6 +6,7 @@ from flask import Flask, Blueprint, request
 from flask import render_template
 from flask_cors import CORS, cross_origin
 from biolink import settings
+from biolink.ontology.ontology_manager import get_ontology
 
 from biolink.api.restplus import api
 
@@ -53,11 +54,13 @@ for ns in mapping['namespace']:
 app.register_blueprint(blueprint)
 db.init_app(app)
 
-# initial setup
-#from ontobio.ontol_factory import OntologyFactory
-#factory = OntologyFactory()
-#ont = factory.create()
-
+def preload_ontologies():
+    ontologies = settings.get_biolink_config().get('ontologies')
+    for ontology in ontologies:
+        handle = ontology['handle']
+        if ontology['pre_load']:
+            log.info("Loading {}".format(ontology['id']))
+            get_ontology(handle)
 
 @app.route("/")
 def hello():
@@ -65,6 +68,7 @@ def hello():
 
 def main():
     #initialize_app(app)
+    preload_ontologies()
     log.info('>>>>> Starting development server at http://{}/api/ <<<<<'.format(app.config['SERVER_NAME']))
     app.run(debug=settings.FLASK_DEBUG)
 

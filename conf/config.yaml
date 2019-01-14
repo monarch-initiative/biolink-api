@@ -24,19 +24,22 @@ use_amigo_for:
 ontologies:
   - id: go
     handle: go
-    pre_load: true
+    pre_load: false
   - id: hp
     handle: hp
-    pre_load: true
-  - id: mp
-    handle: mp
-    pre_load: true
+    pre_load: false
+#  - id: mp
+#    handle: mp
+#    pre_load: false
   - id: uberon
     handle: uberon
+    pre_load: false
+  - id: mondo
+    handle: mondo
     pre_load: true
-  - id: monarch
-    handle: data/monarch.json
-    pre_load: true
+#  - id: monarch
+#    handle: data/monarch.json
+#    pre_load: false
 route_mapping:
   namespace:
     - name: bioentity
