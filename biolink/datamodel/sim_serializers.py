@@ -71,7 +71,12 @@ sim_query = api.model('SimQuery', {
                                description="reference individual or class (eg gene, disease)")
 })
 
+sim_metadata = api.model('SimMetadata', {
+    'max_max_ic': fields.Float(description='max IC')
+})
+
 sim_result = api.model('SimResult', {
     'query': fields.Nested(sim_query),
-    'matches': fields.List(fields.Nested(sim_match, description='list of matches'))
+    'matches': fields.List(fields.Nested(sim_match, description='list of matches')),
+    'metadata': fields.Nested(sim_metadata)
 })
