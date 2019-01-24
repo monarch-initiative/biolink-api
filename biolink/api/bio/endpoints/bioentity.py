@@ -71,7 +71,7 @@ def get_object_gene(id, **args):
         obj.disease_associations = search_associations(subject=id, object_category='disease', user_agent=USER_AGENT, **args)['associations']
         obj.genotype_associations = search_associations(subject=id, invert_subject_object=True, object_category='genotype', user_agent=USER_AGENT, **args)['associations']
 
-        return(obj)
+        return obj
 
 def get_object_genotype(id, **args):
         obj = scigraph.bioobject(id, 'Genotype')
@@ -79,29 +79,21 @@ def get_object_genotype(id, **args):
         obj.disease_associations = search_associations(subject=id, object_category='disease', user_agent=USER_AGENT, **args)['associations']
         obj.gene_associations = search_associations(subject=id, object_category='gene', user_agent=USER_AGENT, **args)['associations']
 
-        return(obj)
+        return obj
 
 @ns.route('/<id>')
 @api.doc(params={'id': 'id, e.g. NCBIGene:84570'})
 class GenericObject(Resource):
 
-    parser = core_parser.copy()
-    parser.add_argument('get_association_counts', help='Get association counts', type=inputs.boolean, default=False)
-
-    @api.expect(parser)
+    @api.expect(core_parser)
     @api.marshal_with(bio_object)
     def get(self, id):
         """
         Returns basic info on object of any type
         """
-        args = self.parser.parse_args()
+        args = core_parser.parse_args()
         obj = scigraph.bioobject(id)
-        if args['get_association_counts']:
-            counts = get_association_counts(id)
-            # TODO
-            obj.__setattr__('association_counts', counts)
-
-        return(obj)
+        return obj
 
 @ns.route('/<type>/<id>')
 @api.param('id', 'id, e.g. NCBIGene:84570')
@@ -110,20 +102,23 @@ class GenericObject(Resource):
                                            TYPE_SUBSTANCE, TYPE_INDIVIDUAL])
 class GenericObjectByType(Resource):
 
-    @api.expect(GenericObject.parser)
+    parser = core_parser.copy()
+    parser.add_argument('get_association_counts', help='Get association counts', type=inputs.boolean, default=False)
+
+    @api.expect(parser)
     @api.marshal_with(bio_object)
     def get(self, id, type):
         """
         Return basic info on an object for a given type
         """
-        args = GenericObject.parser.parse_args()
+        args = self.parser.parse_args()
         obj = scigraph.bioobject(id)
         if args['get_association_counts']:
-            counts = get_association_counts(id)
+            counts = get_association_counts(id, type)
             # TODO
             obj.__setattr__('association_counts', counts)
 
-        return(obj)
+        return obj
 
 @ns.route('/<id>/associations')
 class GenericAssociations(Resource):

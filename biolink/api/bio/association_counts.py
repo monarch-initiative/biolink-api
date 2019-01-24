@@ -13,70 +13,112 @@ HOMOLOG_TYPES = [
 ]
 INTERACTS_WITH = 'RO:0002434'
 
-def get_association_counts(id):
+CATEGORY_NAME_MAP = {
+    'gene': 'genes',
+    'interaction': 'interactions',
+    'homolog': 'homologs',
+    'genotype': 'genotypes',
+    'phenotype': 'phenotypes',
+    'anatomical entity': 'anatomy',
+    'biological process': 'functions',
+    'pathway': 'pathways',
+    'disease': 'diseases',
+    'publication': 'publications',
+    'variant': 'variants',
+    'model': 'models',
+    'case': 'cases',
+    'substance': 'substances',
+    'ortholog-interaction': 'ortholog-interactions',
+    'ortholog-genotype': 'ortholog-genotypes',
+    'ortholog-phenotype': 'ortholog-phenotypes',
+    'ortholog-anatomical entity': 'ortholog-anatomy',
+    'ortholog-biological process': 'ortholog-functions',
+    'ortholog-pathway': 'ortholog-pathways',
+    'ortholog-disease': 'ortholog-diseases',
+    'ortholog-publication': 'ortholog-publications',
+    'ortholog-variant': 'ortholog-variants',
+    'ortholog-model': 'ortholog-models',
+    'ortholog-case': 'ortholog-cases',
+    'ortholog-substance': 'ortholog-substances'
+}
+
+def get_association_counts(bioentity_id, bioentity_type=None):
     """
     For a given CURIE, get the number of associations by each category.
-
-    Note: Experimental
     """
     count_map = {}
     subject_associations = search_associations(
-        fq={'subject_closure': id},
+        fq={'subject_closure': bioentity_id},
         facet_pivot_fields=['{!stats=piv1}object_category', 'relation'],
         stats=True,
-        stats_field='{!tag=piv1 calcdistinct=true distinctValues=false}object'
+        stats_fields=['{!tag=piv1 calcdistinct=true distinctValues=false}object']
     )
     object_associations = search_associations(
-        fq={'object_closure': id},
+        fq={'object_closure': bioentity_id},
         facet_pivot_fields=['{!stats=piv1}subject_category', 'relation'],
         stats=True,
-        stats_field='{!tag=piv1 calcdistinct=true distinctValues=false}subject'
+        stats_fields=['{!tag=piv1 calcdistinct=true distinctValues=false}subject']
     )
-    subject_pivot_counts = subject_associations['facet_pivot']['object_category,relation']
-    object_pivot_counts = object_associations['facet_pivot']['subject_category,relation']
+    subject_facet_pivot = subject_associations['facet_pivot']['object_category,relation']
+    object_facet_pivot = object_associations['facet_pivot']['subject_category,relation']
+    parse_facet_pivot(subject_facet_pivot, count_map)
+    parse_facet_pivot(object_facet_pivot, count_map)
 
-    for category in subject_pivot_counts:
-        type = category['value']
-        if type == 'gene':
-            count_map['gene'] = category['stats']['stats_fields']['object']['countDistinct']
-            if 'pivot' in category:
-                for relation in category['pivot']:
-                    if relation['value'] in HOMOLOG_TYPES:
-                        # homolog
-                        if 'homolog' not in count_map:
-                            count_map['homolog'] = relation['stats']['stats_fields']['object']['countDistinct']
-                        else:
-                            count_map['homolog'] += relation['stats']['stats_fields']['object']['countDistinct']
-                    elif relation['value'] == INTERACTS_WITH:
-                        # interaction
-                        count_map['interaction'] = relation['stats']['stats_fields']['object']['countDistinct']
-                    else:
-                        # ignore the rest of the relation counts as they are to be aggregated at higher level
-                        pass
-        else:
-            count_map[type] = category['stats']['stats_fields']['object']['countDistinct']
+    if bioentity_type == 'gene':
+        count_map.pop(CATEGORY_NAME_MAP['gene'])
+        # get counts for all ortholog associations
+        ortholog_associations = search_associations(
+            fq={'subject_ortholog_closure': bioentity_id},
+            facet_pivot_fields=['{!stats=piv1}object_category', 'relation'],
+            stats=True,
+            stats_fields=['{!tag=piv1 calcdistinct=true distinctValues=false}object']
+        )
 
-    for category in object_pivot_counts:
-        type = category['value']
-        if type == 'gene':
-            if 'gene' not in count_map:
-                count_map['gene'] = category['stats']['stats_fields']['subject']['countDistinct']
-            if 'homolog' not in count_map:
+        ortholog_pivot_counts = ortholog_associations['facet_pivot']['object_category,relation']
+        for category in ortholog_pivot_counts:
+            type = category['value']
+            if type == 'gene':
                 if 'pivot' in category:
                     for relation in category['pivot']:
-                        if relation['value'] in HOMOLOG_TYPES:
-                            # homolog
-                            if 'homolog' not in count_map:
-                                count_map['homolog'] = relation['stats']['stats_fields']['subject']['countDistinct']
-                            else:
-                                count_map['homolog'] += relation['stats']['stats_fields']['subject']['countDistinct']
-                        elif relation['value'] == INTERACTS_WITH:
-                            # interaction
-                            count_map['interaction'] = relation['stats']['stats_fields']['object']['countDistinct']
+                        if relation['value'] == INTERACTS_WITH:
+                            # Ortholog-Interactions
+                            count_map[CATEGORY_NAME_MAP['ortholog-interaction']] = relation['stats']['stats_fields']['object']['countDistinct']
+            else:
+                key = 'ortholog-{}'.format(type)
+                count_map[CATEGORY_NAME_MAP[key]] = category['stats']['stats_fields']['object']['countDistinct']
+
+    return count_map
+
+def parse_facet_pivot(facet_pivot, count_map=None):
+
+    if count_map is None:
+        count_map = {}
+
+    for category in facet_pivot:
+        type = category['value']
+        stats_fields = category['stats']['stats_fields']
+        key = None
+        if 'subject' in stats_fields:
+            key = 'subject'
+        elif 'object' in stats_fields:
+            key = 'object'
+
+        if type == 'gene':
+            if CATEGORY_NAME_MAP[type] in count_map:
+                # avoid counting twice for 'gene'
+                continue
+            count_map[CATEGORY_NAME_MAP[type]] = stats_fields[key]['countDistinct']
+            if 'pivot' in category:
+                for relation in category['pivot']:
+                    relation_stats_fields = relation['stats']['stats_fields']
+                    if relation['value'] in HOMOLOG_TYPES:
+                        if CATEGORY_NAME_MAP['homolog'] in count_map:
+                            count_map[CATEGORY_NAME_MAP['homolog']] += relation_stats_fields[key]['countDistinct']
                         else:
-                            # ignore the rest of the relation counts as they are to be aggregated at higher level
-                            pass
+                            count_map[CATEGORY_NAME_MAP['homolog']] = relation_stats_fields[key]['countDistinct']
+                    elif relation['value'] == INTERACTS_WITH:
+                        count_map[CATEGORY_NAME_MAP['interaction']] = relation_stats_fields[key]['countDistinct']
         else:
-            count_map[type] = category['stats']['stats_fields']['subject']['countDistinct']
+            count_map[CATEGORY_NAME_MAP[type]] = stats_fields[key]['countDistinct']
 
     return count_map
