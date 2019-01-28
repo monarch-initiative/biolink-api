@@ -23,6 +23,14 @@ TODO - consider swapping subject/object
       and the content should contain "Canis lupus"
       and the content should contain "Gangliosidosis"
 
+ Scenario: User queries for Parkinson disease, late-onset and can see onset and inheritance
+    Given a path "/bioentity/disease/MONDO:0008199"
+     when the content is converted to JSON
+      then the JSON should have some JSONPath "clinical_modifiers[*].id" with "string" "HP:0003676"
+      then the JSON should have some JSONPath "clinical_modifiers[*].label" with "string" "Progressive"
+      then the JSON should have some JSONPath "inheritance[*].id" with "string" "HP:0003745"
+      then the JSON should have some JSONPath "inheritance[*].label" with "string" "Sporadic"
+
 ### Genes
 
  Scenario: User queries for genes associated with lipid storage diseases (e.g. gangliosidosis)

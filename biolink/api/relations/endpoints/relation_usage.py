@@ -11,16 +11,12 @@ log = logging.getLogger(__name__)
 
 M=GolrFields()
 
-ns = api.namespace('relation/usage', description='Usage of different relationship types')
-
 parser = api.parser()
 parser.add_argument('subject_taxon', help='SUBJECT TAXON id, e.g. NCBITaxon:9606. Includes inferred by default')
 parser.add_argument('evidence', help="""Object id, e.g. ECO:0000501 (for IEA; Includes inferred by default)
                     or a specific publication or other supporting ibject, e.g. ZFIN:ZDB-PUB-060503-2.
                     """)
 
-
-@ns.route('/')
 class RelationUsageResource(Resource):
 
     @api.expect(parser)
@@ -39,7 +35,6 @@ class RelationUsageResource(Resource):
             **args
         )
 
-@ns.route('/between/<subject_category>/<object_category>')
 class RelationUsageBetweenResource(Resource):
 
     @api.expect(parser)
@@ -58,8 +53,7 @@ class RelationUsageBetweenResource(Resource):
             user_agent=USER_AGENT,
             **args
         )
-    
-@ns.route('/pivot/')
+
 class RelationUsagePivotResource(Resource):
 
     @api.expect(parser)
@@ -77,9 +71,7 @@ class RelationUsagePivotResource(Resource):
             user_agent=USER_AGENT,
             **args
         )
-    
-    
-@ns.route('/pivot/label')
+
 class RelationUsagePivotLabelResource(Resource):
 
     @api.expect(parser)

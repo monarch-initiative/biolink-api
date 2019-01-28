@@ -1,58 +1,21 @@
 import logging.config
-import os
+from os import path
 
 import flask as f
 from flask import Flask, Blueprint, request
 from flask import render_template
 from flask_cors import CORS, cross_origin
 from biolink import settings
-from biolink.api.bio.endpoints.bioentity import ns as bio_objects_namespace
-from biolink.api.link.endpoints.associations_from import ns as associations_from_namespace
-from biolink.api.link.endpoints.find_associations import ns as find_associations_namespace
-from biolink.api.search.endpoints.entitysearch import ns as entity_search_namespace
-
-from biolink.api.ontol.endpoints.ontology_endpoint import ns as ontology_endpoint_namespace
-
-from biolink.api.ontol.endpoints.subgraph import ns as ontol_subgraph_namespace
-from biolink.api.ontol.endpoints.termstats import ns as ontol_termstats_namespace
-from biolink.api.ontol.endpoints.labeler import ns as ontol_labeler
-#from biolink.api.ontol.endpoints.enrichment import ns as ontol_enrichment_namespace
-
-from biolink.api.entityset.endpoints.summary import ns as entityset_summary_namespace
-from biolink.api.entityset.endpoints.slimmer import ns as entityset_slimmer_namespace
-from biolink.api.entityset.endpoints.geneset_homologs import ns as geneset_homologs_namespace
-from biolink.api.entityset.endpoints.overrepresentation import ns as overrepresentation
-from biolink.api.nlp.endpoints.annotate import ns as nlp_annotate_namespace
-from biolink.api.graph.endpoints.node import ns as graph_node_namespace
-
-from biolink.api.ontol.endpoints.subgraph import ns as subgraph_namespace
-
-from biolink.api.mart.endpoints.mart import ns as mart_namespace
-
-from biolink.api.cam.endpoints.cam_endpoint import ns as cam_namespace
-from biolink.api.owl.endpoints.ontology import ns as owl_ontology_namespace
-from biolink.api.patient.endpoints.individual import ns as patient_individual_namespace
-from biolink.api.identifier.endpoints.prefixes import ns as identifier_prefixes_namespace
-from biolink.api.identifier.endpoints.mapper import ns as identifier_prefixes_mapper
-
-from biolink.api.genome.endpoints.region import ns as genome_region_namespace
-from biolink.api.pair.endpoints.pairsim import ns as pair_pairsim_namespace
-
-from biolink.api.evidence.endpoints.graph import ns as evidence_graph_namespace
-from biolink.api.relations.endpoints.relation_usage import ns as relation_usage_namespace
-
-from biolink.api.variation.endpoints.variantset import ns as variation_variantset_namespace
-
-from biolink.api.pub.endpoints.pubs import ns as pubs_namespace
-
 
 from biolink.api.restplus import api
 
 from biolink.database import db
 
 app = Flask(__name__)
+app.url_map.strict_slashes = False
 CORS(app)
-logging.config.fileConfig('logging.conf')
+log_file_path = path.join(path.dirname(path.abspath(__file__)), '../logging.conf')
+logging.config.fileConfig(log_file_path)
 log = logging.getLogger(__name__)
 
 
@@ -71,7 +34,22 @@ app.config['ERROR_404_HELP'] = settings.RESTPLUS_ERROR_404_HELP
 
 blueprint = Blueprint('api', __name__, url_prefix='/api')
 api.init_app(blueprint)
-#api.add_namespace(link_search_namespace)
+
+mapping = settings.get_biolink_config().get('route_mapping')
+
+for ns in mapping['namespace']:
+    namespace = api.namespace(ns['name'], description=ns['description'])
+    routes = ns['routes']
+    for r in routes:
+        route = r['route']
+        resource = r['resource']
+        log.debug("Registering Resource: {} to route: {}".format(resource, route))
+        module_name = '.'.join(resource.split('.')[0:-1])
+        resource_class_name = resource.split('.')[-1]
+        module = __import__(module_name, fromlist=[resource_class_name])
+        resource_class = getattr(module, resource_class_name)
+        namespace.add_resource(resource_class, route)
+
 app.register_blueprint(blueprint)
 db.init_app(app)
 

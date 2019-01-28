@@ -12,8 +12,6 @@ log = logging.getLogger(__name__)
 
 M=GolrFields()
 
-ns = api.namespace('association', description='Associations between entities or entity and descriptors')
-
 parser = api.parser()
 parser.add_argument('subject', help='Return associations emanating from this node, e.g. NCBIGene:84570, ZFIN:ZDB-GENE-050417-357 (If ID is from an ontology then results would include inferred associations, by default)')
 parser.add_argument('subject_taxon', help='Subject taxon ID, e.g. NCBITaxon:9606 (Includes inferred associations, by default)')
@@ -26,7 +24,6 @@ parser.add_argument('start', type=int, required=False, default=0, help='beginnin
 parser.add_argument('rows', type=int, required=False, default=10, help='number of rows')
 parser.add_argument('map_identifiers', help='Prefix to map all IDs to, e.g. NCBIGene')
 
-@ns.route('/<id>')
 @api.doc(params={'id': 'identifier for an association, e.g. f5ba436c-f851-41b3-9d9d-bb2b5fc879d4'}, required=True)
 class AssociationObject(Resource):
 
@@ -43,8 +40,6 @@ class AssociationObject(Resource):
 
         return get_association(id, user_agent=USER_AGENT)
 
-
-@ns.route('/find')
 class AssociationSearch(Resource):
 
     @api.expect(parser)
@@ -57,7 +52,6 @@ class AssociationSearch(Resource):
 
         return search_associations(user_agent=USER_AGENT, **args)
 
-@ns.route('/find/<subject_category>')
 @api.doc(params={'subject_category': 'Category of entity at link Subject (source), e.g. gene, disease, phenotype'}, required=True)
 class AssociationBySubjectCategorySearch(Resource):
 
@@ -71,7 +65,6 @@ class AssociationBySubjectCategorySearch(Resource):
 
         return search_associations(subject_category=subject_category, user_agent=USER_AGENT, **args)
 
-@ns.route('/find/<subject_category>/<object_category>')
 @api.doc(params={'subject_category': 'Category of entity at link Subject (source), e.g. gene, disease, phenotype'})
 @api.doc(params={'object_category': 'Category of entity at link Object (target), e.g. gene, disease, phenotype'})
 class AssociationBySubjectAndObjectCategorySearch(Resource):

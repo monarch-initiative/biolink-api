@@ -121,11 +121,16 @@ bio_object_core = api.inherit('BioObjectCore', named_object_core, {
     'taxon': fields.Nested(taxon, description='Taxon to which the object belongs'),
     
 })
+
 bio_object = api.inherit('BioObject', named_object, {
     'taxon': fields.Nested(taxon, description='Taxon to which the object belongs'),
     'association_counts': fields.Raw(description='association counts'),
     'xrefs': fields.List(fields.String, description='Database cross-references. These are usually CURIEs, but may also be URLs. E.g. ENSEMBL:ENSG00000099940 '),
-    
+})
+
+disease_object = api.inherit('DiseaseObject', bio_object, {
+    'inheritance': fields.List(fields.Nested(named_object_core), description='Inheritance for object'),
+    'clinical_modifiers': fields.List(fields.Nested(named_object_core), description='Clinical modifiers such as age of onset, pace of progression, and temporal patterns'),
 })
 
 # Assoc

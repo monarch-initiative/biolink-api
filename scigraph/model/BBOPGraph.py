@@ -84,6 +84,14 @@ class Node:
     def __str__(self):
         return self.id+' "'+str(self.lbl)+'"'
 
+    def as_dict(self):
+        return {
+            "id": self.id,
+            "lbl": self.lbl,
+            "meta": self.meta.pmap
+        }
+
+
 class Edge:
     def __init__(self, obj={}):    
         self.sub = obj['sub']
@@ -101,4 +109,3 @@ class Meta:
         if 'category' in obj:
             self.category_list = obj['category']
         self.pmap = obj
-    

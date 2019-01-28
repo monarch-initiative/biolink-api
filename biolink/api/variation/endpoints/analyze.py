@@ -8,12 +8,9 @@ import pysolr
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('variation/analyze', description='foo bar')
-
 parser = api.parser()
 #parser.add_argument('subject_taxon', help='SUBJECT TAXON id, e.g. NCBITaxon:9606. Includes inferred by default')
 
-@ns.route('/<term>')
 class Analyze(Resource):
 
     @api.expect(parser)

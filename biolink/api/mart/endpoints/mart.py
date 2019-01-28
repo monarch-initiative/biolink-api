@@ -29,12 +29,9 @@ limiter = Limiter(
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('mart', description='Bulk operations')
-
 parser = api.parser()
 parser.add_argument('slim', action='append', help='Map objects up (slim) to a higher level category. Value can be ontology class ID or subset ID')
 
-@ns.route('/gene/<object_category>/<taxon>')
 #@limiter.limit("1 per minute")
 @api.doc(params={'object_category': 'Category of entity at link Object (target), e.g. phenotype, disease'})
 @api.doc(params={'taxon': 'taxon of gene, must be of form NCBITaxon:9606'})
@@ -56,7 +53,6 @@ class MartGeneAssociationsResource(Resource):
         )
         return assocs
 
-@ns.route('/case/<object_category>/<taxon>')
 #@limiter.limit("1 per minute")
 @api.doc(params={'object_category': 'Category of entity at link Subject (target), e.g. phenotype, disease'})
 @api.doc(params={'taxon': 'taxon of case, must be of form NCBITaxon:9606'})
@@ -83,7 +79,6 @@ class MartCaseAssociationsResource(Resource):
         )
         return assocs
 
-@ns.route('/disease/<object_category>/<taxon>')
 #@limiter.limit("1 per minute")
 @api.doc(params={'object_category': 'Category of entity at link Object (target), e.g. phenotype, disease'})
 @api.doc(params={'taxon': 'taxon of disease, must be of form NCBITaxon:9606'})
@@ -110,7 +105,6 @@ class MartDiseaseAssociationsResource(Resource):
         )
         return assocs
 
-@ns.route('/paralog/<taxon1>/<taxon2>')
 @api.doc(params={'taxon1': 'subject taxon, e.g. NCBITaxon:9606'})
 @api.doc(params={'taxon2': 'object taxon, e.g. NCBITaxon:9606'})
 class MartParalogAssociationsResource(Resource):
@@ -129,7 +123,6 @@ class MartParalogAssociationsResource(Resource):
         )
         return assocs
 
-@ns.route('/ortholog/<taxon1>/<taxon2>')
 @api.doc(params={'taxon1': 'subject taxon, e.g. NCBITaxon:9606'})
 @api.doc(params={'taxon2': 'object taxon, e.g. NCBITaxon:10090'})
 class MartOrthologAssociationsResource(Resource):

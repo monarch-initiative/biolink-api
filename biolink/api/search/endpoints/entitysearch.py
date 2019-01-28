@@ -8,7 +8,6 @@ from biolink import USER_AGENT
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('search', description='Search for entities')
 
 def get_simple_parser():
         """
@@ -26,6 +25,7 @@ def get_simple_parser():
         p.add_argument('highlight_class', type=str, required=False, help='highlight class')
         return p
 
+
 def get_advanced_parser():
         """
         Extends simple flaskrest parser object with params
@@ -36,6 +36,7 @@ def get_advanced_parser():
         p.add_argument('weighted_attribute', action='append', help='weighted attributes, specified as a range from 0 to 1 plus an ontology term, e.g. 0.3*HP:0000001')
         p.add_argument('noise', type=inputs.boolean, default=False, help='If set, uses noise-tolerant querying, e.g owlsim, boqa')
         return p
+
 
 def get_layperson_parser():
     """
@@ -52,6 +53,7 @@ def get_layperson_parser():
 
     return p
 
+
 def search(term, args):
     q = GolrSearchQuery(term, args)
     return q.search()
@@ -60,7 +62,7 @@ simple_parser = get_simple_parser()
 adv_parser = get_advanced_parser()
 layperson_parser = get_layperson_parser()
 
-@ns.route('/entity/<term>')
+
 @api.doc(params={'term': 'search string, e.g. shh, parkinson, femur'})
 class SearchEntities(Resource):
 
@@ -75,7 +77,7 @@ class SearchEntities(Resource):
         results = q.search()
         return results
 
-@ns.route('/entity/hpo-pl/<term>')
+
 @api.doc(params={'term': 'search string, e.g. muscle atrophy, frequent infections'})
 class SearchHPOEntities(Resource):
 
@@ -107,7 +109,6 @@ class SearchHPOEntities(Resource):
         return results
 
 
-@ns.route('/entity/autocomplete/<term>')
 class Autocomplete(Resource):
 
     @api.expect(simple_parser)
@@ -132,7 +133,3 @@ class Autocomplete(Resource):
 #        args = parser.parse_args()
 #
 #        return []
-    
-    
-    
-

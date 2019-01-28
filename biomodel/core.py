@@ -172,7 +172,6 @@ class Node():
                  lbl=None,
                  **kwargs):
         self.id=id
-        self.id=id
         self.lbl=lbl
 
 
@@ -302,7 +301,6 @@ class NamedObject():
                  description=None,
                  **kwargs):
         self.id=id
-        self.id=id
         self.label=label
         self.categories=categories
         self.synonyms=synonyms
@@ -404,7 +402,6 @@ class Taxon():
                  label=None,
                  **kwargs):
         self.id=id
-        self.id=id
         self.label=label
 
 
@@ -435,11 +432,13 @@ class BioObject(NamedObject):
     def __init__(self,
                  id=None,
                  taxon=None,
-                 association_counts=None,
+                 inheritance=None,
+                 clinical_modifiers=None,
                  **kwargs):
         super(BioObject, self).__init__(id, **kwargs)
-        self.taxon=taxon
-        self.association_counts=association_counts
+        self.taxon = taxon
+        self.inheritance = inheritance
+        self.clinical_modifiers = clinical_modifiers
 
 
     """
@@ -459,8 +458,10 @@ class BioObject(NamedObject):
             obj.taxon = Taxon.from_json(json_obj['taxon'])
         if 'description' in json_obj:
             obj.description = json_obj['description']
-        if 'association_counts' in json_obj:
-            obj.association_counts = json_obj['association_counts']
+        if 'inheritance' in json_obj:
+            obj.inheritance = json_obj['inheritance']
+        if 'clinical_modifiers' in json_obj:
+            obj.clinical_modifiers = json_obj['clinical_modifiers']
         return obj
 
 class AnnotationExtension():
@@ -568,7 +569,6 @@ class Association():
                  provided_by=None,
                  publications=None,
                  **kwargs):
-        self.id=id
         self.id=id
         self.type=type
         self.subject=subject

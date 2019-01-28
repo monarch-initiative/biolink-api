@@ -8,12 +8,9 @@ from biolink.api.restplus import api
 
 log = logging.getLogger(__name__)
 
-ns = api.namespace('graph', description='Operations over data graphs')
-
 parser = api.parser()
 sg = SciGraph()
 
-@ns.route('/node/<id>')
 @api.doc(params={'id': 'CURIE e.g. HP:0000465'})
 class NodeResource(Resource):
 
@@ -30,7 +27,6 @@ class NodeResource(Resource):
         
         return sg.graph(id)
 
-@ns.route('/edges/from/<id>')
 @api.doc(params={'id': 'CURIE e.g. HP:0000465'})
 class EdgeResource(Resource):
 
