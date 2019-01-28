@@ -106,10 +106,13 @@ class GenericObjectByType(Resource):
         """
         Return basic info on an object for a given type
         """
+        args = self.parser.parse_args()
         if type == TYPE_DISEASE:
             ret_val = marshal(scigraph.bioobject(id, type), disease_object), 200
         else:
             ret_val = marshal(scigraph.bioobject(id, type), bio_object), 200
+        if args['get_association_counts']:
+            ret_val[0]['association_counts'] = get_association_counts(id, type)
         return ret_val
 
 class GenericAssociations(Resource):
