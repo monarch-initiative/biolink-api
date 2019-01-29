@@ -434,11 +434,13 @@ class BioObject(NamedObject):
                  taxon=None,
                  inheritance=None,
                  clinical_modifiers=None,
+                 association_counts=None,
                  **kwargs):
         super(BioObject, self).__init__(id, **kwargs)
         self.taxon = taxon
         self.inheritance = inheritance
         self.clinical_modifiers = clinical_modifiers
+        self.association_counts = association_counts
 
 
     """
@@ -462,6 +464,8 @@ class BioObject(NamedObject):
             obj.inheritance = json_obj['inheritance']
         if 'clinical_modifiers' in json_obj:
             obj.clinical_modifiers = json_obj['clinical_modifiers']
+        if 'association_counts' in json_obj:
+            obj.association_counts = json_obj['association_counts']
         return obj
 
 class AnnotationExtension():

@@ -10,7 +10,7 @@ from scigraph.scigraph_util import SciGraph
 from biowikidata.wd_sparql import condition_to_drug
 from ontobio.vocabulary.relations import HomologyTypes
 from ..closure_bins import create_closure_bin
-
+from ..association_counts import get_association_counts
 from biolink import USER_AGENT
 
 from ontobio.golr.golr_query import run_solr_text_on, ESOLR, ESOLRDoc, replace
@@ -68,7 +68,7 @@ def get_object_gene(id, **args):
         obj.disease_associations = search_associations(subject=id, object_category='disease', user_agent=USER_AGENT, **args)['associations']
         obj.genotype_associations = search_associations(subject=id, invert_subject_object=True, object_category='genotype', user_agent=USER_AGENT, **args)['associations']
 
-        return(obj)
+        return obj
 
 def get_object_genotype(id, **args):
         obj = scigraph.bioobject(id, 'Genotype')
@@ -76,7 +76,7 @@ def get_object_genotype(id, **args):
         obj.disease_associations = search_associations(subject=id, object_category='disease', user_agent=USER_AGENT, **args)['associations']
         obj.gene_associations = search_associations(subject=id, object_category='gene', user_agent=USER_AGENT, **args)['associations']
 
-        return(obj)
+        return obj
 
 @api.doc(params={'id': 'id, e.g. NCBIGene:84570'})
 class GenericObject(Resource):
@@ -87,6 +87,7 @@ class GenericObject(Resource):
         """
         Returns basic info on object of any type
         """
+        args = core_parser.parse_args()
         obj = scigraph.bioobject(id)
         return obj
 
@@ -96,15 +97,22 @@ class GenericObject(Resource):
                                            TYPE_SUBSTANCE, TYPE_INDIVIDUAL])
 class GenericObjectByType(Resource):
 
-    @api.expect(core_parser)
+    parser = core_parser.copy()
+    parser.add_argument('get_association_counts', help='Get association counts', type=inputs.boolean, default=False)
+
+    @api.expect(parser)
+    @api.marshal_with(bio_object)
     def get(self, id, type):
         """
         Return basic info on an object for a given type
         """
+        args = self.parser.parse_args()
         if type == TYPE_DISEASE:
             ret_val = marshal(scigraph.bioobject(id, type), disease_object), 200
         else:
             ret_val = marshal(scigraph.bioobject(id, type), bio_object), 200
+        if args['get_association_counts']:
+            ret_val[0]['association_counts'] = get_association_counts(id, type)
         return ret_val
 
 class GenericAssociations(Resource):
