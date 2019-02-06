@@ -1125,6 +1125,25 @@ class GenotypeGenotypeAssociations(Resource):
             **core_parser.parse_args()
         )
 
+@api.doc(params={'id': 'CURIE identifier of genotype, e.g. MONARCH:FBgeno422705'})
+class GenotypeVariantAssociations(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_with(association_results)
+    def get(self, id):
+        """
+        Returns genotypes-variant associations.
+        """
+
+        return search_associations(
+            subject_category='genotype',
+            object_category='variant',
+            invert_subject_object=True,
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
+
 @api.doc(params={'id': 'CURIE identifier of genotype, e.g. ZFIN:ZDB-FISH-150901-4286'})
 class GenotypePhenotypeAssociations(Resource):
 
@@ -1206,6 +1225,24 @@ class VariantGenotypeAssociations(Resource):
         return search_associations(
             subject_category='variant',
             object_category='genotype',
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
+
+@api.doc(params={'id': 'CURIE identifier of variant, e.g. ClinVarVariant:14925'})
+class VariantDiseaseAssociations(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_with(association_results)
+    def get(self, id):
+        """
+        Returns diseases associated with a variant
+        """
+
+        return search_associations(
+            subject_category='variant',
+            object_category='disease',
             subject=id,
             user_agent=USER_AGENT,
             **core_parser.parse_args()

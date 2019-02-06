@@ -139,6 +139,8 @@ route_mapping:
           resource: biolink.api.bio.endpoints.bioentity.SubstanceTreatsAssociations
         - route: /genotype/<id>/genotypes
           resource: biolink.api.bio.endpoints.bioentity.GenotypeGenotypeAssociations
+        - route: /genotype/<id>/variants
+          resource: biolink.api.bio.endpoints.bioentity.GenotypeVariantAssociations
         - route: /genotype/<id>/phenotypes
           resource: biolink.api.bio.endpoints.bioentity.GenotypePhenotypeAssociations
         - route: /genotype/<id>/diseases
@@ -147,6 +149,8 @@ route_mapping:
           resource: biolink.api.bio.endpoints.bioentity.GenotypeGeneAssociations
         - route: /variant/<id>/genotypes
           resource: biolink.api.bio.endpoints.bioentity.VariantGenotypeAssociations
+        - route: /variant/<id>/diseases
+          resource: biolink.api.bio.endpoints.bioentity.VariantDiseaseAssociations
         - route: /variant/<id>/phenotypes
           resource: biolink.api.bio.endpoints.bioentity.VariantPhenotypeAssociations
         - route: /variant/<id>/genes
