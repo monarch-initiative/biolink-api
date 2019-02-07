@@ -1155,7 +1155,6 @@ class GenotypeGenotypeAssociations(Resource):
         Genotypes may be related to one another according to the GENO model
         """
 
-        # TODO: invert
         return search_associations(
             subject_category='genotype',
             object_category='genotype',
@@ -1220,7 +1219,6 @@ class GenotypeDiseaseAssociations(Resource):
         Returns diseases associated with a genotype
         """
 
-        # TODO: invert
         return search_associations(
             subject_category='genotype',
             object_category='disease',
@@ -1239,7 +1237,6 @@ class GenotypeGeneAssociations(Resource):
         Returns genes associated with a genotype
         """
 
-        # TODO: invert
         return search_associations(
             subject_category='genotype',
             object_category='gene',
@@ -1297,7 +1294,6 @@ class VariantGenotypeAssociations(Resource):
         Returns genotypes associated with a variant
         """
 
-        # TODO: invert
         return search_associations(
             subject_category='variant',
             object_category='genotype',
@@ -1361,7 +1357,6 @@ class VariantGeneAssociations(Resource):
         Returns genes associated with a variant
         """
 
-        # TODO: invert
         return search_associations(
             subject_category='variant',
             object_category='gene',
