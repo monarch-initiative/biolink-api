@@ -49,6 +49,7 @@ TYPE_PATHWAY = 'pathway'
 TYPE_ANATOMY = 'anatomy'
 TYPE_SUBSTANCE = 'substance'
 TYPE_INDIVIDUAL = 'individual'
+TYPE_LITERATURE = 'publication'
 
 core_parser_with_rel = core_parser.copy()
 core_parser_with_rel.add_argument('relationship_type', choices=[INVOLVED_IN, INVOLVED_IN_REGULATION_OF, ACTS_UPSTREAM_OF_OR_WITHIN], default=INVOLVED_IN, help="relationship type ('{}', '{}' or '{}')".format(INVOLVED_IN, INVOLVED_IN_REGULATION_OF, ACTS_UPSTREAM_OF_OR_WITHIN))
@@ -94,7 +95,7 @@ class GenericObject(Resource):
 @api.param('id', 'id, e.g. NCBIGene:84570')
 @api.param('type', 'bioentity type', enum=[TYPE_GENE, TYPE_VARIANT, TYPE_GENOTYPE, TYPE_PHENOTYPE,
                                            TYPE_DISEASE, TYPE_GOTERM, TYPE_PATHWAY, TYPE_ANATOMY,
-                                           TYPE_SUBSTANCE, TYPE_INDIVIDUAL])
+                                           TYPE_SUBSTANCE, TYPE_INDIVIDUAL, TYPE_LITERATURE])
 class GenericObjectByType(Resource):
 
     parser = core_parser.copy()
