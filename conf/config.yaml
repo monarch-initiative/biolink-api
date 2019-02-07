@@ -177,6 +177,18 @@ route_mapping:
           resource: biolink.api.bio.endpoints.bioentity.ModelPhenotypeAssociations
         - route: /model/<id>/variants
           resource: biolink.api.bio.endpoints.bioentity.ModelVariantAssociations
+        - route: /literature/<id>/variants
+          resource: biolink.api.bio.endpoints.bioentity.LiteratureVariantAssociations
+        - route: /literature/<id>/phenotypes
+          resource: biolink.api.bio.endpoints.bioentity.LiteraturePhenotypeAssociations
+        - route: /literature/<id>/models
+          resource: biolink.api.bio.endpoints.bioentity.LiteratureModelAssociations
+        - route: /literature/<id>/genotypes
+          resource: biolink.api.bio.endpoints.bioentity.LiteratureGenotypeAssociations
+        - route: /literature/<id>/genes
+          resource: biolink.api.bio.endpoints.bioentity.LiteratureGeneAssociations
+        - route: /literature/<id>/diseases
+          resource: biolink.api.bio.endpoints.bioentity.LiteratureDiseaseAssociations
     - name: association
       description: Retrieve associations between entities or entity and descriptors
       routes:

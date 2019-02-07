@@ -1505,3 +1505,111 @@ class ModelVariantAssociations(Resource):
             user_agent=USER_AGENT,
             **core_parser.parse_args()
         )
+
+@api.doc(params={'id': 'CURIE identifier for literature/publication, e.g. PMID:11751940'})
+class LiteratureVariantAssociations(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_with(association_results)
+    def get(self, id):
+        """
+        Returns variants associated with a literature
+        """
+
+        return search_associations(
+            subject_category='publication',
+            object_category='variant',
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
+
+@api.doc(params={'id': 'CURIE identifier for literature/publication, e.g. PMID:11751940'})
+class LiteraturePhenotypeAssociations(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_with(association_results)
+    def get(self, id):
+        """
+        Returns phenotypes associated with a literature
+        """
+
+        return search_associations(
+            subject_category='publication',
+            object_category='phenotype',
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
+
+@api.doc(params={'id': 'CURIE identifier for literature/publication, e.g. PMID:11751940'})
+class LiteratureModelAssociations(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_with(association_results)
+    def get(self, id):
+        """
+        Returns models associated with a literature
+        """
+
+        return search_associations(
+            subject_category='publication',
+            object_category='model',
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
+
+@api.doc(params={'id': 'CURIE identifier for literature/publication, e.g. PMID:11751940'})
+class LiteratureGenotypeAssociations(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_with(association_results)
+    def get(self, id):
+        """
+        Returns genotypes associated with a literature
+        """
+
+        return search_associations(
+            subject_category='publication',
+            object_category='genotype',
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
+
+@api.doc(params={'id': 'CURIE identifier for literature/publication, e.g. PMID:11751940'})
+class LiteratureGeneAssociations(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_with(association_results)
+    def get(self, id):
+        """
+        Returns genes associated with a literature
+        """
+
+        return search_associations(
+            subject_category='publication',
+            object_category='gene',
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
+
+@api.doc(params={'id': 'CURIE identifier for literature/publication, e.g. PMID:11751940'})
+class LiteratureDiseaseAssociations(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_with(association_results)
+    def get(self, id):
+        """
+        Returns diseases associated with a literature
+        """
+
+        return search_associations(
+            subject_category='publication',
+            object_category='disease',
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
