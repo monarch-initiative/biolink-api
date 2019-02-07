@@ -127,6 +127,10 @@ route_mapping:
           resource: biolink.api.bio.endpoints.bioentity.FunctionLiteratureAssociations
         - route: /pathway/<id>/genes
           resource: biolink.api.bio.endpoints.bioentity.PathwayGeneAssociations
+        - route: /pathway/<id>/diseases
+          resource: biolink.api.bio.endpoints.bioentity.PathwayDiseaseAssociations
+        - route: /pathway/<id>/phenotypes
+          resource: biolink.api.bio.endpoints.bioentity.PathwayPhenotypeAssociations
         - route: /anatomy/<id>/genes
           resource: biolink.api.bio.endpoints.bioentity.AnatomyGeneAssociations
         - route: /anatomy/<id>/genes/<taxid>
@@ -147,6 +151,10 @@ route_mapping:
           resource: biolink.api.bio.endpoints.bioentity.GenotypeDiseaseAssociations
         - route: /genotype/<id>/genes
           resource: biolink.api.bio.endpoints.bioentity.GenotypeGeneAssociations
+        - route: /genotype/<id>/models
+          resource: biolink.api.bio.endpoints.bioentity.GenotypeModelAssociations
+        - route: /genotype/<id>/literature
+          resource: biolink.api.bio.endpoints.bioentity.GenotypeLiteratureAssociations
         - route: /variant/<id>/genotypes
           resource: biolink.api.bio.endpoints.bioentity.VariantGenotypeAssociations
         - route: /variant/<id>/diseases
@@ -155,6 +163,8 @@ route_mapping:
           resource: biolink.api.bio.endpoints.bioentity.VariantPhenotypeAssociations
         - route: /variant/<id>/genes
           resource: biolink.api.bio.endpoints.bioentity.VariantGeneAssociations
+        - route: /variant/<id>/literature
+          resource: biolink.api.bio.endpoints.bioentity.VariantLiteratureAssociations
         - route: /model/<id>/diseases
           resource: biolink.api.bio.endpoints.bioentity.ModelDiseaseAssociations
         - route: /model/<id>/genes

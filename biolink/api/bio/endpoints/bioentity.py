@@ -1008,9 +1008,47 @@ class PathwayGeneAssociations(Resource):
         """
 
         return search_associations(
-            subject_category='gene',
-            object_category='pathway',
-            object=id,
+            subject_category='pathway',
+            object_category='gene',
+            subject=id,
+            invert_subject_object=True,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
+
+@api.doc(params={'id': 'CURIE any pathway element. E.g. REACT:R-HSA-5387390'})
+class PathwayDiseaseAssociations(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_with(association_results)
+    def get(self, id):
+        """
+        Returns diseases associated with a pathway
+        """
+
+        return search_associations(
+            subject_category='pathway',
+            object_category='disease',
+            subject=id,
+            invert_subject_object=True,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
+
+@api.doc(params={'id': 'CURIE any pathway element. E.g. REACT:R-HSA-5387390'})
+class PathwayPhenotypeAssociations(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_with(association_results)
+    def get(self, id):
+        """
+        Returns phenotypes associated with a pathway
+        """
+
+        return search_associations(
+            subject_category='pathway',
+            object_category='phenotype',
+            subject=id,
             user_agent=USER_AGENT,
             **core_parser.parse_args()
         )
@@ -1209,6 +1247,43 @@ class GenotypeGeneAssociations(Resource):
             **core_parser.parse_args()
         )
 
+@api.doc(params={'id': 'CURIE identifier of genotype, e.g. ZFIN:ZDB-FISH-150901-6607'})
+class GenotypeModelAssociations(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_with(association_results)
+    def get(self, id):
+        """
+        Returns models associated with a genotype
+        """
+
+        return search_associations(
+            subject_category='genotype',
+            object_category='gene',
+            subject=id,
+            invert_subject_object=True,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
+
+@api.doc(params={'id': 'CURIE identifier of genotype, e.g. ZFIN:ZDB-FISH-150901-6607'})
+class GenotypeLiteratureAssociations(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_with(association_results)
+    def get(self, id):
+        """
+        Returns publications associated with a genotype
+        """
+
+        return search_associations(
+            subject_category='genotype',
+            object_category='publication',
+            subject=id,
+            invert_subject_object=True,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
 ##
 
 @api.doc(params={'id': 'CURIE identifier of variant, e.g. ZFIN:ZDB-ALT-010427-8'})
@@ -1290,6 +1365,25 @@ class VariantGeneAssociations(Resource):
             subject_category='variant',
             object_category='gene',
             subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
+
+@api.doc(params={'id': 'CURIE identifier of variant, e.g. ZFIN:ZDB-ALT-010427-8, ClinVarVariant:39783'})
+class VariantLiteratureAssociations(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_with(association_results)
+    def get(self, id):
+        """
+        Returns publications associated with a variant
+        """
+
+        return search_associations(
+            subject_category='variant',
+            object_category='publication',
+            subject=id,
+            invert_subject_object=True,
             user_agent=USER_AGENT,
             **core_parser.parse_args()
         )
