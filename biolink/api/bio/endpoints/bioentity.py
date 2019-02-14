@@ -101,19 +101,23 @@ class GenericObjectByType(Resource):
     parser.add_argument('get_association_counts', help='Get association counts', type=inputs.boolean, default=False)
 
     @api.expect(parser)
-    @api.marshal_with(bio_object)
     def get(self, id, type):
         """
         Return basic info on an object for a given type
         """
         args = self.parser.parse_args()
         if type == TYPE_DISEASE:
-            ret_val = marshal(scigraph.bioobject(id, type), disease_object), 200
+            bio_entity = scigraph.bioobject(id, type)
+            ret_val = marshal(bio_entity, disease_object), 200
         else:
+            bio_entity = scigraph.bioobject(id, type)
             ret_val = marshal(scigraph.bioobject(id, type), bio_object), 200
         if args['get_association_counts']:
-            ret_val[0]['association_counts'] = get_association_counts(id, type)
+            # *_ortholog_closure requires clique leader, so use
+            # bio_entity.id instead of incoming id
+            ret_val[0]['association_counts'] = get_association_counts(bio_entity.id, type)
         return ret_val
+
 
 class GenericAssociations(Resource):
 
