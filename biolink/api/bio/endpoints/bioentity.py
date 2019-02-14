@@ -111,7 +111,7 @@ class GenericObjectByType(Resource):
             ret_val = marshal(bio_entity, disease_object), 200
         else:
             bio_entity = scigraph.bioobject(id, type)
-            ret_val = marshal(scigraph.bioobject(id, type), bio_object), 200
+            ret_val = marshal(bio_entity, bio_object), 200
         if args['get_association_counts']:
             # *_ortholog_closure requires clique leader, so use
             # bio_entity.id instead of incoming id
