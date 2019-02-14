@@ -99,7 +99,7 @@ route_mapping:
           resource: biolink.api.bio.endpoints.bioentity.DiseasePathwayAssociations
         - route: /disease/<id>/variants
           resource: biolink.api.bio.endpoints.bioentity.DiseaseVariantAssociations
-        - route: phenotype/<id>/anatomy
+        - route: /phenotype/<id>/anatomy
           resource: biolink.api.bio.endpoints.bioentity.PhenotypeAnatomyAssociations
         - route: /phenotype/<id>/diseases
           resource: biolink.api.bio.endpoints.bioentity.PhenotypeDiseaseAssociations

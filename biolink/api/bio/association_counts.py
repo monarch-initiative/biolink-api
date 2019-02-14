@@ -51,13 +51,13 @@ def get_association_counts(bioentity_id, bioentity_type=None):
         fq={'subject_closure': bioentity_id},
         facet_pivot_fields=['{!stats=piv1}object_category', 'relation'],
         stats=True,
-        stats_fields=['{!tag=piv1 calcdistinct=true distinctValues=false}object']
+        stats_field=['{!tag=piv1 calcdistinct=true distinctValues=false}object']
     )
     object_associations = search_associations(
         fq={'object_closure': bioentity_id},
         facet_pivot_fields=['{!stats=piv1}subject_category', 'relation'],
         stats=True,
-        stats_fields=['{!tag=piv1 calcdistinct=true distinctValues=false}subject']
+        stats_field=['{!tag=piv1 calcdistinct=true distinctValues=false}subject']
     )
     subject_facet_pivot = subject_associations['facet_pivot']['object_category,relation']
     object_facet_pivot = object_associations['facet_pivot']['subject_category,relation']
@@ -71,7 +71,7 @@ def get_association_counts(bioentity_id, bioentity_type=None):
             fq={'subject_ortholog_closure': bioentity_id},
             facet_pivot_fields=['{!stats=piv1}object_category', 'relation'],
             stats=True,
-            stats_fields=['{!tag=piv1 calcdistinct=true distinctValues=false}object']
+            stats_field=['{!tag=piv1 calcdistinct=true distinctValues=false}object']
         )
 
         ortholog_pivot_counts = ortholog_associations['facet_pivot']['object_category,relation']
