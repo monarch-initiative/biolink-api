@@ -69,8 +69,8 @@ route_mapping:
           resource: biolink.api.bio.endpoints.bioentity.GeneGenotypeAssociations
         - route: /gene/<id>/function
           resource: biolink.api.bio.endpoints.bioentity.GeneFunctionAssociations
-        - route: /gene/<id>/literature
-          resource: biolink.api.bio.endpoints.bioentity.GeneLiteratureAssociations
+        - route: /gene/<id>/publications
+          resource: biolink.api.bio.endpoints.bioentity.GenePublicationAssociations
         - route: /gene/<id>/models
           resource: biolink.api.bio.endpoints.bioentity.GeneModelAssociations
         - route: /gene/<id>/ortholog/phenotypes
@@ -91,8 +91,8 @@ route_mapping:
           resource: biolink.api.bio.endpoints.bioentity.DiseaseModelTaxonAssociations
         - route: /disease/<id>/genotypes
           resource: biolink.api.bio.endpoints.bioentity.DiseaseGenotypeAssociations
-        - route: /disease/<id>/literature
-          resource: biolink.api.bio.endpoints.bioentity.DiseaseLiteratureAssociations
+        - route: /disease/<id>/publications
+          resource: biolink.api.bio.endpoints.bioentity.DiseasePublicationAssociations
         - route: /disease/<id>/models
           resource: biolink.api.bio.endpoints.bioentity.DiseaseModelAssociations
         - route: /disease/<id>/pathways
@@ -109,8 +109,8 @@ route_mapping:
           resource: biolink.api.bio.endpoints.bioentity.PhenotypeGeneByTaxonAssociations
         - route: /phenotype/<id>/genotypes
           resource: biolink.api.bio.endpoints.bioentity.PhenotypeGenotypeAssociations
-        - route: /phenotype/<id>/literature
-          resource: biolink.api.bio.endpoints.bioentity.PhenotypeLieratureAssociations
+        - route: /phenotype/<id>/publications
+          resource: biolink.api.bio.endpoints.bioentity.PhenotypePublicationAssociations
         - route: /phenotype/<id>/pathways
           resource: biolink.api.bio.endpoints.bioentity.PhenotypePathwayAssociations
         - route: /phenotype/<id>/variants
@@ -123,10 +123,14 @@ route_mapping:
           resource: biolink.api.bio.endpoints.bioentity.FunctionAssociations
         - route: /function/<id>/taxons
           resource: biolink.api.bio.endpoints.bioentity.FunctionTaxonAssociations
-        - route: /function/<id>/literature
-          resource: biolink.api.bio.endpoints.bioentity.FunctionLiteratureAssociations
+        - route: /function/<id>/publications
+          resource: biolink.api.bio.endpoints.bioentity.FunctionPublicationAssociations
         - route: /pathway/<id>/genes
           resource: biolink.api.bio.endpoints.bioentity.PathwayGeneAssociations
+        - route: /pathway/<id>/diseases
+          resource: biolink.api.bio.endpoints.bioentity.PathwayDiseaseAssociations
+        - route: /pathway/<id>/phenotypes
+          resource: biolink.api.bio.endpoints.bioentity.PathwayPhenotypeAssociations
         - route: /anatomy/<id>/genes
           resource: biolink.api.bio.endpoints.bioentity.AnatomyGeneAssociations
         - route: /anatomy/<id>/genes/<taxid>
@@ -139,30 +143,52 @@ route_mapping:
           resource: biolink.api.bio.endpoints.bioentity.SubstanceTreatsAssociations
         - route: /genotype/<id>/genotypes
           resource: biolink.api.bio.endpoints.bioentity.GenotypeGenotypeAssociations
+        - route: /genotype/<id>/variants
+          resource: biolink.api.bio.endpoints.bioentity.GenotypeVariantAssociations
         - route: /genotype/<id>/phenotypes
           resource: biolink.api.bio.endpoints.bioentity.GenotypePhenotypeAssociations
         - route: /genotype/<id>/diseases
           resource: biolink.api.bio.endpoints.bioentity.GenotypeDiseaseAssociations
         - route: /genotype/<id>/genes
           resource: biolink.api.bio.endpoints.bioentity.GenotypeGeneAssociations
+        - route: /genotype/<id>/models
+          resource: biolink.api.bio.endpoints.bioentity.GenotypeModelAssociations
+        - route: /genotype/<id>/publications
+          resource: biolink.api.bio.endpoints.bioentity.GenotypePublicationAssociations
         - route: /variant/<id>/genotypes
           resource: biolink.api.bio.endpoints.bioentity.VariantGenotypeAssociations
+        - route: /variant/<id>/diseases
+          resource: biolink.api.bio.endpoints.bioentity.VariantDiseaseAssociations
         - route: /variant/<id>/phenotypes
           resource: biolink.api.bio.endpoints.bioentity.VariantPhenotypeAssociations
         - route: /variant/<id>/genes
           resource: biolink.api.bio.endpoints.bioentity.VariantGeneAssociations
+        - route: /variant/<id>/publications
+          resource: biolink.api.bio.endpoints.bioentity.VariantPublicationAssociations
         - route: /model/<id>/diseases
           resource: biolink.api.bio.endpoints.bioentity.ModelDiseaseAssociations
         - route: /model/<id>/genes
           resource: biolink.api.bio.endpoints.bioentity.ModelGeneAssociations
         - route: /model/<id>/genotypes
           resource: biolink.api.bio.endpoints.bioentity.ModelGenotypeAssociations
-        - route: /model/<id>/literature
-          resource: biolink.api.bio.endpoints.bioentity.ModelLiteratureAssociations
+        - route: /model/<id>/publications
+          resource: biolink.api.bio.endpoints.bioentity.ModelPublicationAssociations
         - route: /model/<id>/phenotypes
           resource: biolink.api.bio.endpoints.bioentity.ModelPhenotypeAssociations
         - route: /model/<id>/variants
           resource: biolink.api.bio.endpoints.bioentity.ModelVariantAssociations
+        - route: /publication/<id>/variants
+          resource: biolink.api.bio.endpoints.bioentity.PublicationVariantAssociations
+        - route: /publication/<id>/phenotypes
+          resource: biolink.api.bio.endpoints.bioentity.PublicationPhenotypeAssociations
+        - route: /publication/<id>/models
+          resource: biolink.api.bio.endpoints.bioentity.PublicationModelAssociations
+        - route: /publication/<id>/genotypes
+          resource: biolink.api.bio.endpoints.bioentity.PublicationGenotypeAssociations
+        - route: /publication/<id>/genes
+          resource: biolink.api.bio.endpoints.bioentity.PublicationGeneAssociations
+        - route: /publication/<id>/diseases
+          resource: biolink.api.bio.endpoints.bioentity.PublicationDiseaseAssociations
     - name: association
       description: Retrieve associations between entities or entity and descriptors
       routes:
