@@ -36,7 +36,7 @@ app.config['ERROR_404_HELP'] = settings.RESTPLUS_ERROR_404_HELP
 blueprint = Blueprint('api', __name__, url_prefix='/api')
 api.init_app(blueprint)
 
-mapping = settings.get_biolink_config().get('route_mapping')
+mapping = settings.get_route_mapping().get('route_mapping')
 
 for ns in mapping['namespace']:
     namespace = api.namespace(ns['name'], description=ns['description'])
