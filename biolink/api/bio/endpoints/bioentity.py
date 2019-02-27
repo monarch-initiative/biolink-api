@@ -118,7 +118,6 @@ class GenericObjectByType(Resource):
                 ret_val = marshal(bio_entity, disease_object), 200
             else:
                 bio_entity = scigraph.bioobject(id, type)
-                print("BIOENITTY: {}".format(bio_entity))
                 ret_val = marshal(bio_entity, bio_object), 200
 
             if args['get_association_counts']:
