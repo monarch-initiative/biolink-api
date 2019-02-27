@@ -65,7 +65,8 @@ def get_association_counts(bioentity_id, bioentity_type=None):
     parse_facet_pivot(object_facet_pivot, count_map)
 
     if bioentity_type == 'gene':
-        count_map.pop(CATEGORY_NAME_MAP['gene'])
+        if CATEGORY_NAME_MAP['gene'] in count_map:
+            count_map.pop(CATEGORY_NAME_MAP['gene'])
         # get counts for all ortholog associations
         ortholog_associations = search_associations(
             fq={'subject_ortholog_closure': bioentity_id},
