@@ -50,6 +50,12 @@ TYPE_ANATOMY = 'anatomy'
 TYPE_SUBSTANCE = 'substance'
 TYPE_INDIVIDUAL = 'individual'
 TYPE_PUBLICATION = 'publication'
+TYPE_MODEL = 'model'
+
+categories = [TYPE_GENE, TYPE_VARIANT, TYPE_GENOTYPE,
+              TYPE_PHENOTYPE, TYPE_DISEASE, TYPE_GOTERM,
+              TYPE_PATHWAY, TYPE_ANATOMY, TYPE_SUBSTANCE,
+              TYPE_INDIVIDUAL, TYPE_PUBLICATION, TYPE_MODEL]
 
 core_parser_with_rel = core_parser.copy()
 core_parser_with_rel.add_argument('relationship_type', choices=[INVOLVED_IN, INVOLVED_IN_REGULATION_OF, ACTS_UPSTREAM_OF_OR_WITHIN], default=INVOLVED_IN, help="relationship type ('{}', '{}' or '{}')".format(INVOLVED_IN, INVOLVED_IN_REGULATION_OF, ACTS_UPSTREAM_OF_OR_WITHIN))
@@ -93,9 +99,7 @@ class GenericObject(Resource):
         return obj
 
 @api.param('id', 'id, e.g. NCBIGene:84570')
-@api.param('type', 'bioentity type', enum=[TYPE_GENE, TYPE_VARIANT, TYPE_GENOTYPE, TYPE_PHENOTYPE,
-                                           TYPE_DISEASE, TYPE_GOTERM, TYPE_PATHWAY, TYPE_ANATOMY,
-                                           TYPE_SUBSTANCE, TYPE_INDIVIDUAL, TYPE_PUBLICATION])
+@api.param('type', 'bioentity type', enum=categories)
 class GenericObjectByType(Resource):
 
     parser = core_parser.copy()
@@ -106,17 +110,23 @@ class GenericObjectByType(Resource):
         """
         Return basic info on an object for a given type
         """
+        ret_val = None
         args = self.parser.parse_args()
-        if type == TYPE_DISEASE:
-            bio_entity = scigraph.bioobject(id, type)
-            ret_val = marshal(bio_entity, disease_object), 200
+        if type in categories:
+            if type == TYPE_DISEASE:
+                bio_entity = scigraph.bioobject(id, type)
+                ret_val = marshal(bio_entity, disease_object), 200
+            else:
+                bio_entity = scigraph.bioobject(id, type)
+                print("BIOENITTY: {}".format(bio_entity))
+                ret_val = marshal(bio_entity, bio_object), 200
+
+            if args['get_association_counts']:
+                # *_ortholog_closure requires clique leader, so use
+                # bio_entity.id instead of incoming id
+                ret_val[0]['association_counts'] = get_association_counts(bio_entity.id, type)
         else:
-            bio_entity = scigraph.bioobject(id, type)
-            ret_val = marshal(bio_entity, bio_object), 200
-        if args['get_association_counts']:
-            # *_ortholog_closure requires clique leader, so use
-            # bio_entity.id instead of incoming id
-            ret_val[0]['association_counts'] = get_association_counts(bio_entity.id, type)
+            ret_val = {}
         return ret_val
 
 
