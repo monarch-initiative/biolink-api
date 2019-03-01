@@ -11,6 +11,10 @@ RESTPLUS_VALIDATE = True
 RESTPLUS_MASK_SWAGGER = False
 RESTPLUS_ERROR_404_HELP = False
 
+# This is set to false to prevent Flask-Restplus from
+# changing the error message structure
+ERROR_INCLUDE_MESSAGE = False
+
 # SQLAlchemy settings
 SQLALCHEMY_DATABASE_URI = 'sqlite:///db.sqlite'
 SQLALCHEMY_TRACK_MODIFICATIONS = False
