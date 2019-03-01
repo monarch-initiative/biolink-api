@@ -14,6 +14,7 @@ from scigraph.model.EntityAnnotationResults import *
 from biomodel.core import NamedObject, BioObject, SynonymPropertyValue
 from ontobio.util.user_agent import get_user_agent
 from biolink import NAME, VERSION
+from biolink.error_handlers import NoResultFoundException
 
 # TODO: modularize into vocab/graph/etc?
 
@@ -50,6 +51,9 @@ class SciGraph:
         Returns a BBOPGraph
         """
         response = self.get_response("graph/neighbors", id, "json", **params)
+        if response.status_code == 404:
+            raise NoResultFoundException('SciGraph graph/neighbors yields no result for {}'.format(id))
+
         return BBOPGraph(response.json())
 
     def node(self, id=None, **params):
@@ -59,7 +63,12 @@ class SciGraph:
         Returns a BBOPGraph Node
         """
         response = self.get_response("graph", q=id, format="json", **params)
+        if response.status_code == 404:
+            raise NoResultFoundException('SciGraph yields no result for {}'.format(id))
+
         nodes = response.json()['nodes']
+        if len(nodes) == 0:
+            raise NoResultFoundException('SciGraph yields no result for {}'.format(id))
         return self.make_NamedObject(**nodes[0])
 
     def bioobject(self, id, node_type=None, class_name='BioObject', **params):
@@ -82,6 +91,9 @@ class SciGraph:
         )
 
         nodes = response.json()['nodes']
+        if len(nodes) == 0:
+            raise NoResultFoundException('SciGraph dynamic/cliqueLeader yields no result for {}'.format(id))
+
         bio_object = self.make_NamedObject(**nodes[0], class_name=class_name)
 
         response = self.get_response(

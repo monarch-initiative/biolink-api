@@ -1,12 +1,12 @@
 import logging
 
-from flask import request
 from flask_restplus import Resource
 from biolink.datamodel.serializers import compact_association_set, association_results
 from ontobio.golr.golr_associations import search_associations, GolrFields
 
 from biolink.api.restplus import api
 from biolink import USER_AGENT
+from biolink.error_handlers import RouteNotImplementedException
 
 MAX_ROWS=10000
 
@@ -101,6 +101,4 @@ class EntitySetGraphResource(Resource):
         """
         args = parser.parse_args()
 
-        return "TODO"    
-    
-
+        raise RouteNotImplementedException()
