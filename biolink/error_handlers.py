@@ -5,7 +5,7 @@ from biolink import settings
 import logging
 
 class CustomException(Exception):
-    def __init__(self, message, status_code=400, debug=None):
+    def __init__(self, message, status_code=500, debug=None):
         Exception.__init__(self)
         self.message = message
         if status_code is not None:
@@ -26,7 +26,7 @@ class NoResultFoundException(CustomException):
     """
     Use this exception when results are expected but no result found
     """
-    def __init__(self, message, status_code=400, debug=None):
+    def __init__(self, message, status_code=404, debug=None):
         CustomException.__init__(self, message, status_code, debug)
 
 class UnrecognizedBioentityTypeException(CustomException):
