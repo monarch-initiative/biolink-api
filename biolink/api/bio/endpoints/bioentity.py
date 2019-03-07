@@ -12,6 +12,7 @@ from ontobio.vocabulary.relations import HomologyTypes
 from ..closure_bins import create_closure_bin
 from ..association_counts import get_association_counts
 from biolink import USER_AGENT
+from biolink.api.entityset.endpoints.slimmer import gene_to_uniprot_from_mygene, uniprot_to_gene_from_mygene
 
 from ontobio.golr.golr_query import run_solr_text_on, ESOLR, ESOLRDoc, replace
 from ontobio.config import get_config
@@ -346,7 +347,8 @@ class GeneFunctionAssociations(Resource):
             # https://github.com/monarch-initiative/dipper/issues/461
             #sg_dev = SciGraph(url='https://scigraph-data.monarchinitiative.org/scigraph/')
             sg_dev = scigraph
-            prots = sg_dev.gene_to_uniprot_proteins(id)
+            #prots = sg_dev.gene_to_uniprot_proteins(id)
+            prots = gene_to_uniprot_from_mygene(id)
             for prot in prots:
                 pr_assocs = search_associations(
                     object_category='function',
