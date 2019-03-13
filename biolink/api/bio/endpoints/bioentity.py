@@ -18,6 +18,8 @@ from ontobio.golr.golr_query import run_solr_text_on, ESOLR, ESOLRDoc, replace
 from ontobio.config import get_config
 import json
 
+from biolink.error_handlers import default_error_handler, no_result_found_exception_handler, unhandled_exception_handler
+from biolink.error_handlers import NoResultFoundException, UnhandledException, UnrecognizedBioentityTypeException
 
 log = logging.getLogger(__name__)
 
@@ -113,20 +115,22 @@ class GenericObjectByType(Resource):
         """
         ret_val = None
         args = self.parser.parse_args()
-        if type in categories:
-            if type == TYPE_DISEASE:
-                bio_entity = scigraph.bioobject(id, type)
-                ret_val = marshal(bio_entity, disease_object), 200
-            else:
-                bio_entity = scigraph.bioobject(id, type)
-                ret_val = marshal(bio_entity, bio_object), 200
 
-            if args['get_association_counts']:
-                # *_ortholog_closure requires clique leader, so use
-                # bio_entity.id instead of incoming id
-                ret_val[0]['association_counts'] = get_association_counts(bio_entity.id, type)
+        if type not in categories:
+            raise UnrecognizedBioentityTypeException("{} is not a valid Bioentity type".format(type))
+
+        if type == TYPE_DISEASE:
+            bio_entity = scigraph.bioobject(id, type)
+            ret_val = marshal(bio_entity, disease_object), 200
         else:
-            ret_val = {}
+            bio_entity = scigraph.bioobject(id, type)
+            ret_val = marshal(bio_entity, bio_object), 200
+
+        if args['get_association_counts']:
+            # *_ortholog_closure requires clique leader, so use
+            # bio_entity.id instead of incoming id
+            ret_val[0]['association_counts'] = get_association_counts(bio_entity.id, type)
+
         return ret_val
 
 

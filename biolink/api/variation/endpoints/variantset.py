@@ -7,7 +7,8 @@ from biolink.api.variation.business import create_variantset, update_variantset,
 from biolink.datamodel.serializers import association
 from biolink.api.restplus import api
 from biolink.database.models import VariantSet
-import pysolr
+
+from biolink.error_handlers import RouteNotImplementedException
 
 log = logging.getLogger(__name__)
 
@@ -125,6 +126,5 @@ class VariantAnalyze(Resource):
         Returns list of matches
         """
         args = parser.parse_args()
-
-        return []
+        raise RouteNotImplementedException()
     
