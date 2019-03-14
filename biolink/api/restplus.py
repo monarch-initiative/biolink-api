@@ -7,10 +7,10 @@ from sqlalchemy.orm.exc import NoResultFound
 
 log = logging.getLogger(__name__)
 
-api = Api(version='0.1.1', title='BioLink API',
+api = Api(version='0.1.1', title='GeneOntology API',
           license='BSD3',
-          contact='cjmungall@lbl.gov',
-          description='API integration layer for linked biological objects.\n\n __Source:__ https://github.com/biolink/biolink-api/')
+          contact='laurent.albou@lbl.gov',
+          description='GeneOntology API based on the BioLink Model, an integration layer for linked biological objects.\n\n __Source:__ https://github.com/geneontology/biolink-api')
 
 
 @api.errorhandler

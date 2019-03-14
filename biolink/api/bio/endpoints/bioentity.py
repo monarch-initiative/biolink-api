@@ -95,7 +95,7 @@ class GenericObject(Resource):
     @api.marshal_with(bio_object)
     def get(self, id):
         """
-        Returns basic info on object of any type
+        Returns basic info on any bioentity (e.g. GO term, gene)
         """
         args = core_parser.parse_args()
         obj = scigraph.bioobject(id)
@@ -140,7 +140,7 @@ class GenericAssociations(Resource):
     @api.marshal_with(association_results)
     def get(self, id):
         """
-        Returns associations for an entity regardless of the type
+        Returns associations for any bioentity (e.g. GO term, gene)
         """
         return search_associations(
             subject=id,
@@ -173,7 +173,7 @@ class GeneHomologAssociations(Resource):
     @api.marshal_with(association_results)
     def get(self, id):
         """
-        Returns homologs for a gene
+        Returns homologs associated to a gene
         """
         """
         Horrible hacks
@@ -318,7 +318,7 @@ class GeneFunctionAssociations(Resource):
     @api.marshal_with(association_results)
     def get(self, id):
         """
-        Returns function associations for a gene.
+        Returns GO terms associated to a gene.
 
         IMPLEMENTATION DETAILS
         ----------------------
@@ -370,7 +370,7 @@ class GenePublicationAssociations(Resource):
     @api.marshal_with(association_results)
     def get(self, id):
         """
-        Returns publications associated with a gene
+        Returns publications associated to a gene
         """
 
         return search_associations(
@@ -902,7 +902,7 @@ class FunctionAssociations(Resource):
     @api.expect(basic_parser)
     def get(self, id):
         """
-        Returns annotations associated to a function term
+        Returns annotations associated to a GO term
         """
 
         # annotation_class,aspect
@@ -1600,7 +1600,7 @@ class PublicationGeneAssociations(Resource):
     @api.marshal_with(association_results)
     def get(self, id):
         """
-        Returns genes associated with a publication
+        Returns genes associated to a publication
         """
 
         return search_associations(
