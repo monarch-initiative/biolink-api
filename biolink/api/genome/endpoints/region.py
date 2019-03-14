@@ -1,10 +1,10 @@
 import logging
 
-from flask import request
 from flask_restplus import Resource
 from biolink.datamodel.serializers import sequence_feature
 from biolink.api.restplus import api
-import pysolr
+
+from biolink.error_handlers import RouteNotImplementedException
 
 log = logging.getLogger(__name__)
 
@@ -20,10 +20,4 @@ class FeaturesWithinResource(Resource):
         Returns list of matches
         """
         args = parser.parse_args()
-
-        return []
-
-
-    
-    
-
+        raise RouteNotImplementedException()

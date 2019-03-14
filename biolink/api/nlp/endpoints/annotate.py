@@ -4,6 +4,7 @@ from flask import request
 from flask_restplus import Resource
 from biolink.datamodel.serializers import association
 from biolink.api.restplus import api
+from biolink.error_handlers import RouteNotImplementedException
 import pysolr
 
 log = logging.getLogger(__name__)
@@ -24,9 +25,4 @@ class Annotate(Resource):
         """
         args = parser.parse_args()
 
-        return []
-
-
-    
-    
-
+        raise RouteNotImplementedException('Use SciGraph annotator instead')

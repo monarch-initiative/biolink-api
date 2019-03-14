@@ -28,7 +28,7 @@ app.config['SWAGGER_UI_DOC_EXPANSION'] = settings.RESTPLUS_SWAGGER_UI_DOC_EXPANS
 app.config['RESTPLUS_VALIDATE'] = settings.RESTPLUS_VALIDATE
 app.config['RESTPLUS_MASK_SWAGGER'] = settings.RESTPLUS_MASK_SWAGGER
 app.config['ERROR_404_HELP'] = settings.RESTPLUS_ERROR_404_HELP
-
+app.config['ERROR_INCLUDE_MESSAGE'] = settings.ERROR_INCLUDE_MESSAGE
 
 #def initialize_app(flask_app):
 #    configure_app(flask_app)
@@ -36,7 +36,7 @@ app.config['ERROR_404_HELP'] = settings.RESTPLUS_ERROR_404_HELP
 blueprint = Blueprint('api', __name__, url_prefix='/api')
 api.init_app(blueprint)
 
-mapping = settings.get_biolink_config().get('route_mapping')
+mapping = settings.get_route_mapping().get('route_mapping')
 
 for ns in mapping['namespace']:
     namespace = api.namespace(ns['name'], description=ns['description'])

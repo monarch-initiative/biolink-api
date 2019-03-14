@@ -14,32 +14,32 @@ HOMOLOG_TYPES = [
 INTERACTS_WITH = 'RO:0002434'
 
 CATEGORY_NAME_MAP = {
-    'gene': 'genes',
-    'interaction': 'interactions',
-    'homolog': 'homologs',
-    'genotype': 'genotypes',
-    'phenotype': 'phenotypes',
+    'gene': 'gene',
+    'interaction': 'interaction',
+    'homolog': 'homolog',
+    'genotype': 'genotype',
+    'phenotype': 'phenotype',
     'anatomical entity': 'anatomy',
-    'biological process': 'functions',
-    'pathway': 'pathways',
-    'disease': 'diseases',
-    'publication': 'publications',
-    'variant': 'variants',
-    'model': 'models',
-    'case': 'cases',
-    'substance': 'substances',
-    'ortholog-interaction': 'ortholog-interactions',
-    'ortholog-genotype': 'ortholog-genotypes',
-    'ortholog-phenotype': 'ortholog-phenotypes',
+    'biological process': 'function',
+    'pathway': 'pathway',
+    'disease': 'disease',
+    'publication': 'publication',
+    'variant': 'variant',
+    'model': 'model',
+    'case': 'case',
+    'substance': 'substance',
+    'ortholog-interaction': 'ortholog-interaction',
+    'ortholog-genotype': 'ortholog-genotype',
+    'ortholog-phenotype': 'ortholog-phenotype',
     'ortholog-anatomical entity': 'ortholog-anatomy',
-    'ortholog-biological process': 'ortholog-functions',
-    'ortholog-pathway': 'ortholog-pathways',
-    'ortholog-disease': 'ortholog-diseases',
-    'ortholog-publication': 'ortholog-publications',
-    'ortholog-variant': 'ortholog-variants',
-    'ortholog-model': 'ortholog-models',
-    'ortholog-case': 'ortholog-cases',
-    'ortholog-substance': 'ortholog-substances'
+    'ortholog-biological process': 'ortholog-function',
+    'ortholog-pathway': 'ortholog-pathway',
+    'ortholog-disease': 'ortholog-disease',
+    'ortholog-publication': 'ortholog-publication',
+    'ortholog-variant': 'ortholog-variant',
+    'ortholog-model': 'ortholog-model',
+    'ortholog-case': 'ortholog-case',
+    'ortholog-substance': 'ortholog-substance'
 }
 
 def get_association_counts(bioentity_id, bioentity_type=None):
@@ -51,13 +51,13 @@ def get_association_counts(bioentity_id, bioentity_type=None):
         fq={'subject_closure': bioentity_id},
         facet_pivot_fields=['{!stats=piv1}object_category', 'relation'],
         stats=True,
-        stats_fields=['{!tag=piv1 calcdistinct=true distinctValues=false}object']
+        stats_field=['{!tag=piv1 calcdistinct=true distinctValues=false}object']
     )
     object_associations = search_associations(
         fq={'object_closure': bioentity_id},
         facet_pivot_fields=['{!stats=piv1}subject_category', 'relation'],
         stats=True,
-        stats_fields=['{!tag=piv1 calcdistinct=true distinctValues=false}subject']
+        stats_field=['{!tag=piv1 calcdistinct=true distinctValues=false}subject']
     )
     subject_facet_pivot = subject_associations['facet_pivot']['object_category,relation']
     object_facet_pivot = object_associations['facet_pivot']['subject_category,relation']
@@ -65,13 +65,14 @@ def get_association_counts(bioentity_id, bioentity_type=None):
     parse_facet_pivot(object_facet_pivot, count_map)
 
     if bioentity_type == 'gene':
-        count_map.pop(CATEGORY_NAME_MAP['gene'])
+        if CATEGORY_NAME_MAP['gene'] in count_map:
+            count_map.pop(CATEGORY_NAME_MAP['gene'])
         # get counts for all ortholog associations
         ortholog_associations = search_associations(
             fq={'subject_ortholog_closure': bioentity_id},
             facet_pivot_fields=['{!stats=piv1}object_category', 'relation'],
             stats=True,
-            stats_fields=['{!tag=piv1 calcdistinct=true distinctValues=false}object']
+            stats_field=['{!tag=piv1 calcdistinct=true distinctValues=false}object']
         )
 
         ortholog_pivot_counts = ortholog_associations['facet_pivot']['object_category,relation']

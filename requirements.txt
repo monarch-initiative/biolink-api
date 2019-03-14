@@ -1,5 +1,5 @@
 prefixcommons>=0.0
-ontobio>=1.5.0
+ontobio>=1.7.2
 pip>=9.0.1
 wheel>0.25.0
 flask-restplus>=0.10.1
@@ -20,3 +20,4 @@ cachier>=0.1.26
 flask-limiter>=0.0
 gevent>=0.0
 gitpython>=2.1.11
+mygene==3.1.0

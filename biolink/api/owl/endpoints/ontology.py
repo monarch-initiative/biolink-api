@@ -1,10 +1,10 @@
 import logging
 
-from flask import request
 from flask_restplus import Resource
 from biolink.datamodel.serializers import association
 from biolink.api.restplus import api
-import pysolr
+
+from biolink.error_handlers import RouteNotImplementedException
 
 log = logging.getLogger(__name__)
 
@@ -15,21 +15,14 @@ class DLQuery(Resource):
 
     @api.expect(parser)
     @api.marshal_list_with(association)
-
-    @api.expect(parser)
-    @api.marshal_list_with(association)
     def get(self, query):
         """
         Placeholder - use OWLery for now
         """
         args = parser.parse_args()
-
-        return []
+        raise RouteNotImplementedException('Use Owlery API instead')
 
 class SparqlQuery(Resource):
-
-    @api.expect(parser)
-    @api.marshal_list_with(association)
 
     @api.expect(parser)
     @api.marshal_list_with(association)
@@ -38,10 +31,5 @@ class SparqlQuery(Resource):
         Placeholder - use direct SPARQL endpoint for now
         """
         args = parser.parse_args()
-
-        return []
-    
-
-    
-    
+        raise RouteNotImplementedException('Use SPARQL endpoint directly')
 
