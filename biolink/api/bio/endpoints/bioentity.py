@@ -68,7 +68,7 @@ homolog_parser = core_parser.copy()
 homolog_parser.add_argument('homolog_taxon', help='Taxon CURIE of homolog, e.g. NCBITaxon:9606 (Can be an ancestral node in the ontology; includes inferred associations, by default)')
 homolog_parser.add_argument('homology_type', choices=['P', 'O', 'LDO'], help='P (paralog), O (Ortholog) or LDO (least-diverged ortholog)')
 
-scigraph = SciGraph(get_biolink_config().scigraph_data.url)
+scigraph = SciGraph(get_biolink_config()['scigraph_data']['url'])
 
 homol_rel = HomologyTypes.Homolog.value
 

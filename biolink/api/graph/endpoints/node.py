@@ -10,7 +10,7 @@ from biolink.settings import get_biolink_config
 log = logging.getLogger(__name__)
 
 parser = api.parser()
-sg = SciGraph(get_biolink_config().scigraph_data.url)
+sg = SciGraph(get_biolink_config()['scigraph_data']['url'])
 
 @api.doc(params={'id': 'CURIE e.g. HP:0000465'})
 class NodeResource(Resource):
