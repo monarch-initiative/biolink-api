@@ -8,6 +8,7 @@ from ontobio.config import Config, get_config
 from biolink.api.restplus import api
 from scigraph.scigraph_util import SciGraph
 from biolink import USER_AGENT
+from biolink.settings import get_biolink_config
 
 from biothings_client import get_client
 
@@ -47,7 +48,7 @@ class EntitySetFunctionSlimmer(Resource):
         # Note that GO currently uses UniProt as primary ID for some sources: https://github.com/biolink/biolink-api/issues/66
         # https://github.com/monarch-initiative/dipper/issues/461
 
-        sg_dev = SciGraph(url=get_config().scigraph_data.url)
+        sg_dev = SciGraph(url=get_biolink_config().scigraph_data.url)
 
         subjects = [x.replace('WormBase:', 'WB:') if 'WormBase:' in x else x for x in subjects]
         slimmer_subjects = []

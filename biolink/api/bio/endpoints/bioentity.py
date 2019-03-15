@@ -13,6 +13,7 @@ from ..closure_bins import create_closure_bin
 from ..association_counts import get_association_counts
 from biolink import USER_AGENT
 from biolink.api.entityset.endpoints.slimmer import gene_to_uniprot_from_mygene, uniprot_to_gene_from_mygene
+from biolink.settings import get_biolink_config
 
 from ontobio.golr.golr_query import run_solr_text_on, ESOLR, ESOLRDoc, replace
 from ontobio.config import get_config
@@ -67,7 +68,7 @@ homolog_parser = core_parser.copy()
 homolog_parser.add_argument('homolog_taxon', help='Taxon CURIE of homolog, e.g. NCBITaxon:9606 (Can be an ancestral node in the ontology; includes inferred associations, by default)')
 homolog_parser.add_argument('homology_type', choices=['P', 'O', 'LDO'], help='P (paralog), O (Ortholog) or LDO (least-diverged ortholog)')
 
-scigraph = SciGraph('https://scigraph-data.monarchinitiative.org/scigraph/')
+scigraph = SciGraph(get_biolink_config().scigraph_data.url)
 
 homol_rel = HomologyTypes.Homolog.value
 
@@ -349,9 +350,7 @@ class GeneFunctionAssociations(Resource):
         if len(assocs['associations']) == 0:
             # Note that GO currently uses UniProt as primary ID for some sources: https://github.com/biolink/biolink-api/issues/66
             # https://github.com/monarch-initiative/dipper/issues/461
-            #sg_dev = SciGraph(url='https://scigraph-data.monarchinitiative.org/scigraph/')
-            sg_dev = scigraph
-            #prots = sg_dev.gene_to_uniprot_proteins(id)
+            #prots = scigraph.gene_to_uniprot_proteins(id)
             prots = gene_to_uniprot_from_mygene(id)
             for prot in prots:
                 pr_assocs = search_associations(

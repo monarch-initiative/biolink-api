@@ -5,11 +5,12 @@ from flask_restplus import Resource
 from biolink.datamodel.serializers import association, bbop_graph
 from scigraph.scigraph_util import SciGraph
 from biolink.api.restplus import api
+from biolink.settings import get_biolink_config
 
 log = logging.getLogger(__name__)
 
 parser = api.parser()
-sg = SciGraph()
+sg = SciGraph(get_biolink_config().scigraph_data.url)
 
 @api.doc(params={'id': 'CURIE e.g. HP:0000465'})
 class NodeResource(Resource):
