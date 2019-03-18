@@ -12,7 +12,11 @@ from biolink.api.restplus import api
 
 from biolink.database import db
 
+from werkzeug.contrib.fixers import ProxyFix
 app = Flask(__name__)
+app.wsgi_app = ProxyFix(app.wsgi_app)
+
+#app = Flask(__name__)
 app.url_map.strict_slashes = False
 CORS(app)
 log_file_path = path.join(path.dirname(path.abspath(__file__)), '../logging.conf')
