@@ -2,7 +2,7 @@ import yaml
 from os import path
 
 # Flask settings
-FLASK_SERVER_NAME = 'localhost:8888'
+FLASK_SERVER_NAME = 'api.geneontology.org'
 FLASK_DEBUG = True  # Do not use debug mode in production
 
 # Flask-Restplus settings
