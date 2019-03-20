@@ -1,12 +1,12 @@
 solr_assocs:
   url: "https://solr.monarchinitiative.org/solr/golr"
-  timeout: 5
+  timeout: 60
 amigo_solr_assocs:
   url: "http://golr.berkeleybop.org"
   timeout: 4
 solr_search:
   url: "https://solr.monarchinitiative.org/solr/search"
-  timeout: 2
+  timeout: 10
 amigo_solr_search:
   url: "http://golr.berkeleybop.org"
   timeout: 2
