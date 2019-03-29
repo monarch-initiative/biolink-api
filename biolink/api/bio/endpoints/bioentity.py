@@ -714,7 +714,7 @@ class PhenotypeGeneByTaxonAssociations(Resource):
     #@api.marshal_list_with(association)
     def get(self, id, taxid):
         """
-        Returns gene ids for all genes for a particular phenotype in a taxon
+        Returns gene IDs for all genes associated with a given phenotype, filtered by taxon
 
         For example, MP:0001569 + NCBITaxon:10090 (mouse)
 
@@ -722,6 +722,7 @@ class PhenotypeGeneByTaxonAssociations(Resource):
         return select_distinct_subjects(
             subject_category='gene',
             object_category='phenotype',
+            object=id,
             subject_taxon=taxid,
             user_agent=USER_AGENT
         )
@@ -1082,16 +1083,17 @@ class AnatomyGeneByTaxonAssociations(Resource):
     #@api.marshal_list_with(association)
     def get(self, id, taxid):
         """
-        Returns gene ids for all genes for a particular anatomy in a taxon
+        Returns gene IDs for all genes associated with a given anatomy, filtered by taxon
 
         For example, + NCBITaxon:10090 (mouse)
 
         """
         return search_associations(
-            subject_category='gene',
-            object_category='anatomical entity',
-            subject_taxon=taxid,
-            object=id,
+            subject_category='anatomical entity',
+            object_category='gene',
+            subject=id,
+            object_taxon=taxid,
+            invert_subject_object=True,
             user_agent=USER_AGENT,
             **core_parser.parse_args()
         )
