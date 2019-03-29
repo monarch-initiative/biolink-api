@@ -72,22 +72,6 @@ scigraph = SciGraph(get_biolink_config()['scigraph_data']['url'])
 
 homol_rel = HomologyTypes.Homolog.value
 
-def get_object_gene(id, **args):
-        obj = scigraph.bioobject(id, 'Gene')
-        obj.phenotype_associations = search_associations(subject=id, object_category='phenotype', user_agent=USER_AGENT, **args)['associations']
-        obj.homology_associations = search_associations(subject=id, rel=homol_rel, object_category='gene', user_agent=USER_AGENT, **args)['associations']
-        obj.disease_associations = search_associations(subject=id, object_category='disease', user_agent=USER_AGENT, **args)['associations']
-        obj.genotype_associations = search_associations(subject=id, invert_subject_object=True, object_category='genotype', user_agent=USER_AGENT, **args)['associations']
-
-        return obj
-
-def get_object_genotype(id, **args):
-        obj = scigraph.bioobject(id, 'Genotype')
-        obj.phenotype_associations = search_associations(subject=id, object_category='phenotype', user_agent=USER_AGENT, **args)['associations']
-        obj.disease_associations = search_associations(subject=id, object_category='disease', user_agent=USER_AGENT, **args)['associations']
-        obj.gene_associations = search_associations(subject=id, object_category='gene', user_agent=USER_AGENT, **args)['associations']
-
-        return obj
 
 @api.doc(params={'id': 'id, e.g. NCBIGene:84570'})
 class GenericObject(Resource):
