@@ -28,12 +28,12 @@ def get_biolink_config():
     global biolink_config
     if biolink_config is None:
         with open(CONFIG, 'r') as f:
-            biolink_config = yaml.load(f)
+            biolink_config = yaml.load(f, Loader=yaml.FullLoader)
     return biolink_config
 
 def get_route_mapping():
     global route_mapping
     if route_mapping is None:
         with open(ROUTES, 'r') as FH:
-            route_mapping = yaml.load(FH)
+            route_mapping = yaml.load(FH, Loader=yaml.FullLoader)
     return route_mapping
