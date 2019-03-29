@@ -1082,9 +1082,10 @@ class AnatomyGeneAssociations(Resource):
         Returns genes associated with a given anatomy
         """
         return search_associations(
-            subject_category='gene',
-            object_category='anatomical entity',
-            object=id,
+            subject_category='anatomical entity',
+            object_category='gene',
+            subject=id,
+            invert_subject_object=True,
             user_agent=USER_AGENT,
             **core_parser.parse_args()
         )
@@ -1275,7 +1276,7 @@ class GenotypeModelAssociations(Resource):
 
         return search_associations(
             subject_category='genotype',
-            object_category='gene',
+            object_category='model',
             subject=id,
             invert_subject_object=True,
             user_agent=USER_AGENT,
