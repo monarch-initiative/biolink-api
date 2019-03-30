@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import logging.config
 from os import path
 
