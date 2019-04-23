@@ -51,8 +51,6 @@ route_mapping:
           resource: biolink.api.bio.endpoints.bioentity.DiseaseGenotypeAssociations
         - route: /disease/<id>/publications
           resource: biolink.api.bio.endpoints.bioentity.DiseasePublicationAssociations
-        - route: /disease/<id>/models
-          resource: biolink.api.bio.endpoints.bioentity.DiseaseModelAssociations
         - route: /disease/<id>/pathways
           resource: biolink.api.bio.endpoints.bioentity.DiseasePathwayAssociations
         - route: /disease/<id>/variants

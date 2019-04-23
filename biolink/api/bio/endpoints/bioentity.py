@@ -608,25 +608,6 @@ class DiseasePublicationAssociations(Resource):
             **core_parser.parse_args()
         )
 
-@api.doc(params={'id': 'CURIE identifier of disease, e.g. OMIM:605543, DOID:678. Equivalent IDs can be used with same results'})
-class DiseaseModelAssociations(Resource):
-
-    @api.expect(core_parser)
-    @api.marshal_with(association_results)
-    def get(self, id):
-        """
-        Returns models associated with a disease
-        """
-
-        # Note: ontobio automagically sets invert_subject_object when (subject,object) is (disease,model)
-        return search_associations(
-            subject_category='disease',
-            object_category='model',
-            subject=id,
-            user_agent=USER_AGENT,
-            **core_parser.parse_args()
-        )
-
 @api.doc(params={'id': 'CURIE identifier of disease, e.g. DOID:4450. Equivalent IDs can be used with same results'})
 class DiseasePathwayAssociations(Resource):
 
