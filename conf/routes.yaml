@@ -150,8 +150,6 @@ route_mapping:
       routes:
         - route: /<id>
           resource: biolink.api.link.endpoints.find_associations.AssociationObject
-        - route: /find
-          resource: biolink.api.link.endpoints.find_associations.AssociationSearch
         - route: /find/<subject_category>
           resource: biolink.api.link.endpoints.find_associations.AssociationBySubjectCategorySearch
         - route: /find/<subject_category>/<object_category>
