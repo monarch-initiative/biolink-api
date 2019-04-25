@@ -79,13 +79,14 @@ bbop_graph = api.model('Graph', {
 
 named_object_core = api.model('NamedObjectCore', {
     'id': fields.String(readOnly=True, description='ID or CURIE e.g. MGI:1201606', required=True),
-    'label': fields.String(readOnly=True, description='RDFS Label')
+    'label': fields.String(readOnly=True, description='RDFS Label'),
+    'iri': fields.String(readOnly=True, description='IRI'),
+    'category': fields.List(fields.String(readOnly=True, description='Type of object'))
 })
 
 
 named_object = api.inherit('NamedObject', named_object_core, {
     'description': fields.String(readOnly=True, description='Descriptive text for the entity. For ontology classes, this will be a definition.'),
-    'categories': fields.List(fields.String(readOnly=True, description='Type of object (inferred)')),
     'types': fields.List(fields.String(readOnly=True, description='Type of object (direct)')),
     'synonyms': fields.List(fields.Nested(synonym_property_value), description='list of synonyms or alternate labels'),
     'deprecated': fields.Boolean(description='True if the node is deprecated/obsoleted.'),
@@ -96,7 +97,6 @@ named_object = api.inherit('NamedObject', named_object_core, {
 entity_reference = api.model('EntityReference', {
     'id': fields.String(readOnly=True, description='ID or CURIE e.g. MGI:1201606'),
     'label': fields.String(readOnly=True, description='RDFS Label'),
-    'categories': fields.List(fields.String(readOnly=True, description='Type of object')),
 })
 
 relation = api.inherit('Relation', named_object, {
