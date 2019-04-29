@@ -96,26 +96,39 @@ class SciGraph:
 
         bio_object = self.make_NamedObject(**nodes[0], class_name=class_name)
 
+        # get nodes connected with edge 'in_taxon'
         response = self.get_response(
-            "graph/neighbors", q=bio_object.id, format="json",
-            depth=1, direction="OUTGOING"
+            "graph/neighbors",
+            q=bio_object.id,
+            format="json",
+            depth=1,
+            relationshipType=IN_TAXON,
+            direction="OUTGOING"
         )
+
         graph = BBOPGraph(response.json())
 
         bio_object.taxon = None
-        taxon_edge = [edge for edge in graph.edges if edge.pred == IN_TAXON]
-        for tax_edge in taxon_edge:
+        for tax_edge in graph.edges:
             bio_object.taxon = self.make_NamedObject(
                 **graph.get_node(tax_edge.obj).as_dict()
             )
 
         # Type specific
         if node_type == 'disease':
+            # get nodes connected with edge 'has_disposition'
+            response = self.get_response(
+                "graph/neighbors",
+                q=bio_object.id,
+                format="json",
+                depth=1,
+                relationshipType=HAS_DISPOSITION,
+                direction="OUTGOING"
+            )
+            graph = BBOPGraph(response.json())
             bio_object.inheritance = []
             bio_object.clinical_modifiers = []
-            disposition_edges = [edge for edge in graph.edges
-                                 if edge.pred == HAS_DISPOSITION]
-            for disposition_edge in disposition_edges:
+            for disposition_edge in graph.edges:
                 disposition = graph.get_node(disposition_edge.obj)
                 if 'inheritance' in disposition.meta.category_list:
                     bio_object.inheritance.append(
