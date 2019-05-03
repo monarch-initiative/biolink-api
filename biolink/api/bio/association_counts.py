@@ -51,13 +51,18 @@ def get_association_counts(bioentity_id, bioentity_type=None):
         fq={'subject_closure': bioentity_id},
         facet_pivot_fields=['{!stats=piv1}object_category', 'relation'],
         stats=True,
-        stats_field=['{!tag=piv1 calcdistinct=true distinctValues=false}object']
+        rows=0,
+        facet_fields=[],
+        stats_field=['{!tag=piv1 countdistinct=true distinctValues=false cardinality=0.90}object']
     )
+    print(subject_associations)
     object_associations = search_associations(
         fq={'object_closure': bioentity_id},
         facet_pivot_fields=['{!stats=piv1}subject_category', 'relation'],
         stats=True,
-        stats_field=['{!tag=piv1 calcdistinct=true distinctValues=false}subject']
+        rows=0,
+        facet_fields=[],
+        stats_field=['{!tag=piv1 countdistinct=true distinctValues=false cardinality=0.90}subject']
     )
     subject_facet_pivot = subject_associations['facet_pivot']['object_category,relation']
     object_facet_pivot = object_associations['facet_pivot']['subject_category,relation']
@@ -72,7 +77,9 @@ def get_association_counts(bioentity_id, bioentity_type=None):
             fq={'subject_ortholog_closure': bioentity_id},
             facet_pivot_fields=['{!stats=piv1}object_category', 'relation'],
             stats=True,
-            stats_field=['{!tag=piv1 calcdistinct=true distinctValues=false}object']
+            rows=0,
+            facet_fields=[],
+            stats_field=['{!tag=piv1 countdistinct=true distinctValues=false cardinality=0.90}object']
         )
 
         ortholog_pivot_counts = ortholog_associations['facet_pivot']['object_category,relation']
@@ -83,10 +90,10 @@ def get_association_counts(bioentity_id, bioentity_type=None):
                     for relation in category['pivot']:
                         if relation['value'] == INTERACTS_WITH:
                             # Ortholog-Interactions
-                            count_map[CATEGORY_NAME_MAP['ortholog-interaction']] = relation['stats']['stats_fields']['object']['countDistinct']
+                            count_map[CATEGORY_NAME_MAP['ortholog-interaction']] = relation['stats']['stats_fields']['object']['cardinality']
             else:
                 key = 'ortholog-{}'.format(type)
-                count_map[CATEGORY_NAME_MAP[key]] = category['stats']['stats_fields']['object']['countDistinct']
+                count_map[CATEGORY_NAME_MAP[key]] = category['stats']['stats_fields']['object']['cardinality']
 
     return count_map
 
@@ -108,18 +115,18 @@ def parse_facet_pivot(facet_pivot, count_map=None):
             if CATEGORY_NAME_MAP[type] in count_map:
                 # avoid counting twice for 'gene'
                 continue
-            count_map[CATEGORY_NAME_MAP[type]] = stats_fields[key]['countDistinct']
+            count_map[CATEGORY_NAME_MAP[type]] = stats_fields[key]['cardinality']
             if 'pivot' in category:
                 for relation in category['pivot']:
                     relation_stats_fields = relation['stats']['stats_fields']
                     if relation['value'] in HOMOLOG_TYPES:
                         if CATEGORY_NAME_MAP['homolog'] in count_map:
-                            count_map[CATEGORY_NAME_MAP['homolog']] += relation_stats_fields[key]['countDistinct']
+                            count_map[CATEGORY_NAME_MAP['homolog']] += relation_stats_fields[key]['cardinality']
                         else:
-                            count_map[CATEGORY_NAME_MAP['homolog']] = relation_stats_fields[key]['countDistinct']
+                            count_map[CATEGORY_NAME_MAP['homolog']] = relation_stats_fields[key]['cardinality']
                     elif relation['value'] == INTERACTS_WITH:
-                        count_map[CATEGORY_NAME_MAP['interaction']] = relation_stats_fields[key]['countDistinct']
+                        count_map[CATEGORY_NAME_MAP['interaction']] = relation_stats_fields[key]['cardinality']
         else:
-            count_map[CATEGORY_NAME_MAP[type]] = stats_fields[key]['countDistinct']
+            count_map[CATEGORY_NAME_MAP[type]] = stats_fields[key]['cardinality']
 
     return count_map
