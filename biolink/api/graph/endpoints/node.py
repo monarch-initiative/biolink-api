@@ -24,8 +24,8 @@ class NodeResource(Resource):
         A node is an abstract representation of some kind of entity. The entity may be a physical thing such as a patient,
         a molecular entity such as a gene or protein, or a conceptual entity such as a class from an ontology.
         """
-        g = sg.bioobject(id)
-        return g
+        graph = sg.bioobject(id)
+        return graph
 
 
 @api.doc(params={'id': 'CURIE e.g. HP:0000465'})
@@ -47,28 +47,28 @@ class EdgeResource(Resource):
         args = self.parser.parse_args()
         response = sg.get_response("dynamic/cliqueLeader", q=id, format="json", depth=1)
         nodes = response.json()['nodes']
-        if len(nodes) == 0:
+        if not nodes:
             raise NoResultFoundException('SciGraph dynamic/cliqueLeader yields no result for {}'.format(id))
 
         clique_leader = nodes[0]['id']
         final_graph = BBOPGraph({'nodes': [], 'edges': []})
         if args.relationship_type:
             for relationship in args.relationship_type:
-                g = sg.neighbors(
+                graph = sg.neighbors(
                     id=clique_leader,
                     relationshipType=relationship,
                     direction=args.direction,
                     depth=args.depth,
                     entail=args.entail
                 )
-                final_graph.merge(g)
+                final_graph.merge(graph)
 
         else:
-            g = sg.neighbors(
+            graph = sg.neighbors(
                 id=clique_leader,
                 depth=args.depth,
                 entail=args.entail
             )
-            final_graph.merge(g)
+            final_graph.merge(graph)
 
         return final_graph
