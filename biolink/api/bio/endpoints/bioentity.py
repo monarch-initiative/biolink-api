@@ -438,6 +438,24 @@ class GeneVariantAssociations(Resource):
             **core_parser.parse_args()
         )
 
+@api.doc(params={'id': 'CURIE identifier of gene, e.g. HGNC:613, HGNC:11025'})
+class GeneCaseAssociations(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_with(association_results)
+    def get(self, id):
+        """
+        Returns cases associated with a gene
+        """
+        return search_associations(
+            subject_category='gene',
+            object_category='case',
+            invert_subject_object=True,
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
+
 @api.doc(params={'id': 'CURIE identifier of disease, e.g. OMIM:605543, Orphanet:1934, DOID:678. Equivalent IDs can be used with same results'})
 class DiseasePhenotypeAssociations(Resource):
 
@@ -644,6 +662,25 @@ class DiseaseVariantAssociations(Resource):
             **core_parser.parse_args()
         )
 
+@api.doc(params={'id': 'CURIE identifier of disease, e.g. MONDO:0007103, MONDO:0010918. Equivalent IDs can be used with same results'})
+class DiseaseCaseAssociations(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_with(association_results)
+    def get(self, id):
+        """
+        Returns cases associated with a disease
+        """
+
+        return search_associations(
+            subject_category='disease',
+            object_category='case',
+            invert_subject_object=True,
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
+
 @api.doc(params={'id': 'CURIE identifier of phenotype, e.g. MP:0008521. Equivalent IDs can be used with same results'})
 class PhenotypeAnatomyAssociations(Resource):
     # Note: This depends on https://github.com/biolink/biolink-api/issues/122
@@ -797,6 +834,25 @@ class PhenotypeVariantAssociations(Resource):
         return search_associations(
             subject_category='phenotype',
             object_category='variant',
+            invert_subject_object=True,
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
+
+@api.doc(params={'id': 'Pheno class CURIE identifier, e.g  HP:0011951 (Aspiration pneumonia), HP:0002450 (Abnormal motor neuron morphology)'})
+class PhenotypeCaseAssociations(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_with(association_results)
+    def get(self, id):
+        """
+        Returns cases associated with a phenotype
+        """
+
+        return search_associations(
+            subject_category='phenotype',
+            object_category='case',
             invert_subject_object=True,
             subject=id,
             user_agent=USER_AGENT,
@@ -1287,7 +1343,25 @@ class GenotypePublicationAssociations(Resource):
             user_agent=USER_AGENT,
             **core_parser.parse_args()
         )
-##
+
+@api.doc(params={'id': 'CURIE identifier of genotype, e.g. dbSNPIndividual:10440, dbSNPIndividual:22633'})
+class GenotypeCaseAssociations(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_with(association_results)
+    def get(self, id):
+        """
+        Returns cases associated with a genotype
+        """
+
+        return search_associations(
+            subject_category='genotype',
+            object_category='case',
+            subject=id,
+            invert_subject_object=True,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
 
 @api.doc(params={'id': 'CURIE identifier of variant, e.g. ZFIN:ZDB-ALT-010427-8'})
 class VariantGenotypeAssociations(Resource):
@@ -1383,6 +1457,44 @@ class VariantPublicationAssociations(Resource):
         return search_associations(
             subject_category='variant',
             object_category='publication',
+            subject=id,
+            invert_subject_object=True,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
+
+@api.doc(params={'id': 'CURIE identifier of variant, e.g. OMIM:607623.0012, dbSNP:rs5030868'})
+class VariantModelAssociations(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_with(association_results)
+    def get(self, id):
+        """
+        Returns models associated with a variant
+        """
+
+        return search_associations(
+            subject_category='variant',
+            object_category='model',
+            subject=id,
+            invert_subject_object=True,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
+
+@api.doc(params={'id': 'CURIE identifier of variant, e.g. OMIM:309550.0004, dbSNP:rs5030868'})
+class VariantCaseAssociations(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_with(association_results)
+    def get(self, id):
+        """
+        Returns cases associated with a variant
+        """
+
+        return search_associations(
+            subject_category='variant',
+            object_category='case',
             subject=id,
             invert_subject_object=True,
             user_agent=USER_AGENT,
@@ -1507,6 +1619,24 @@ class ModelVariantAssociations(Resource):
             **core_parser.parse_args()
         )
 
+@api.doc(params={'id': 'CURIE identifier for a model, e.g. Coriell:GM22295, Coriell:HG02187'})
+class ModelCaseAssociations(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_with(association_results)
+    def get(self, id):
+        """
+        Returns cases associated with a model
+        """
+
+        return search_associations(
+            subject_category='model',
+            object_category='case',
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
+
 @api.doc(params={'id': 'CURIE identifier for a publication, e.g. PMID:11751940'})
 class PublicationVariantAssociations(Resource):
 
@@ -1610,6 +1740,97 @@ class PublicationDiseaseAssociations(Resource):
         return search_associations(
             subject_category='publication',
             object_category='disease',
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
+
+@api.doc(params={'id': 'CURIE identifier for a case'})
+class CaseModelAssociations(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_with(association_results)
+    def get(self, id):
+        """
+        Returns models associated with a case
+        """
+
+        return search_associations(
+            subject_category='case',
+            object_category='model',
+            invert_subject_object=True,
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
+
+@api.doc(params={'id': 'CURIE identifier for a case'})
+class CaseDiseaseAssociations(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_with(association_results)
+    def get(self, id):
+        """
+        Returns diseases associated with a case
+        """
+
+        return search_associations(
+            subject_category='case',
+            object_category='disease',
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
+
+@api.doc(params={'id': 'CURIE identifier for a case'})
+class CaseVariantAssociations(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_with(association_results)
+    def get(self, id):
+        """
+        Returns variants associated with a case
+        """
+
+        return search_associations(
+            subject_category='case',
+            object_category='variant',
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
+
+@api.doc(params={'id': 'CURIE identifier for a case'})
+class CaseGenotypeAssociations(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_with(association_results)
+    def get(self, id):
+        """
+        Returns genotypes associated with a case
+        """
+
+        return search_associations(
+            subject_category='case',
+            object_category='genotype',
+            subject=id,
+            user_agent=USER_AGENT,
+            **core_parser.parse_args()
+        )
+
+@api.doc(params={'id': 'CURIE identifier for a case'})
+class CasePhenotypeAssociations(Resource):
+
+    @api.expect(core_parser)
+    @api.marshal_with(association_results)
+    def get(self, id):
+        """
+        Returns phenotypes associated with a case
+        """
+
+        return search_associations(
+            subject_category='case',
+            object_category='phenotype',
             subject=id,
             user_agent=USER_AGENT,
             **core_parser.parse_args()
