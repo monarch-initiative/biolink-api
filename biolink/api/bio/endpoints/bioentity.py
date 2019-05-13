@@ -56,11 +56,13 @@ TYPE_SUBSTANCE = 'substance'
 TYPE_INDIVIDUAL = 'individual'
 TYPE_PUBLICATION = 'publication'
 TYPE_MODEL = 'model'
+TYPE_CASE = 'case'
 
 categories = [TYPE_GENE, TYPE_VARIANT, TYPE_GENOTYPE,
               TYPE_PHENOTYPE, TYPE_DISEASE, TYPE_GOTERM,
               TYPE_PATHWAY, TYPE_ANATOMY, TYPE_SUBSTANCE,
-              TYPE_INDIVIDUAL, TYPE_PUBLICATION, TYPE_MODEL]
+              TYPE_INDIVIDUAL, TYPE_PUBLICATION, TYPE_MODEL,
+              TYPE_CASE]
 
 core_parser_with_rel = core_parser.copy()
 core_parser_with_rel.add_argument('relationship_type', choices=[INVOLVED_IN, INVOLVED_IN_REGULATION_OF, ACTS_UPSTREAM_OF_OR_WITHIN], default=INVOLVED_IN, help="relationship type ('{}', '{}' or '{}')".format(INVOLVED_IN, INVOLVED_IN_REGULATION_OF, ACTS_UPSTREAM_OF_OR_WITHIN))
