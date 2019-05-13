@@ -14,119 +14,264 @@ HOMOLOG_TYPES = [
 INTERACTS_WITH = 'RO:0002434'
 
 CATEGORY_NAME_MAP = {
-    'gene': 'gene',
-    'interaction': 'interaction',
-    'homolog': 'homolog',
-    'genotype': 'genotype',
-    'phenotype': 'phenotype',
-    'anatomical entity': 'anatomy',
-    'biological process': 'function',
-    'pathway': 'pathway',
-    'disease': 'disease',
-    'publication': 'publication',
-    'variant': 'variant',
-    'model': 'model',
-    'case': 'case',
-    'substance': 'substance',
-    'ortholog-interaction': 'ortholog-interaction',
-    'ortholog-genotype': 'ortholog-genotype',
-    'ortholog-phenotype': 'ortholog-phenotype',
-    'ortholog-anatomical entity': 'ortholog-anatomy',
-    'ortholog-biological process': 'ortholog-function',
-    'ortholog-pathway': 'ortholog-pathway',
-    'ortholog-disease': 'ortholog-disease',
-    'ortholog-publication': 'ortholog-publication',
-    'ortholog-variant': 'ortholog-variant',
-    'ortholog-model': 'ortholog-model',
-    'ortholog-case': 'ortholog-case',
-    'ortholog-substance': 'ortholog-substance'
+    'publication_variant': {
+        'publication': 'variant',
+        'variant': 'publication'
+    },
+    'gene_homology': {
+        'gene': 'homolog'
+    },
+    'publication_gene': {
+        'publication': 'gene',
+        'gene': 'publication'
+    },
+    'gene_interaction': {
+        'gene': 'interaction'
+    },
+    'variant_phenotype':{
+        'variant': 'phenotype',
+        'phenotype': 'variant'
+    },
+    'genotype_gene': {
+        'genotype': 'gene',
+        'gene': 'genotype'
+    },
+    'gene_anatomy': {
+        'gene': 'anatomy',
+        'anatomy': 'gene'
+    },
+    'variant_gene': {
+        'variant': 'gene',
+        'gene': 'variant'
+
+    },
+    "variant_genotype": {
+        'variant': 'genotype',
+        'genotype': 'variant',
+        'model': 'variant'
+
+    },
+    "gene_function": {
+        'gene': 'function',
+        'function': 'gene',
+        'goterm': 'gene'
+    },
+    "model_gene": {
+        'model': 'gene',
+        'gene': 'model'
+    },
+    "genotype_phenotype": {
+        'genotype': 'phenotype',
+        'phenotype': 'genotype',
+        'model': 'phenotype'
+    },
+    'model_variant': {
+        'model': 'variant',
+        'variant': 'model'
+    },
+    "gene_phenotype": {
+        'gene': 'phenotype',
+        'phenotype': 'gene'
+    },
+    "publication_phenotype": {
+        'publication': 'phenotype',
+        'phenotype': 'publication'
+    },
+    'publication_genotype': {
+        'publication': 'genotype',
+        'genotype': 'publication'
+    },
+    "gene_pathway": {
+        'gene': 'pathway',
+        'pathway': 'gene'
+    },
+    "publication_disease": {
+        'publication': 'disease',
+        'disease': 'publication'
+    },
+    "disease_phenotype": {
+        'disease': 'phenotype',
+        'phenotype': 'disease'
+    },
+    "variant_disease": {
+        'variant': 'disease',
+        'disease': 'variant'
+    },
+    "pathway_phenotype": {
+        'pathway': 'phenotype',
+        'phenotype': 'pathway'
+    },
+    "gene_temporal": {},
+    "model_case": {
+        'model': 'case',
+        'case': 'model'
+    },
+    "model_disease": {
+        'model': 'disease',
+        'disease': 'model'
+    },
+    "publication_model": {
+        'publication': 'model',
+        'model': 'publication'
+    },
+    "marker_disease": {
+        'gene': 'disease',
+        'disease': 'gene'
+    },
+    "case_disease": {
+        'case': 'disease',
+        'disease': 'case'
+    },
+    "gene_disease": {
+        'gene': 'disease',
+        'disease': 'gene'
+    },
+    "case_variant": {
+        'case': 'variant',
+        'variant': 'case'
+    },
+    "case_genotype": {
+        'case': 'genotype',
+        'genotype': 'case'
+    },
+    "model_genotype": {
+        'model': 'genotype',
+        'genotype': 'model'
+    },
+    "genotype_disease": {
+        'genotype': 'disease',
+        'disease': 'genotype'
+    },
+    "case_gene": {
+        'case': 'gene',
+        'gene': 'case'
+    },
+    "case_phenotype": {
+        'case': 'phenotype',
+        'phenotype': 'case'
+    }
 }
+
+EXCLUDE_LIST = ['ortholog-homolog']
+
 
 def get_association_counts(bioentity_id, bioentity_type=None):
     """
     For a given CURIE, get the number of associations by each category.
     """
     count_map = {}
+    # get counts where bioentity_id is the subject
     subject_associations = search_associations(
         fq={'subject_closure': bioentity_id},
-        facet_pivot_fields=['{!stats=piv1}object_category', 'relation'],
+        facet_pivot_fields=['{!stats=piv1}association_type', 'object_taxon'],
         stats=True,
         rows=0,
         facet_fields=[],
-        stats_field=['{!tag=piv1 countdistinct=true distinctValues=false cardinality=0.90}object']
+        stats_field=['{!tag=piv1 calcdistinct=true distinctValues=false}object']
     )
-    print(subject_associations)
+    subject_facet_pivot = subject_associations['facet_pivot']['association_type,object_taxon']
+    parse_facet_pivot(subject_facet_pivot, bioentity_type, count_map)
+
+    # get counts where bioentity_id is the object
     object_associations = search_associations(
         fq={'object_closure': bioentity_id},
-        facet_pivot_fields=['{!stats=piv1}subject_category', 'relation'],
+        facet_pivot_fields=['{!stats=piv1}association_type', 'subject_taxon'],
         stats=True,
         rows=0,
         facet_fields=[],
-        stats_field=['{!tag=piv1 countdistinct=true distinctValues=false cardinality=0.90}subject']
+        stats_field=['{!tag=piv1 calcdistinct=true distinctValues=false}subject']
     )
-    subject_facet_pivot = subject_associations['facet_pivot']['object_category,relation']
-    object_facet_pivot = object_associations['facet_pivot']['subject_category,relation']
-    parse_facet_pivot(subject_facet_pivot, count_map)
-    parse_facet_pivot(object_facet_pivot, count_map)
+    object_facet_pivot = object_associations['facet_pivot']['association_type,subject_taxon']
+    parse_facet_pivot(object_facet_pivot, bioentity_type, count_map)
 
     if bioentity_type == 'gene':
-        if CATEGORY_NAME_MAP['gene'] in count_map:
-            count_map.pop(CATEGORY_NAME_MAP['gene'])
-        # get counts for all ortholog associations
+        # get counts for ortholog-x associations
+        type_prefix = 'ortholog'
+        ortholog_count_map = {}
         ortholog_associations = search_associations(
             fq={'subject_ortholog_closure': bioentity_id},
-            facet_pivot_fields=['{!stats=piv1}object_category', 'relation'],
+            facet_pivot_fields=['{!stats=piv1}association_type', 'object_taxon'],
             stats=True,
             rows=0,
             facet_fields=[],
-            stats_field=['{!tag=piv1 countdistinct=true distinctValues=false cardinality=0.90}object']
+            stats_field=['{!tag=piv1 calcdistinct=true distinctValues=false}object']
         )
+        ortholog_facet_pivot = ortholog_associations['facet_pivot']['association_type,object_taxon']
+        parse_facet_pivot(ortholog_facet_pivot, bioentity_type, ortholog_count_map, type_prefix)
+        final_count_map = {**count_map, **ortholog_count_map}
+    else:
+        final_count_map = count_map
 
-        ortholog_pivot_counts = ortholog_associations['facet_pivot']['object_category,relation']
-        for category in ortholog_pivot_counts:
-            type = category['value']
-            if type == 'gene':
-                if 'pivot' in category:
-                    for relation in category['pivot']:
-                        if relation['value'] == INTERACTS_WITH:
-                            # Ortholog-Interactions
-                            count_map[CATEGORY_NAME_MAP['ortholog-interaction']] = relation['stats']['stats_fields']['object']['cardinality']
-            else:
-                key = 'ortholog-{}'.format(type)
-                count_map[CATEGORY_NAME_MAP[key]] = category['stats']['stats_fields']['object']['cardinality']
+    for x in EXCLUDE_LIST:
+        if x in final_count_map:
+            final_count_map.pop(x)
 
-    return count_map
+    return final_count_map
 
-def parse_facet_pivot(facet_pivot, count_map=None):
+
+def parse_facet_pivot(facet_pivot, bioentity_type, count_map, type_prefix = None):
 
     if count_map is None:
         count_map = {}
 
-    for category in facet_pivot:
-        type = category['value']
-        stats_fields = category['stats']['stats_fields']
-        key = None
-        if 'subject' in stats_fields:
-            key = 'subject'
-        elif 'object' in stats_fields:
-            key = 'object'
+    for category_pivot in facet_pivot:
+        type = category_pivot['value']
+        if bioentity_type not in CATEGORY_NAME_MAP[type]:
+            # ignore this count type
+            continue
+        k = CATEGORY_NAME_MAP[type][bioentity_type]
+        if type_prefix:
+            k = "{}-{}".format(type_prefix, k)
 
-        if type == 'gene':
-            if CATEGORY_NAME_MAP[type] in count_map:
-                # avoid counting twice for 'gene'
-                continue
-            count_map[CATEGORY_NAME_MAP[type]] = stats_fields[key]['cardinality']
-            if 'pivot' in category:
-                for relation in category['pivot']:
-                    relation_stats_fields = relation['stats']['stats_fields']
-                    if relation['value'] in HOMOLOG_TYPES:
-                        if CATEGORY_NAME_MAP['homolog'] in count_map:
-                            count_map[CATEGORY_NAME_MAP['homolog']] += relation_stats_fields[key]['cardinality']
-                        else:
-                            count_map[CATEGORY_NAME_MAP['homolog']] = relation_stats_fields[key]['cardinality']
-                    elif relation['value'] == INTERACTS_WITH:
-                        count_map[CATEGORY_NAME_MAP['interaction']] = relation_stats_fields[key]['cardinality']
+        if k not in count_map:
+            count_map[k] = {}
+        if k == 'homolog' and k in count_map and 'counts' in count_map[k]:
+            # ignore, to avoid double counting
+            continue
+
+        category_stats = category_pivot['stats']['stats_fields']
+        key = None
+        if 'subject' in category_stats:
+            key = 'subject'
+        elif 'object' in category_stats:
+            key = 'object'
+        category_counts = category_stats[key]['countDistinct']
+        if 'counts' in count_map[k]:
+            count_map[k]['counts'] += category_counts
         else:
-            count_map[CATEGORY_NAME_MAP[type]] = stats_fields[key]['cardinality']
+            count_map[k] = {
+                'counts': category_counts
+            }
+
+        if 'pivot' in category_pivot:
+            # taxon pivot
+            taxon_pivot = category_pivot['pivot']
+            taxon_counts = parse_taxon_pivot(taxon_pivot, key)
+            if 'counts_by_taxon' in count_map[k]:
+                taxon_counts = merge_counts(count_map[k]['counts_by_taxon'], taxon_counts)
+            count_map[k]['counts_by_taxon'] = taxon_counts
 
     return count_map
+
+
+def parse_taxon_pivot(taxon_pivot, key):
+    counts_map = {}
+    for t in taxon_pivot:
+        taxon = t['value']
+        counts = t['stats']['stats_fields'][key]['countDistinct']
+        counts_map[taxon] = counts
+    return counts_map
+
+def merge_counts(d1, d2):
+    d = {}
+    d1_key_set = set(x for x in d1.keys())
+    d2_key_set = set(x for x in d2.keys())
+    all_keys = d1_key_set | d2_key_set
+    for k in all_keys:
+        count = 0
+        if k in d1:
+            count += d1[k]
+        if k in d2:
+            count += d2[k]
+        d[k] = count
+    return d
