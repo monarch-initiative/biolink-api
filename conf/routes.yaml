@@ -403,3 +403,8 @@ route_mapping:
             resource: biolink.api.sim.endpoints.semanticsim.SimSearch
           - route: /compare
             resource: biolink.api.sim.endpoints.semanticsim.SimCompare
+    - name: metadata
+      description: Get metadata
+      routes:
+          - route: /datasets
+            resource: biolink.api.metadata.endpoints.datasets.MetadataForDatasets
