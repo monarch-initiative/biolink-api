@@ -386,7 +386,17 @@ class SciGraph:
         bbg = self.neighbors(id, direction='INCOMING', depth=1)
         return bbg_to_assocs(bbg)
 
-
+    def get_datasets(self):
+        """
+        Get metadata about all the datasets in SciGraph
+        """
+        response = self.get_response("dynamic/ontologies", None, "json")
+        response_json = response.json()
+        datasets = []
+        for n in response_json['nodes']:
+            if 'MonarchData' in n['id']:
+                datasets.append(n)
+        return datasets
 
 def bbg_to_assocs(g):
     return [bbedge_to_assoc(e,g) for e in g.edges]
