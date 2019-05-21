@@ -71,7 +71,6 @@ categories = [TYPE_GENE, TYPE_VARIANT, TYPE_GENOTYPE,
 homolog_parser = core_parser.copy()
 homolog_parser.add_argument('taxon', help='Taxon CURIE of homolog, e.g. NCBITaxon:9606 (Can be an ancestral node in the ontology; includes inferred associations, by default)')
 homolog_parser.add_argument('homology_type', choices=['P', 'O', 'LDO'], help='P (paralog), O (Ortholog) or LDO (least-diverged ortholog)')
-homolog_parser.add_argument('relation', help='A relation CURIE to filter associations', default=None)
 
 core_parser_with_filters = core_parser.copy()
 core_parser_with_filters.add_argument('taxon', action='append', help='One or more taxon CURIE to filter associations by subject taxon', default=None)
@@ -946,8 +945,8 @@ class FunctionGeneAssociations(Resource):
                 object_category='function',
                 fq={
                     'regulates_closure': id,
-                    'taxon_closure': args.taxon
                 },
+                subject_taxon=args.taxon,
                 invert_subject_object=True,
                 user_agent=USER_AGENT,
                 **args
@@ -956,13 +955,13 @@ class FunctionGeneAssociations(Resource):
             # Temporary fix until https://github.com/geneontology/amigo/pull/469
             # and https://github.com/owlcollab/owltools/issues/241 are resolved
             return search_associations(
-                subject_category = 'gene',
-                object_category = 'function',
+                subject_category='gene',
+                object_category='function',
                 fq={
                     'regulates_closure': id,
                     '-isa_partof_closure': id,
-                    'taxon_closure': args.taxon
                 },
+                subject_taxon=args.taxon,
                 invert_subject_object=True,
                 user_agent=USER_AGENT,
                 **args
@@ -972,9 +971,7 @@ class FunctionGeneAssociations(Resource):
                 subject_category='gene',
                 object_category='function',
                 subject=id,
-                fq={
-                    'taxon_closure': args.taxon
-                },
+                subject_taxon=args.taxon,
                 invert_subject_object=True,
                 user_agent=USER_AGENT,
                 **args
