@@ -191,7 +191,7 @@ d2p_association = api.inherit('D2PAssociation', association, {
 
 # A search result that returns a set of associations
 # plus specific fields for disease to phenotype (frequency and onset)
-d2p_association_results = api.inherit('AssociationResults', association_results, {
+d2p_association_results = api.inherit('D2PAssociationResults', association_results, {
     'associations': fields.List(fields.Nested(d2p_association),
                                 description='Complete representation of full disease '
                                             'to phenotype association, plus evidence')
