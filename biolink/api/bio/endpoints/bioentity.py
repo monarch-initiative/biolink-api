@@ -410,10 +410,10 @@ class GeneOrthologPhenotypeAssociations(Resource):
         """
         args = core_parser_with_filters.parse_args()
         # Get the clique leader
-        bio_object = scigraph.get_clique_leader(id)
+        gene = scigraph.get_clique_leader(id)
 
         filters = {
-            'subject_ortholog_closure': bio_object.id,
+            'subject_ortholog_closure': gene.id,
         }
         if args.taxon is not None:
             filters['subject_taxon_closure'] = args.taxon
@@ -438,10 +438,10 @@ class GeneOrthologDiseaseAssociations(Resource):
         args = core_parser_with_filters.parse_args()
 
         # Get the clique leader
-        bio_object = scigraph.get_clique_leader(id)
+        gene = scigraph.get_clique_leader(id)
 
         filters = {
-            'subject_ortholog_closure': bio_object.id,
+            'subject_ortholog_closure': gene.id,
         }
         if args.taxon is not None:
             filters['subject_taxon_closure'] = args.taxon
