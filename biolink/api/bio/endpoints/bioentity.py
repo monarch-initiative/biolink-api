@@ -4,7 +4,6 @@ from flask import request
 from flask_restplus import Resource, inputs, marshal
 from biolink.datamodel.serializers import node, named_object, bio_object,\
     association_results, association, disease_object, d2p_association_results
-#import biolink.datamodel.serializers
 from biolink.api.restplus import api
 from ontobio.golr.golr_associations import search_associations, select_distinct_subjects
 from scigraph.scigraph_util import SciGraph
@@ -74,7 +73,7 @@ homolog_parser.add_argument('homology_type', choices=['P', 'O', 'LDO'], help='P 
 homolog_parser.add_argument('relation', help='A relation CURIE to filter associations', default=None)
 
 core_parser_with_filters = core_parser.copy()
-core_parser_with_filters.add_argument('taxon', action='append', help='One or more taxon CURIE to filter associations by subject taxon', default=None)
+core_parser_with_filters.add_argument('taxon', action='append', help='One or more taxon CURIE to filter associations by subject taxon')
 core_parser_with_filters.add_argument('relation', help='A relation CURIE to filter associations', default=None)
 
 scigraph = SciGraph(get_biolink_config()['scigraph_data']['url'])
@@ -410,11 +409,17 @@ class GeneOrthologPhenotypeAssociations(Resource):
         Return phenotypes associated with orthologs for a gene
         """
         args = core_parser_with_filters.parse_args()
+        # Get the clique leader
+        bio_object = scigraph.get_clique_leader(id)
+
+        filters = {
+            'subject_ortholog_closure': bio_object.id,
+        }
+        if args.taxon is not None:
+            filters['subject_taxon_closure'] = args.taxon
+
         return search_associations(
-            fq={
-                'subject_ortholog_closure': id,
-                'subject_taxon_closure': args.taxon
-            },
+            fq=filters,
             object_category='phenotype',
             user_agent=USER_AGENT,
             **args
@@ -431,11 +436,18 @@ class GeneOrthologDiseaseAssociations(Resource):
         Return diseases associated with orthologs of a gene
         """
         args = core_parser_with_filters.parse_args()
+
+        # Get the clique leader
+        bio_object = scigraph.get_clique_leader(id)
+
+        filters = {
+            'subject_ortholog_closure': bio_object.id,
+        }
+        if args.taxon is not None:
+            filters['subject_taxon_closure'] = args.taxon
+
         return search_associations(
-            fq={
-                'subject_ortholog_closure': id,
-                'subject_taxon_closure': args.taxon
-            },
+            fq=filters,
             object_category='disease',
             user_agent=USER_AGENT,
             **args
