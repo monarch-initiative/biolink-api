@@ -2,7 +2,8 @@ import logging
 
 from flask import request
 from flask_restplus import Resource, inputs, marshal
-from biolink.datamodel.serializers import node, named_object, bio_object, association_results, association, disease_object
+from biolink.datamodel.serializers import node, named_object, bio_object,\
+    association_results, association, disease_object, d2p_association_results
 #import biolink.datamodel.serializers
 from biolink.api.restplus import api
 from ontobio.golr.golr_associations import search_associations, select_distinct_subjects
@@ -481,7 +482,7 @@ class GeneCaseAssociations(Resource):
 class DiseasePhenotypeAssociations(Resource):
 
     @api.expect(core_parser_with_relation_filter)
-    @api.marshal_with(association_results)
+    @api.marshal_with(d2p_association_results)
     def get(self, id):
         """
         Returns phenotypes associated with disease
