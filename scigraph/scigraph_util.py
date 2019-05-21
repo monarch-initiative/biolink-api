@@ -71,6 +71,19 @@ class SciGraph:
             raise NoResultFoundException('SciGraph yields no result for {}'.format(id))
         return self.make_NamedObject(**nodes[0])
 
+    def get_clique_leader(self, id) -> BioObject:
+        """
+        :raises NoResultFoundException
+        :return: BioObject
+        """
+        response = self.get_response("dynamic/cliqueLeader", q=id, format="json")
+
+        nodes = response.json()['nodes']
+        if len(nodes) == 0:
+            raise NoResultFoundException('SciGraph dynamic/cliqueLeader yields no result for {}'.format(id))
+
+        return self.make_NamedObject(**nodes[0], class_name='BioObject')
+
     def bioobject(self, id, node_type=None, class_name='BioObject', **params):
         """
         Get a node in a graph and translates it to biomodels datamodel
@@ -85,16 +98,7 @@ class SciGraph:
 
         Returns: biomodel.BioObject or subclass
         """
-        response = self.get_response(
-            "dynamic/cliqueLeader", q=id, format="json",
-            depth=1, **params
-        )
-
-        nodes = response.json()['nodes']
-        if len(nodes) == 0:
-            raise NoResultFoundException('SciGraph dynamic/cliqueLeader yields no result for {}'.format(id))
-
-        bio_object = self.make_NamedObject(**nodes[0], class_name=class_name)
+        bio_object = self.get_clique_leader(id)
 
         # get nodes connected with edge 'in_taxon'
         response = self.get_response(
