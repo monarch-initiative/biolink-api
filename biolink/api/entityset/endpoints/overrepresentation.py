@@ -55,9 +55,5 @@ class OverRepresentation(Resource):
         background = args.get('background')
         afactory = AssociationSetFactory()
         aset = afactory.create(ontology=ont, subject_category='gene', object_category=ocat, taxon=taxid)
-        enr = aset.enrichment_test(subjects=subjects, threshold=max_p_value, labels=True)
-        return {'results':enr}
-
-    
-    
-
+        enr = aset.enrichment_test(subjects=subjects, background=background, threshold=max_p_value, labels=True)
+        return {'results': enr }
