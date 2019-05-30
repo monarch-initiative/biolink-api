@@ -152,8 +152,9 @@ def step_impl(context, jsonpath):
                         is_okay = False
                     elif taxon == 'NCBITaxon:10116' and not geneID.startswith('RGD'):
                         is_okay = False
-                    elif taxon == 'NCBITaxon:7955' and not geneID.startswith('ZFIN'):
-                        is_okay = False
+                    # elif taxon == 'NCBITaxon:7955' and not geneID.startswith('ZFIN'):
+                    #     is_okay = False
+                    # TODO: commenting out because the this taxon can have ZFIN or NCBIGene as the gene CURIE prefix
                     elif taxon == 'NCBITaxon:7227' and not (geneID.startswith('FlyBase') or geneID.startswith('FB')):
                         is_okay = False
                     elif taxon == 'NCBITaxon:6239' and not (geneID.startswith('WormBase') or geneID.startswith('WB')):
