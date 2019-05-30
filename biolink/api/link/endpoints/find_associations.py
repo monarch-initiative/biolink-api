@@ -44,7 +44,7 @@ class AssociationBySubjectCategorySearch(Resource):
 
     @api.expect(parser)
     @api.marshal_list_with(association_results)
-    def get(self, subject_category='gene'):
+    def get(self, subject_category):
         """
         Returns list of matching associations for a given subject category.
         """
@@ -56,6 +56,8 @@ class AssociationBySubjectCategorySearch(Resource):
 class AssociationBySubjectAndObjectCategorySearch(Resource):
 
     parser = core_parser.copy()
+    parser.add_argument('subject', help='Subject CURIE')
+    parser.add_argument('object', help='Object CURIE')
     parser.add_argument('subject_taxon', help='Subject taxon ID, e.g. NCBITaxon:9606 (Includes inferred associations, by default)')
     parser.add_argument('object_taxon', help='Object taxon ID, e.g. NCBITaxon:10090 (Includes inferred associations, by default)')
     parser.add_argument('relation', help='Filter by relation CURIE, e.g. RO:0002200 (has_phenotype), RO:0002607 (is marker for), RO:HOM0000017 (orthologous to), etc.')
