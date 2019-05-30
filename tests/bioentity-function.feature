@@ -1,4 +1,3 @@
-
 Feature: bioentity function (GO) routes work as expected
 
  Scenario: User fetches all GO functional assignments for a zebrafish gene

@@ -1,4 +1,3 @@
-
 Feature: bioentity routes work as expected
 
 These routes (`bioentity`) provide a way to query for domain-specific
@@ -12,16 +11,11 @@ between these entities
      then the content should contain "COL25A1"
     when the content is converted to JSON
       then the JSON should have the top-level property "id"
-      and the JSON should have a JSONPath "homology_associations[*].object"
-      and the JSON should have a JSONPath "homology_associations[*].object.id"
+      and the JSON should have some JSONPath "id" with "string" "HGNC:18603"
 
  Scenario: User fetches all information on a mouse gene
     Given a path "/bioentity/gene/MGI:1342287"
      then the content should contain "Klf4"
-#    when the content is converted to JSON
-#      then the JSON should have the top-level property "id"
-#      and the JSON should have some JSONPath "phenotype_associations[*].object.id" with "string" "MP:0008521"
-#      and the JSON should have some JSONPath "phenotype_associations[*].object.label" with "string" "abnormal Bowman membrane"
 
 ## Homologs
  Scenario: User fetches paralogs of SHH
@@ -29,7 +23,7 @@ between these entities
      then the content should contain "DHH"
     when the content is converted to JSON
       then the JSON should have the top-level property "associations"
-      and the JSON should have some JSONPath "associations[*].object.id" with "string" "NCBIGene:50846"
+      and the JSON should have some JSONPath "associations[*].object.id" with "string" "HGNC:2865"
       and the JSON should have some JSONPath "associations[*].object.taxon.label" with "string" "Homo sapiens"
 
  Scenario: User fetches homologs of SHH with taxon Homo sapiens
@@ -37,7 +31,7 @@ between these entities
      then the content should contain "DHH"
     when the content is converted to JSON
       then the JSON should have the top-level property "associations"
-      and the JSON should have some JSONPath "associations[*].object.id" with "string" "NCBIGene:50846"
+      and the JSON should have some JSONPath "associations[*].object.id" with "string" "HGNC:2865"
       and the JSON should have some JSONPath "associations[*].object.taxon.label" with "string" "Homo sapiens"
 
  Scenario: User fetches all homologs of SHH
@@ -54,10 +48,6 @@ between these entities
  Scenario: User fetches all information on the same mouse gene, using an ENSEMBL ID
     Given a path "/bioentity/gene/ENSEMBL:ENSMUSG00000003032"
      then the content should contain "Klf4"
-    when the content is converted to JSON
-      then the JSON should have some JSONPath "phenotype_associations[*].subject.id" with "string" "MGI:1342287"
-#      and the JSON should have some JSONPath "phenotype_associations[*].object.id" with "string" "MP:0008521"
-#      and the JSON should have some JSONPath "phenotype_associations[*].object.label" with "string" "abnormal Bowman membrane"
 
  Scenario: User fetches all phenotypes for a mouse gene
     Given a path "/bioentity/gene/MGI:1342287/phenotypes?rows=500"

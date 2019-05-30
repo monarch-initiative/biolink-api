@@ -21,5 +21,5 @@ Feature: Association queries work as expected
 
  Scenario: User queries for mouse genes with cornea phenotypes (using an HPO ID), omitting evidence
     Given a path "/association/find/gene/phenotype/?subject_taxon=NCBITaxon:10090&rows=1000&fl_excludes_evidence=true&object=HP:0000481"
-     then the content should contain "Abnormality of the cornea"
+     then the content should contain "Abnormality of corneal thickness"
       and the content should contain "abnormal Bowman membrane"
