@@ -63,6 +63,14 @@ def step_impl(context, text):
     else:
         assert context.content.rfind(text) != -1
 
+@then('the content should not contain "{text}"')
+def step_impl(context, text):
+    if not context.content:
+        ## Apparently no text at all...
+        assert True is False
+    else:
+        assert context.content.rfind(text) == -1
+
 ## Adds:
 ##  context.content_json
 @when('the content is converted to JSON')

@@ -10,3 +10,7 @@ Feature: slimmer routes work as expected
       then the JSON should have some JSONPath "[*].assocs[*].subject.id" with "string" "MGI:98371"
       then the JSON should have some JSONPath "[*].assocs[*].subject.label" with "string" "Sox9"
       and the JSON should have some JSONPath "[*].slim" with "string" "GO:0010467"
+
+## Slimmer anatomy
+
+## Slimmer phenotype
