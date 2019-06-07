@@ -10,7 +10,8 @@ install:
 
 before_script:
   - "export PYTHONPATH=.:$PYTHONPATH"
-  - "python biolink/app.py"
+  - "export FLASK_USE_RELOADER=False"
+  - "python biolink/app.py >> log.txt 2>&1 &"
   - sleep 3
 
 # command to run tests
