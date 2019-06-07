@@ -14,7 +14,7 @@ before_script:
 
 # command to run tests
 script:
-  - python biolink/app.py &
+  - "python biolink/app.py >> log.txt 2>&1 &"
   - sleep 30
   - behave -f progress3 tests/
 
