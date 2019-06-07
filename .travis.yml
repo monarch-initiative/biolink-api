@@ -14,9 +14,9 @@ before_script:
 
 # command to run tests
 script:
-  - "python biolink/app.py &"
+  - python biolink/app.py &
   - sleep 10
-  - behave tests/
+  - behave -f progress3 tests/
 
 #after_success:
 #  coveralls
