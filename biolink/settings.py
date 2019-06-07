@@ -1,9 +1,11 @@
 import yaml
-from os import path
+from os import path, environ
 
 # Flask settings
 FLASK_SERVER_NAME = 'localhost:8888'
-FLASK_DEBUG = True  # Do not use debug mode in production
+# Do not use debug mode in production
+FLASK_DEBUG = eval(environ['FLASK_DEBUG']) if 'FLASK_DEBUG' in environ else True
+FLASK_USE_RELOADER = eval(environ['FLASK_USE_RELOADER']) if 'FLASK_USE_RELOADER' in environ else True
 
 # Flask-Restplus settings
 RESTPLUS_SWAGGER_UI_DOC_EXPANSION = 'list'
