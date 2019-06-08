@@ -184,18 +184,27 @@ association_results = api.inherit('AssociationResults', search_result, {
 
 d2p_association = api.inherit('D2PAssociation', association, {
     'frequency': fields.Nested(entity_reference,
-                               description='Frequency of phenotype in patients with disease', required=False),
+                               description='Frequency of phenotype '
+                                           'in patients with disease',
+                               required=False),
     'onset': fields.Nested(entity_reference,
-                           description='Onset of phenotype in disease process', required=False)
+                           description='Onset of phenotype in disease process',
+                           required=False)
 })
 
 # A search result that returns a set of associations
 # plus specific fields for disease to phenotype (frequency and onset)
-d2p_association_results = api.inherit('D2PAssociationResults', association_results, {
+d2p_association_results = api.inherit('D2PAssociationResults', search_result, {
     'associations': fields.List(fields.Nested(d2p_association),
                                 description='Complete representation of full disease '
-                                            'to phenotype association, plus evidence')
+                                            'to phenotype association, plus evidence'),
+    'compact_associations': fields.List(fields.Nested(compact_association_set),
+                                        description='Compact representation in which objects '
+                                                    '(e.g. phenotypes) are collected '
+                                                    'for subject-predicate pairs'),
+    'objects': fields.List(fields.String, description='List of distinct objects used')
 })
+
 
 #############
 # Bio Objects
