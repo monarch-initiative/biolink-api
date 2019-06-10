@@ -725,7 +725,7 @@ class PhenotypeAnatomyAssociations(Resource):
 class PhenotypeDiseaseAssociations(Resource):
 
     @api.expect(core_parser_with_relation_filter)
-    @api.marshal_with(association_results)
+    @api.marshal_with(d2p_association_results)
     def get(self, id):
         """
         Returns diseases associated with a phenotype
