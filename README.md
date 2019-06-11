@@ -1,4 +1,5 @@
-# BioLink API
+# BioLink API 
+[![Build Status](https://travis-ci.org/biolink/biolink-api.svg?branch=master)](https://travis-ci.org/biolink/biolink-api)
 
 An API providing access to information on biologically and
 biomedically relevant entities, and the relationships between them, including:
