@@ -141,6 +141,9 @@ def gene_to_uniprot_from_mygene(id):
     """
     uniprot_ids = []
     mg = get_client('gene')
+    if id.startswith('NCBIGene:'):
+        # MyGeneInfo uses 'entrezgene' prefix instead of 'NCBIGene'
+        id = id.replace('NCBIGene', 'entrezgene')
     try:
         results = mg.query(id, fields='uniprot')
         if results['hits']:

@@ -152,10 +152,15 @@ class GeneInteractions(Resource):
         Returns interactions for a gene
         """
         args = core_parser_with_filters.parse_args()
+        relation = args.relation
+        del args['relation']
+        if relation is None:
+            relation = 'RO:0002434'
+
         return search_associations(
             subject_category='gene',
             object_category='gene',
-            relation='RO:0002434',
+            relation=relation,
             subject=id,
             user_agent=USER_AGENT,
             object_taxon=args.taxon,

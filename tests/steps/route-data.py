@@ -63,6 +63,14 @@ def step_impl(context, text):
     else:
         assert context.content.rfind(text) != -1
 
+@then('the content should not contain "{text}"')
+def step_impl(context, text):
+    if not context.content:
+        ## Apparently no text at all...
+        assert True is False
+    else:
+        assert context.content.rfind(text) == -1
+
 ## Adds:
 ##  context.content_json
 @when('the content is converted to JSON')
@@ -152,8 +160,9 @@ def step_impl(context, jsonpath):
                         is_okay = False
                     elif taxon == 'NCBITaxon:10116' and not geneID.startswith('RGD'):
                         is_okay = False
-                    elif taxon == 'NCBITaxon:7955' and not geneID.startswith('ZFIN'):
-                        is_okay = False
+                    # elif taxon == 'NCBITaxon:7955' and not geneID.startswith('ZFIN'):
+                    #     is_okay = False
+                    # TODO: commenting out because the this taxon can have ZFIN or NCBIGene as the gene CURIE prefix
                     elif taxon == 'NCBITaxon:7227' and not (geneID.startswith('FlyBase') or geneID.startswith('FB')):
                         is_okay = False
                     elif taxon == 'NCBITaxon:6239' and not (geneID.startswith('WormBase') or geneID.startswith('WB')):
