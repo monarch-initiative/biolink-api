@@ -28,10 +28,11 @@ class EntitySetSummary(Resource):
         Summary statistics for objects associated
         """
         args = parser.parse_args()
-
+        subjects = args.get('subject')
+        del args['subject']
         M=GolrFields()
         results = search_associations(
-            subjects=args.get('subject'),
+            subjects=subjects,
             rows=0,
             facet_fields=[M.OBJECT_CLOSURE, M.IS_DEFINED_BY],
             facet_limit=-1,
@@ -47,7 +48,6 @@ class EntitySetAssociations(Resource):
 
     @api.expect(parser)
     @api.marshal_list_with(association_results)
-    #@api.marshal_list_with(compact_association_set)
     def get(self):
         """
         Returns compact associations for a given input set
@@ -55,9 +55,10 @@ class EntitySetAssociations(Resource):
         args = parser.parse_args()
 
         M=GolrFields()
-
+        subjects = args.get('subject')
+        del args['subject']
         results = search_associations(
-            subjects=args.get('subject'),
+            subjects=subjects,
             select_fields=[M.SUBJECT, M.RELATION, M.OBJECT],
             use_compact_associations=True,
             rows=MAX_ROWS,

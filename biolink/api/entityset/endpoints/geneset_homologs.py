@@ -18,17 +18,18 @@ parser.add_argument('subject', action='append', help='Entity ids to be examined,
 class EntitySetHomologs(Resource):
 
     @api.expect(parser)
-    @api.marshal_list_with(compact_association_set)
+    @api.marshal_list_with(association_results)
     def get(self):
         """
         Returns homology associations for a given input set of genes
         """
         args = parser.parse_args()
-
+        subjects = args['subject']
+        del args['subject']
         M=GolrFields()
         rel = 'RO:0002434'  # TODO; allow other types
         results = search_associations(
-            subjects=args.get('subject'),
+            subjects=subjects,
             select_fields=[M.SUBJECT, M.RELATION, M.OBJECT],
             use_compact_associations=True,
             relation=rel,
