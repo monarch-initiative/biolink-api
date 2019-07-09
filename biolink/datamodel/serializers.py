@@ -60,17 +60,16 @@ summary_property_value = api.inherit('SummaryPropertyValue', abstract_property_v
 association_property_value = api.inherit('AssociationPropertyValue', abstract_property_value, {
 })
 
+
 node = api.model('Node', {
     'id': fields.String(readOnly=True, description='ID or CURIE'),
-    'lbl': fields.String(readOnly=True, description='human readable label, maps to rdfs:label'),
-    'meta': fields.Raw(description='metadata about the Node')
+    'lbl': fields.String(readOnly=True, description='human readable label, maps to rdfs:label')
 })
 
 edge = api.model('Edge', {
     'sub': fields.String(readOnly=True, description='Subject (source) Node ID'),
     'pred': fields.String(readOnly=True, description='Predicate (relation) ID'),
     'obj': fields.String(readOnly=True, description='Object (target) Node ID'),
-    'meta': fields.Raw(description='metadata about the Edge')
 })
 
 bbop_graph = api.model('Graph', {

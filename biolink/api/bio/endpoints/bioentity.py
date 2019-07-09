@@ -360,7 +360,7 @@ class GeneFunctionAssociations(Resource):
                     user_agent=USER_AGENT,
                     **core_parser.parse_args()
                 )
-                assocs = pr_assocs
+                assocs['associations'] += pr_assocs['associations']
         return assocs
 
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:4750'})
