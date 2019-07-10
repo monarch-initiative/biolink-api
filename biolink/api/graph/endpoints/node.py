@@ -71,4 +71,4 @@ class EdgeResource(Resource):
             )
             final_graph.merge(graph)
 
-        return final_graph
+        return final_graph.as_dict()

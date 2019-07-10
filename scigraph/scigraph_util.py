@@ -4,14 +4,12 @@ __author__ = 'cjm'
 Utility classes for wrapping a SciGraph service
 """
 
-import logging
-import requests
 import importlib
 
 from scigraph.model.BBOPGraph import *
 from scigraph.model.Concept import *
 from scigraph.model.EntityAnnotationResults import *
-from biomodel.core import NamedObject, BioObject, SynonymPropertyValue
+from biomodel.core import BioObject, SynonymPropertyValue
 from ontobio.util.user_agent import get_user_agent
 from biolink import NAME, VERSION
 from biolink.error_handlers import NoResultFoundException
