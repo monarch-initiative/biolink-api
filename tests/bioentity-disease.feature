@@ -35,6 +35,27 @@ Feature: Disease entity queries work as expected
         Given a path "/bioentity/disease/DOID:9455/genes?rows=0&fetch_objects=true&facet=true"
         then the content should contain "HGNC:14537"
 
+## Disease to Gene causal associations
+
+    Scenario: User queries for causal genes associated with Marfan Syndrome
+        Given a path "/bioentity/disease/MONDO:0007947/genes?rows=10&association_type=causal"
+        then the JSON should have some JSONPath "associations[0].object.label" with "string" "FBN1"
+        then the JSON should have some JSONPath "numFound" with "integer" "1"
+
+## Disease to Gene non causal associations
+
+    Scenario: User queries for non causal genes associated with Marfan Syndrome
+        Given a path "/bioentity/disease/MONDO:0007947/genes?rows=10&association_type=non_causal"
+        then the JSON should not have some JSONPath "associations[*].object.label" with "string" "FBN1"
+        then the JSON should have some JSONPath "associations[*].object.label" with "string" "TGFBR2"
+
+## Disease to Gene all associations
+
+    Scenario: User queries for all genes associated with Marfan Syndrome
+        Given a path "/bioentity/disease/MONDO:0007947/genes?rows=10"
+        then the JSON should have some JSONPath "associations[*].object.label" with "string" "FBN1"
+        then the JSON should have some JSONPath "associations[*].object.label" with "string" "TGFBR2"
+
 ## Disease to Phenotype associations
 
     Scenario: User queries for phenotypes associated with a disease
