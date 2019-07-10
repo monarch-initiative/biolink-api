@@ -75,6 +75,11 @@ core_parser_with_filters = core_parser.copy()
 core_parser_with_filters.add_argument('taxon', action='append', help='One or more taxon CURIE to filter associations by subject taxon')
 core_parser_with_filters.add_argument('relation', help='A relation CURIE to filter associations', default=None)
 
+gene_disease_parser = core_parser_with_filters.copy()
+gene_disease_parser.add_argument(
+    'association_type', type=str, choices=('causal', 'non_causal', 'both'),
+    default='both', help='Additional filters: causal, non_causal, both')
+
 scigraph = SciGraph(get_biolink_config()['scigraph_data']['url'])
 
 homol_rel = HomologyTypes.Homolog.value
@@ -225,16 +230,22 @@ class GenePhenotypeAssociations(Resource):
 @api.doc(params={'id': 'CURIE identifier of gene, e.g. NCBIGene:4750. Equivalent IDs can be used with same results'})
 class GeneDiseaseAssociations(Resource):
 
-    @api.expect(core_parser_with_relation_filter)
+    @api.expect(gene_disease_parser)
     @api.marshal_with(association_results)
     def get(self, id):
         """
         Returns diseases associated with gene
         """
-        args = core_parser_with_relation_filter.parse_args()
+        args = gene_disease_parser.parse_args()
+        if args['association_type'] == 'causal':
+            assoc_filter = {'association_type': 'gene_disease'}
+        elif args['association_type'] == 'non_causal':
+            assoc_filter = {'association_type': 'marker_disease'}
+        else:
+            assoc_filter = {'association_type': ['gene_disease', 'marker_disease']}
+
         return search_associations(
-            subject_category='gene',
-            object_category='disease',
+            fq=assoc_filter,
             subject=id,
             user_agent=USER_AGENT,
             **args
@@ -522,17 +533,23 @@ class DiseasePhenotypeAssociations(Resource):
 @api.doc(params={'id': 'CURIE identifier of disease, e.g. OMIM:605543, DOID:678. Equivalent IDs can be used with same results'})
 class DiseaseGeneAssociations(Resource):
 
-    @api.expect(core_parser_with_filters)
+    @api.expect(gene_disease_parser)
     @api.marshal_with(association_results)
     def get(self, id):
         """
         Returns genes associated with a disease
         """
-        args = core_parser_with_filters.parse_args()
+        args = gene_disease_parser.parse_args()
+        if args['association_type'] == 'causal':
+            assoc_filter = {'association_type': 'gene_disease'}
+        elif args['association_type'] == 'non_causal':
+            assoc_filter = {'association_type': 'marker_disease'}
+        else:
+            assoc_filter = {'association_type': ['gene_disease', 'marker_disease']}
+
         return search_associations(
-            subject_category='disease',
-            object_category='gene',
             subject=id,
+            fq=assoc_filter,
             object_taxon=args.taxon,
             invert_subject_object=True,
             user_agent=USER_AGENT,
