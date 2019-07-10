@@ -17,6 +17,7 @@ script:
   - "python biolink/app.py >> log.txt 2>&1 &"
   - sleep 30
   - behave -f progress3 tests/
+  - pytest tests/unit/
 
 #after_success:
 #  coveralls
