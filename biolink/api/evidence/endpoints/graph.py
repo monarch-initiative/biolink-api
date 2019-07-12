@@ -8,7 +8,7 @@ from biolink.api.restplus import api
 from ontobio.obograph_util import convert_json_object
 import tempfile
 import pysolr
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import networkx as nx
 
 from biolink import USER_AGENT
@@ -23,7 +23,7 @@ class EvidenceGraphObject(Resource):
 
     @api.expect(parser)
     @api.marshal_list_with(bbop_graph)
-    def get(self,id):
+    def get(self, id):
         """
         Returns evidence graph object for a given association.
 
@@ -43,26 +43,35 @@ class EvidenceGraphObject(Resource):
 class EvidenceGraphImage(Resource):
 
     @api.expect(parser)
-    def get(self,id):
+    def get(self, id):
         """
         Returns evidence graph as a png
-
-        TODO - requires matplotlib which is hard to install
         """
-        args = parser.parse_args()
-
         assoc = get_association(id, user_agent=USER_AGENT)
         eg = {'graphs':[assoc.get('evidence_graph')]}
         digraph = convert_json_object(eg)
-        #fp = tempfile.TemporaryFile()
-        nx.draw(digraph)
-        fn = '/tmp/'+id+'.png' # TODO
-        plt.savefig(fn)
-        return send_file(fn)
-        
-    
+        tmp_dir = tempfile._get_default_tempdir()
+        graph = digraph['graph']
 
+        # remove nodes connected to nothing
+        graph.remove_nodes_from(list(nx.isolates(graph)))
 
-    
-    
+        node_labels = {}
+        for node in dict(graph.nodes()).values():
+            if node['label'] is not None:
+                node_labels[node['id']] = node['label']
+            elif node['id'].startswith('MONARCH'):
+                node_labels[node['id']] = 'association'
+            else:
+                node_labels[node['id']] = node['id']
 
+        plt.axis('off')
+        plt.figure(figsize=(10, 10))
+        nx.draw(graph, with_labels=True, labels=node_labels)
+        #edge_labels = nx.get_edge_attributes(graph, 'lbl')
+        #nx.draw_networkx_edge_labels(graph, pos=nx.spring_layout(graph),
+        #                             edge_labels=edge_labels)
+
+        tmp_file = tmp_dir + '/' + id + '.png'
+        plt.savefig(tmp_file)
+        return send_file(tmp_file)
