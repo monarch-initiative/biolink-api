@@ -43,7 +43,6 @@ CATEGORY_NAME_MAP = {
     'variant_gene': {
         'variant': 'gene',
         'gene': 'variant'
-
     },
     "variant_genotype": {
         'variant': 'genotype',
@@ -100,6 +99,10 @@ CATEGORY_NAME_MAP = {
     "pathway_phenotype": {
         'pathway': 'phenotype',
         'phenotype': 'pathway'
+    },
+    "disease_pathway": {
+        'pathway': 'disease',
+        'disease': 'pathway'
     },
     "gene_temporal": {},
     "model_case": {
