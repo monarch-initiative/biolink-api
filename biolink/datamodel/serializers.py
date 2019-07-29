@@ -63,13 +63,15 @@ association_property_value = api.inherit('AssociationPropertyValue', abstract_pr
 
 node = api.model('Node', {
     'id': fields.String(readOnly=True, description='ID or CURIE'),
-    'lbl': fields.String(readOnly=True, description='human readable label, maps to rdfs:label')
+    'lbl': fields.String(readOnly=True, description='human readable label, maps to rdfs:label'),
+    'meta': fields.Raw(description='metadata about the Node')
 })
 
 edge = api.model('Edge', {
     'sub': fields.String(readOnly=True, description='Subject (source) Node ID'),
     'pred': fields.String(readOnly=True, description='Predicate (relation) ID'),
     'obj': fields.String(readOnly=True, description='Object (target) Node ID'),
+    'meta': fields.Raw(description='metadata about the Edge')
 })
 
 bbop_graph = api.model('Graph', {
@@ -79,13 +81,14 @@ bbop_graph = api.model('Graph', {
 
 named_object_core = api.model('NamedObjectCore', {
     'id': fields.String(readOnly=True, description='ID or CURIE e.g. MGI:1201606', required=True),
-    'label': fields.String(readOnly=True, description='RDFS Label')
+    'label': fields.String(readOnly=True, description='RDFS Label'),
+    'iri': fields.String(readOnly=True, description='IRI'),
+    'category': fields.List(fields.String(readOnly=True, description='Type of object'))
 })
 
 
 named_object = api.inherit('NamedObject', named_object_core, {
     'description': fields.String(readOnly=True, description='Descriptive text for the entity. For ontology classes, this will be a definition.'),
-    'categories': fields.List(fields.String(readOnly=True, description='Type of object (inferred)')),
     'types': fields.List(fields.String(readOnly=True, description='Type of object (direct)')),
     'synonyms': fields.List(fields.Nested(synonym_property_value), description='list of synonyms or alternate labels'),
     'deprecated': fields.Boolean(description='True if the node is deprecated/obsoleted.'),
@@ -96,7 +99,6 @@ named_object = api.inherit('NamedObject', named_object_core, {
 entity_reference = api.model('EntityReference', {
     'id': fields.String(readOnly=True, description='ID or CURIE e.g. MGI:1201606'),
     'label': fields.String(readOnly=True, description='RDFS Label'),
-    'categories': fields.List(fields.String(readOnly=True, description='Type of object')),
 })
 
 relation = api.inherit('Relation', named_object, {
@@ -182,7 +184,31 @@ association_results = api.inherit('AssociationResults', search_result, {
     'objects': fields.List(fields.String, description='List of distinct objects used')
 })
 
+d2p_association = api.inherit('D2PAssociation', association, {
+    'frequency': fields.Nested(entity_reference,
+                               description='Frequency of phenotype '
+                                           'in patients with disease',
+                               required=False),
+    'onset': fields.Nested(entity_reference,
+                           description='Onset of phenotype in disease process',
+                           required=False)
+})
 
+# A search result that returns a set of associations
+# plus specific fields for disease to phenotype (frequency and onset)
+d2p_association_results = api.inherit('D2PAssociationResults', search_result, {
+    'associations': fields.List(fields.Nested(d2p_association),
+                                description='Complete representation of full disease '
+                                            'to phenotype association, plus evidence'),
+    'compact_associations': fields.List(fields.Nested(compact_association_set),
+                                        description='Compact representation in which objects '
+                                                    '(e.g. phenotypes) are collected '
+                                                    'for subject-predicate pairs'),
+    'objects': fields.List(fields.String, description='List of distinct objects used')
+})
+
+
+#############
 # Bio Objects
 
 sequence_position = api.model('SequencePosition', {

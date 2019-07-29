@@ -1,21 +1,23 @@
-sudo: false
+dist: xenial
 
 language: python
 python:
-  - "3.5"
+  - "3.7.0"
 
 # command to install dependencies
 install:
-  - "pip install -r requirements.txt"
+  - pip install -r requirements.txt
+
+before_script:
+  - "export PYTHONPATH=.:$PYTHONPATH"
+  - "export FLASK_USE_RELOADER=False"
 
 # command to run tests
-script: 
-  - "echo TODO"
+script:
+  - "python biolink/app.py >> log.txt 2>&1 &"
+  - sleep 30
+  - behave -f progress3 tests/
+  - pytest tests/unit/
 
-after_success:
-  coveralls
-
-# whitelist
-branches:
-  only:
-    - master
+#after_success:
+#  coveralls

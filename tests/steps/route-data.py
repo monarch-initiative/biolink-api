@@ -63,6 +63,14 @@ def step_impl(context, text):
     else:
         assert context.content.rfind(text) != -1
 
+@then('the content should not contain "{text}"')
+def step_impl(context, text):
+    if not context.content:
+        ## Apparently no text at all...
+        assert True is False
+    else:
+        assert context.content.rfind(text) == -1
+
 ## Adds:
 ##  context.content_json
 @when('the content is converted to JSON')
@@ -152,8 +160,9 @@ def step_impl(context, jsonpath):
                         is_okay = False
                     elif taxon == 'NCBITaxon:10116' and not geneID.startswith('RGD'):
                         is_okay = False
-                    elif taxon == 'NCBITaxon:7955' and not geneID.startswith('ZFIN'):
-                        is_okay = False
+                    # elif taxon == 'NCBITaxon:7955' and not geneID.startswith('ZFIN'):
+                    #     is_okay = False
+                    # TODO: commenting out because the this taxon can have ZFIN or NCBIGene as the gene CURIE prefix
                     elif taxon == 'NCBITaxon:7227' and not (geneID.startswith('FlyBase') or geneID.startswith('FB')):
                         is_okay = False
                     elif taxon == 'NCBITaxon:6239' and not (geneID.startswith('WormBase') or geneID.startswith('WB')):
@@ -213,6 +222,38 @@ def step_impl(context, jsonpath, thing, value):
                     logging.error("Cannot interpret: {}".format(thing))
                     assert True is False
             assert is_found is True
+
+
+@then('the JSON should not have some JSONPath "{jsonpath}" with "{thing}" "{value}"')
+def step_impl(context, jsonpath, thing, value):
+    if not context.content_json :
+        ## Apparently no JSON at all...
+        assert True is False
+    else:
+        jsonpath_expr = jsonpath_rw.parse(jsonpath)
+        results = jsonpath_expr.find(context.content_json)
+        if (len(results)) == 0:
+            assert True is False
+        else:
+            is_found = False
+            for res in results:
+                if thing == "string":
+                    if res.value == value:
+                        is_found = True
+                elif thing == "integer":
+                    if res.value == int(value):
+                        is_found = True
+                elif thing == "boolean":
+                    if res.value == bool(value):
+                        is_found = True
+                elif thing == "float":
+                    if res.value == float(value):
+                        is_found = True
+                else:
+                    ## Not a thing we know how to deal with yet.
+                    logging.error("Cannot interpret: {}".format(thing))
+                    assert True is False
+            assert is_found is False
 
 @then('the JSON should have some JSONPath "{jsonpath}" containing "{thing}" "{value}"')
 def step_impl(context, jsonpath, thing, value):
