@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-my $BASE = "http://api.monarchinitiative.org/api";
+my $BASE = "http://api.geneontology.org/api";
 
 print "This is a marked up version of the executable behave tests in the [tests](tests/) directory\n\n";
 
