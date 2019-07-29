@@ -156,6 +156,8 @@ route_mapping:
           resource: biolink.api.ontol.endpoints.ontology_endpoint.OntologyTermSubsets
         - route: /subset/<id>
           resource: biolink.api.ontol.endpoints.ontology_endpoint.OntologySubset
+        - route: /ribbon/
+          resource: biolink.api.ontol.endpoints.ontology_endpoint.OntologyRibbons
         - route: /shared/<subject>/<object>
           resource: biolink.api.ontol.endpoints.ontology_endpoint.OntologyTermsSharedAncestor
 

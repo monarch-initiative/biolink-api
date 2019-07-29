@@ -9,14 +9,16 @@ from causalmodels.lego_sparql_util import lego_query, ModelQuery
 from ontobio.sparql.sparql_go import goSummary, goSubsets, subset
 from ontobio.sparql.sparql_ontol_utils import run_sparql_on, EOntology, transform, transformArray
 
-from ontobio.golr.golr_query import GolrSearchQuery, run_solr_on, ESOLR, ESOLRDoc, replace
+from ontobio.golr.golr_query import GolrSearchQuery, run_solr_on, run_solr_text_on, ESOLR, ESOLRDoc, replace
 
 from ontobio.ontol_factory import OntologyFactory
 from biolink.ontology.ontology_manager import get_ontology
 from ontobio.io.ontol_renderers import OboJsonGraphRenderer
 
-import json
+from biolink.api.entityset.endpoints.slimmer import gene_to_uniprot_from_mygene, uniprot_to_gene_from_mygene
 
+
+import json
 
 ### Some query parameters & parsers
 IS_A = "isa"
@@ -147,9 +149,60 @@ class OntologySubset(Resource):
         Returns meta data of an ontology subset (slim)
         """
 
-        query = subset(self, id)
-        results = run_sparql_on(query, EOntology.GO)
-        return transformArray(results, [])
+
+        q = "*:*"
+        qf = ""
+        fq = "&fq=subset:" + id + "&rows=1000"
+        fields = "annotation_class,annotation_class_label,description,source"
+        data = run_solr_text_on(ESOLR.GOLR, ESOLRDoc.ONTOLOGY, q, qf, fields, fq)
+
+        tr = {}
+        for term in data:
+            source = term['source']
+            if source not in tr:
+                tr[source] = { "annotation_class_label" : source, "terms" : [] }
+            ready_term = term.copy()
+            del ready_term["source"]
+            tr[source]["terms"].append(ready_term)
+
+        cats = []
+        for category in tr:
+            cats.append(category)
+
+        fq = "&fq=annotation_class_label:(" + " or ".join(cats) + ")&rows=1000"
+        data = run_solr_text_on(ESOLR.GOLR, ESOLRDoc.ONTOLOGY, q, qf, fields, fq)
+
+        for category in tr:
+            for temp in data:
+                if temp["annotation_class_label"] == category:
+                    tr[category]["annotation_class"] = temp["annotation_class"]
+                    tr[category]["description"] = temp["description"]
+                    break
+
+        result = []
+        for category in tr:
+            cat = tr[category]
+            result.append(cat)           
+
+
+        # if goslim_agr, reorder the list based on the temporary json object below
+        if id == "goslim_agr":
+            temp = []
+            for agr_category in agr_slim_order:
+                cat = agr_category['category']
+                for category in result:
+                    if category['annotation_class'] == cat:
+                        ordered_terms = []
+                        for ot in agr_category['terms']:
+                            for uot in category['terms']:
+                                if uot['annotation_class'] == ot:
+                                    ordered_terms.append(uot)
+                                    break
+                        category["terms"] = ordered_terms
+                        temp.append(category)
+            result = temp
+
+        return result
 
 
 # @ns.route('/term/<id>/related')
@@ -225,4 +278,246 @@ class OntologyTermsSharedAncestor(Resource):
         return { "goids" : shared, "gonames: " : sharedLabels }
 
 
+ribbon_parser = api.parser()
+ribbon_parser.add_argument('subset', help='Name of the subset to map GO terms (e.g. goslim_agr)')
+ribbon_parser.add_argument('subject', action='append', help='List of Gene ids (e.g. MGI:98214, RGD:620474)')
+
+class OntologyRibbons(Resource):
+
+    @api.expect(ribbon_parser)
+    def get(self):
+        """
+        Fetch the summary of annotations for a given gene or set of genes
+        """
+        args = ribbon_parser.parse_args()
+
+        # Step 1: create the categories
+        categories = OntologySubset.get(self, args.subset)
+        for category in categories:
+            # category["tooltip_class_label"] = ["class", "classes"]
+            # category["tooltip_annotation_label"] = ["annotation", "annotations"]
+
+            category["groups"] = category["terms"]
+            del category["terms"]
+
+            category["id"] = category["annotation_class"]
+            del category["annotation_class"]
+
+            category["label"] = category["annotation_class_label"]
+            del category["annotation_class_label"]
+
+            for group in category["groups"]:
+                group["id"] = group["annotation_class"]
+                del group["annotation_class"]
+
+                group["label"] = group["annotation_class_label"]
+                del group["annotation_class_label"]
+
+                group["type"] = "Term"
+            
+            category["groups"] = [{"id" : category["id"], "label" : "all " + category["label"].lower().replace("_", " "), "description" : "Represent all annotations", "type" : "All"}] + category["groups"] + [{"id" : category["id"], "label" : "other " + category["label"].lower().replace("_", " "), "description" : "Represent all annotations not mapped to a specific category", "type" : "Other"}]
+        
+        # Step 2: create the entities / subjects
+        subject_ids = args.subject
+        print("SUBS : " , subject_ids)
+
+        # ID conversion
+        subject_ids = [x.replace('WormBase:', 'WB:') if 'WormBase:' in x else x for x in subject_ids]
+        slimmer_subjects = []
+        for s in subject_ids:
+            if 'HGNC:' in s or 'NCBIGene:' in s or 'ENSEMBL:' in s:
+                prots = gene_to_uniprot_from_mygene(s)
+                if len(prots) == 0:
+                    prots = [s]
+                slimmer_subjects += prots
+            else:
+                slimmer_subjects.append(s)
+
+        print("SLIMMER SUBS : " , slimmer_subjects)
+        subject_ids = slimmer_subjects
+
+        # should remove any undefined subject
+        for subject_id in subject_ids:
+            if subject_id == "undefined":
+                subject_ids.remove(subject_id)
+
+        # because of the MGI:MGI
+        mod_ids = []
+
+        subjects = []
+        for subject_id in subject_ids:
+
+            entity = { "id" : subject_id , 
+                        "groups" : { },
+                        "nb_classes" : 0,
+                        "nb_annotations": 0,
+                        "terms" : set() }
+
+            if subject_id.startswith("MGI:"):
+                subject_id = "MGI:" + subject_id
+            mod_ids.append(subject_id)
+
+            q = "*:*"
+            qf = ""
+            fq = "&fq=bioentity:\"" + subject_id + "\"&rows=100000"
+            fields = "annotation_class,evidence_type,regulates_closure"
+            data = run_solr_text_on(ESOLR.GOLR, ESOLRDoc.ANNOTATION, q, qf, fields, fq)
+
+
+            for cat in categories:
+                for gp in cat['groups']:
+                    group = gp['id']
+
+                    for annot in data:
+                        if group in annot['regulates_closure']:
+
+                            # if the group has not been met yet, create it
+                            if group not in entity['groups']:
+                                entity['groups'][group] = { }
+                                entity['groups'][group]['ALL'] = { "terms" : set(), "nb_classes" : 0, "nb_annotations" : 0 }
+
+                            # if the subgroup has not been met yet, create it
+                            if annot['evidence_type'] not in entity['groups'][group]:
+                                entity['groups'][group][annot['evidence_type']] = { "terms" : set(), "nb_classes" : 0, "nb_annotations" : 0 }
+
+                            # for each annotation, add the term and increment the nb of annotations
+                            entity['groups'][group][annot['evidence_type']]['terms'].add(annot['annotation_class'])
+                            entity['groups'][group][annot['evidence_type']]['nb_annotations'] += 1
+                            entity['groups'][group]['ALL']['terms'].add(annot['annotation_class'])
+                            entity['groups'][group]['ALL']['nb_annotations'] += 1
+
+                            entity['terms'].add(annot['annotation_class'])
+                            entity['nb_annotations'] += 1
+
+            # compute the number of classes for each group that have subgroup (annotations)
+            for group in entity['groups']:
+                for subgroup in entity['groups'][group]:
+                    entity['groups'][group][subgroup]['nb_classes'] = len(entity['groups'][group][subgroup]['terms'])
+                    del entity['groups'][group][subgroup]['terms']
+                    # entity['groups'][group][subgroup]['terms'] = list(entity['groups'][group][subgroup]['terms'])
+
+            entity['nb_classes'] = len(entity['terms'])
+            del entity['terms']
+
+            subjects.append(entity)
+
+        # lastly, fill out the entity details
+        q = "*:*"
+        qf = ""
+        fq = "&fq=bioentity:(\"" + "\" or \"".join(mod_ids) + "\")&rows=100000"
+        fields = "bioentity,bioentity_label,taxon,taxon_label"
+        data = run_solr_text_on(ESOLR.GOLR, ESOLRDoc.BIOENTITY, q, qf, fields, fq)
+        print("G DATA: " , data)
+
+
+        for entity in subjects:
+
+            for entity_detail in data:
+                subject_id = entity_detail['bioentity'].replace("MGI:MGI:", "MGI:")
+
+                if entity['id'] == subject_id:
+                    entity['label'] = entity_detail['bioentity_label']
+                    entity['taxon_id'] = entity_detail['taxon']
+                    entity['taxon_label'] = entity_detail['taxon_label']
+
+
+
+
+            
+            
+        # http://golr-aux.geneontology.io/solr/select/?q=*:*&fq=document_category:%22bioentity%22&rows=10&wt=json&fl=bioentity,bioentity_label,taxon,taxon_label&fq=bioentity:(%22MGI:MGI:98214%22%20or%20%22RGD:620474%22)        
+
+        result = { "categories" : categories , "subjects" : subjects }
+
+        # print("CATEGORIES : " , categories)
+        # print("SUBJECTS : " , subjects)
+        return result
+
+
+
+
+
+
+
+
+
+
+# this is a temporary json object, while waiting the ontology gets an annotation field to specify the order of a term in a slim
+agr_slim_order = [
+   { 
+       "category" : "GO:0003674",
+       "terms" : [
+        "GO:0016491",
+        "GO:0016787",
+        "GO:0016740",
+        "GO:0016874",
+        "GO:0030234",
+        "GO:0038023",
+        "GO:0005102",
+        "GO:0005215",
+        "GO:0005198",
+        "GO:0008092",
+        "GO:0003677",
+        "GO:0003723",
+        "GO:0003700",
+        "GO:0008134",
+        "GO:0036094",
+        "GO:0046872",
+        "GO:0030246",
+        "GO:0097367",
+        "GO:0008289"
+    ]
+   },
+
+    {
+        "category" : "GO:0008150",
+        "terms" : [
+        "GO:0007049",
+        "GO:0016043",
+        "GO:0051234",
+        "GO:0008283",
+        "GO:0030154",
+        "GO:0008219",
+        "GO:0032502",
+        "GO:0000003",
+        "GO:0002376",
+        "GO:0050877",
+        "GO:0050896",
+        "GO:0023052",
+        "GO:0006259",
+        "GO:0016070",
+        "GO:0019538",
+        "GO:0005975",
+        "GO:1901135",
+        "GO:0006629",
+        "GO:0042592",
+        "GO:0009056",
+        "GO:0065009",
+        "GO:0050789",
+        "GO:0007610"
+    ]
+    },
+
+    {
+        "category" : "GO:0005575",
+        "terms" : [
+        "GO:0005576",
+        "GO:0005886",
+        "GO:0045202",
+        "GO:0030054",
+        "GO:0042995",
+        "GO:0031410",
+        "GO:0005768",
+        "GO:0005773",
+        "GO:0005794",
+        "GO:0005783",
+        "GO:0005829",
+        "GO:0005739",
+        "GO:0005634",
+        "GO:0005694",
+        "GO:0005856",
+        "GO:0032991"
+    ]
+    }
+]
 
