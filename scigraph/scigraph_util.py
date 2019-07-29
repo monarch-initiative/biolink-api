@@ -4,14 +4,12 @@ __author__ = 'cjm'
 Utility classes for wrapping a SciGraph service
 """
 
-import logging
-import requests
 import importlib
 
 from scigraph.model.BBOPGraph import *
 from scigraph.model.Concept import *
 from scigraph.model.EntityAnnotationResults import *
-from biomodel.core import NamedObject, BioObject, SynonymPropertyValue
+from biomodel.core import BioObject, SynonymPropertyValue
 from ontobio.util.user_agent import get_user_agent
 from biolink import NAME, VERSION
 from biolink.error_handlers import NoResultFoundException
@@ -71,6 +69,19 @@ class SciGraph:
             raise NoResultFoundException('SciGraph yields no result for {}'.format(id))
         return self.make_NamedObject(**nodes[0])
 
+    def get_clique_leader(self, id) -> BioObject:
+        """
+        :raises NoResultFoundException
+        :return: BioObject
+        """
+        response = self.get_response("dynamic/cliqueLeader", q=id, format="json")
+
+        nodes = response.json()['nodes']
+        if len(nodes) == 0:
+            raise NoResultFoundException('SciGraph dynamic/cliqueLeader yields no result for {}'.format(id))
+
+        return self.make_NamedObject(**nodes[0], class_name='BioObject')
+
     def bioobject(self, id, node_type=None, class_name='BioObject', **params):
         """
         Get a node in a graph and translates it to biomodels datamodel
@@ -85,37 +96,41 @@ class SciGraph:
 
         Returns: biomodel.BioObject or subclass
         """
+        bio_object = self.get_clique_leader(id)
+
+        # get nodes connected with edge 'in_taxon'
         response = self.get_response(
-            "dynamic/cliqueLeader", q=id, format="json",
-            depth=1, **params
+            "graph/neighbors",
+            q=bio_object.id,
+            format="json",
+            depth=1,
+            relationshipType=IN_TAXON,
+            direction="OUTGOING"
         )
 
-        nodes = response.json()['nodes']
-        if len(nodes) == 0:
-            raise NoResultFoundException('SciGraph dynamic/cliqueLeader yields no result for {}'.format(id))
-
-        bio_object = self.make_NamedObject(**nodes[0], class_name=class_name)
-
-        response = self.get_response(
-            "graph/neighbors", q=bio_object.id, format="json",
-            depth=1, direction="OUTGOING"
-        )
         graph = BBOPGraph(response.json())
 
         bio_object.taxon = None
-        taxon_edge = [edge for edge in graph.edges if edge.pred == IN_TAXON]
-        for tax_edge in taxon_edge:
+        for tax_edge in graph.edges:
             bio_object.taxon = self.make_NamedObject(
                 **graph.get_node(tax_edge.obj).as_dict()
             )
 
         # Type specific
         if node_type == 'disease':
+            # get nodes connected with edge 'has_disposition'
+            response = self.get_response(
+                "graph/neighbors",
+                q=bio_object.id,
+                format="json",
+                depth=1,
+                relationshipType=HAS_DISPOSITION,
+                direction="OUTGOING"
+            )
+            graph = BBOPGraph(response.json())
             bio_object.inheritance = []
             bio_object.clinical_modifiers = []
-            disposition_edges = [edge for edge in graph.edges
-                                 if edge.pred == HAS_DISPOSITION]
-            for disposition_edge in disposition_edges:
+            for disposition_edge in graph.edges:
                 disposition = graph.get_node(disposition_edge.obj)
                 if 'inheritance' in disposition.meta.category_list:
                     bio_object.inheritance.append(
@@ -373,7 +388,17 @@ class SciGraph:
         bbg = self.neighbors(id, direction='INCOMING', depth=1)
         return bbg_to_assocs(bbg)
 
-
+    def get_datasets(self):
+        """
+        Get metadata about all the datasets in SciGraph
+        """
+        response = self.get_response("dynamic/ontologies", None, "json")
+        response_json = response.json()
+        datasets = []
+        for n in response_json['nodes']:
+            if 'MonarchData' in n['id']:
+                datasets.append(n)
+        return datasets
 
 def bbg_to_assocs(g):
     return [bbedge_to_assoc(e,g) for e in g.edges]

@@ -29,7 +29,6 @@ class TestSimApi():
         assert len(response.json['matches']) > 0
         assert {match['taxon']['id'] for match in response.json['matches']} == {'NCBITaxon:9606'}
 
-
     def test_compare_post(self):
         data = {
             'reference_ids': ['HP:0000739', 'HP:0001831'],
