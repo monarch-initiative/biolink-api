@@ -2,7 +2,8 @@ import yaml
 from os import path, environ
 
 # Flask settings
-FLASK_SERVER_NAME = 'api.geneontology.org'
+FLASK_SERVER_NAME = 'localhost:8888'
+# Do not use debug mode in production
 FLASK_DEBUG = eval(environ['FLASK_DEBUG']) if 'FLASK_DEBUG' in environ else True
 FLASK_USE_RELOADER = eval(environ['FLASK_USE_RELOADER']) if 'FLASK_USE_RELOADER' in environ else True
 

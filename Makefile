@@ -1,4 +1,4 @@
-SERVER= https://api.geneontology.org/api
+SERVER= https://api.monarchinitiative.org/api
 SERVER_DEV= http://localhost:5000/api
 SWAGGER= $(SERVER)/swagger.json
 

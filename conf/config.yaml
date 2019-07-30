@@ -1,24 +1,24 @@
 solr_assocs:
   url: "https://solr.monarchinitiative.org/solr/golr"
-  timeout: 30
+  timeout: 60
 amigo_solr_assocs:
   url: "http://golr.berkeleybop.org"
-  timeout: 30
+  timeout: 15
 solr_search:
   url: "https://solr.monarchinitiative.org/solr/search"
-  timeout: 30
+  timeout: 15
 amigo_solr_search:
   url: "http://golr.berkeleybop.org"
-  timeout: 30
+  timeout: 15
 sparql:
   url: "http://sparql.hegroup.org/sparql"
   timeout: 30
 scigraph_ontology:
   url: "https://scigraph-ontology.monarchinitiative.org/scigraph/"
-  timeout: 30
+  timeout: 15
 scigraph_data:
   url: "https://scigraph-data.monarchinitiative.org/scigraph/"
-  timeout: 30
+  timeout: 15
 use_amigo_for:
   - function
 ontologies:

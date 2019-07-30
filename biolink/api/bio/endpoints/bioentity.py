@@ -92,7 +92,7 @@ class GenericObject(Resource):
     @api.marshal_with(bio_object)
     def get(self, id):
         """
-        Returns basic info on any bioentity (e.g. GO term, gene)
+        Returns basic info on object of any type
         """
         args = core_parser.parse_args()
         obj = scigraph.bioobject(id)
@@ -137,7 +137,7 @@ class GenericAssociations(Resource):
     @api.marshal_with(association_results)
     def get(self, id):
         """
-        Returns associations for any bioentity (e.g. GO term, gene)
+        Returns associations for an entity regardless of the type
         """
         args = core_parser_with_filters.parse_args()
         return search_associations(
@@ -179,7 +179,7 @@ class GeneHomologAssociations(Resource):
     @api.marshal_with(association_results)
     def get(self, id):
         """
-        Returns homologs associated to a gene
+        Returns homologs for a gene
         """
         """
         Horrible hacks
@@ -331,7 +331,7 @@ class GeneFunctionAssociations(Resource):
     @api.marshal_with(association_results)
     def get(self, id):
         """
-        Returns GO terms associated to a gene.
+        Returns function associations for a gene.
 
         IMPLEMENTATION DETAILS
         ----------------------
@@ -381,7 +381,7 @@ class GenePublicationAssociations(Resource):
     @api.marshal_with(association_results)
     def get(self, id):
         """
-        Returns publications associated to a gene
+        Returns publications associated with a gene
         """
         args = core_parser_with_relation_filter.parse_args()
         return search_associations(
@@ -1018,7 +1018,7 @@ class FunctionAssociations(Resource):
     @api.expect(basic_parser)
     def get(self, id):
         """
-        Returns annotations associated to a GO term
+        Returns annotations associated to a function term
         """
 
         # annotation_class,aspect
@@ -1804,7 +1804,7 @@ class PublicationGeneAssociations(Resource):
     @api.marshal_with(association_results)
     def get(self, id):
         """
-        Returns genes associated to a publication
+        Returns genes associated with a publication
         """
         args = core_parser_with_filters.parse_args()
         return search_associations(
