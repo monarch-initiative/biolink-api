@@ -154,6 +154,19 @@ class OntologySubset(Resource):
         qf = ""
         fq = "&fq=subset:" + id + "&rows=1000"
         fields = "annotation_class,annotation_class_label,description,source"
+
+        # This is a temporary fix while waiting for the PR of the AGR slim on go-ontology
+        if id == "goslim_agr":
+
+            terms_list = set()
+            for section in agr_slim_order:
+                terms_list.add(section['category'])
+                for term in section['terms']:
+                    terms_list.add(term)
+
+            goslim_agr_ids = "\" \"".join(terms_list)
+            fq = "&fq=annotation_class:(\"" + goslim_agr_ids + "\")&rows=1000"
+
         data = run_solr_text_on(ESOLR.GOLR, ESOLRDoc.ONTOLOGY, q, qf, fields, fq)
 
         tr = {}
@@ -281,6 +294,7 @@ class OntologyTermsSharedAncestor(Resource):
 ribbon_parser = api.parser()
 ribbon_parser.add_argument('subset', help='Name of the subset to map GO terms (e.g. goslim_agr)')
 ribbon_parser.add_argument('subject', action='append', help='List of Gene ids (e.g. MGI:98214, RGD:620474)')
+ribbon_parser.add_argument('exclude_IBA', type=inputs.boolean, default=False, help='If true, excludes IBA annotations')
 
 class OntologyRibbons(Resource):
 
@@ -290,6 +304,8 @@ class OntologyRibbons(Resource):
         Fetch the summary of annotations for a given gene or set of genes
         """
         args = ribbon_parser.parse_args()
+
+        exclude_IBA = args.exclude_IBA
 
         # Step 1: create the categories
         categories = OntologySubset.get(self, args.subset)
@@ -361,6 +377,8 @@ class OntologyRibbons(Resource):
             qf = ""
             fq = "&fq=bioentity:\"" + subject_id + "\"&rows=100000"
             fields = "annotation_class,evidence_type,regulates_closure"
+            if exclude_IBA:
+                fq += "&fq=!evidence_type:IBA"
             data = run_solr_text_on(ESOLR.GOLR, ESOLRDoc.ANNOTATION, q, qf, fields, fq)
 
 
@@ -447,10 +465,7 @@ agr_slim_order = [
    { 
        "category" : "GO:0003674",
        "terms" : [
-        "GO:0016491",
-        "GO:0016787",
-        "GO:0016740",
-        "GO:0016874",
+        "GO:0003824",
         "GO:0030234",
         "GO:0038023",
         "GO:0005102",
@@ -492,8 +507,6 @@ agr_slim_order = [
         "GO:0006629",
         "GO:0042592",
         "GO:0009056",
-        "GO:0065009",
-        "GO:0050789",
         "GO:0007610"
     ]
     },
