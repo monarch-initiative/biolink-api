@@ -104,6 +104,7 @@ class GenericObjectByType(Resource):
 
     parser = core_parser.copy()
     parser.add_argument('get_association_counts', help='Get association counts', type=inputs.boolean, default=False)
+    parser.add_argument('distinct_counts', help='Get distinct counts for associations (to be used in conjunction with \'get_association_counts\' parameter)', type=inputs.boolean, default=False)
 
     @api.expect(parser)
     def get(self, id, type):
@@ -122,12 +123,10 @@ class GenericObjectByType(Resource):
         else:
             bio_entity = scigraph.bioobject(id, type)
             ret_val = marshal(bio_entity, bio_object), 200
-
         if args['get_association_counts']:
             # *_ortholog_closure requires clique leader, so use
             # bio_entity.id instead of incoming id
-            ret_val[0]['association_counts'] = get_association_counts(bio_entity.id, type)
-
+            ret_val[0]['association_counts'] = get_association_counts(bio_entity.id, type, distinct_counts=args['distinct_counts'])
         return ret_val
 
 

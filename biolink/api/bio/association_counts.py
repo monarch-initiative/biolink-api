@@ -158,49 +158,80 @@ CATEGORY_NAME_MAP = {
 EXCLUDE_LIST = ['ortholog-homolog']
 
 
-def get_association_counts(bioentity_id, bioentity_type=None):
+def get_association_counts(bioentity_id, bioentity_type=None, distinct_counts=False):
     """
     For a given CURIE, get the number of associations by each category.
     """
     count_map = {}
     # get counts where bioentity_id is the subject
-    subject_associations = search_associations(
-        fq={'subject_closure': bioentity_id},
-        facet_pivot_fields=['{!stats=piv1}association_type', 'object_taxon'],
-        stats=True,
-        rows=0,
-        facet_fields=[],
-        stats_field=['{!tag=piv1 calcdistinct=true distinctValues=false}object']
-    )
-    subject_facet_pivot = subject_associations['facet_pivot']['association_type,object_taxon']
-    parse_facet_pivot(subject_facet_pivot, bioentity_type, count_map)
 
-    # get counts where bioentity_id is the object
-    object_associations = search_associations(
-        fq={'object_closure': bioentity_id},
-        facet_pivot_fields=['{!stats=piv1}association_type', 'subject_taxon'],
-        stats=True,
-        rows=0,
-        facet_fields=[],
-        stats_field=['{!tag=piv1 calcdistinct=true distinctValues=false}subject']
-    )
-    object_facet_pivot = object_associations['facet_pivot']['association_type,subject_taxon']
-    parse_facet_pivot(object_facet_pivot, bioentity_type, count_map)
-
-    if bioentity_type == 'gene':
-        # get counts for ortholog-x associations
-        type_prefix = 'ortholog'
-        ortholog_count_map = {}
-        ortholog_associations = search_associations(
-            fq={'subject_ortholog_closure': bioentity_id},
+    if distinct_counts:
+        subject_associations = search_associations(
+            fq={'subject_closure': bioentity_id},
             facet_pivot_fields=['{!stats=piv1}association_type', 'object_taxon'],
             stats=True,
             rows=0,
             facet_fields=[],
             stats_field=['{!tag=piv1 calcdistinct=true distinctValues=false}object']
         )
+    else:
+        subject_associations = search_associations(
+            fq={'subject_closure': bioentity_id},
+            facet_pivot_fields=['{!stats=piv1}association_type', 'object_taxon'],
+            stats=True,
+            rows=0,
+            facet_fields=[],
+            stats_field=['{!tag=piv1 countDistinct=false}object']
+        )
+    subject_facet_pivot = subject_associations['facet_pivot']['association_type,object_taxon']
+    parse_facet_pivot(subject_facet_pivot, bioentity_type, count_map, distinct_counts=distinct_counts)
+
+    # get counts where bioentity_id is the object
+    if distinct_counts:
+        object_associations = search_associations(
+            fq={'object_closure': bioentity_id},
+            facet_pivot_fields=['{!stats=piv1}association_type', 'subject_taxon'],
+            stats=True,
+            rows=0,
+            facet_fields=[],
+            stats_field=['{!tag=piv1 calcdistinct=true distinctValues=false}subject']
+        )
+    else:
+        object_associations = search_associations(
+            fq={'object_closure': bioentity_id},
+            facet_pivot_fields=['{!stats=piv1}association_type', 'subject_taxon'],
+            stats=True,
+            rows=0,
+            facet_fields=[],
+            stats_field=['{!tag=piv1 countDistinct=false}subject']
+        )
+    object_facet_pivot = object_associations['facet_pivot']['association_type,subject_taxon']
+    parse_facet_pivot(object_facet_pivot, bioentity_type, count_map, distinct_counts=distinct_counts)
+
+    if bioentity_type == 'gene':
+        # get counts for ortholog-x associations
+        type_prefix = 'ortholog'
+        ortholog_count_map = {}
+        if distinct_counts:
+            ortholog_associations = search_associations(
+                fq={'subject_ortholog_closure': bioentity_id},
+                facet_pivot_fields=['{!stats=piv1}association_type', 'object_taxon'],
+                stats=True,
+                rows=0,
+                facet_fields=[],
+                stats_field=['{!tag=piv1 calcdistinct=true distinctValues=false}object']
+            )
+        else:
+            ortholog_associations = search_associations(
+                fq={'subject_ortholog_closure': bioentity_id},
+                facet_pivot_fields=['{!stats=piv1}association_type', 'object_taxon'],
+                stats=True,
+                rows=0,
+                facet_fields=[],
+                stats_field=['{!tag=piv1 countDistinct=false}object']
+            )
         ortholog_facet_pivot = ortholog_associations['facet_pivot']['association_type,object_taxon']
-        parse_facet_pivot(ortholog_facet_pivot, bioentity_type, ortholog_count_map, type_prefix)
+        parse_facet_pivot(ortholog_facet_pivot, bioentity_type, ortholog_count_map, type_prefix, distinct_counts=distinct_counts)
         final_count_map = {**count_map, **ortholog_count_map}
     else:
         final_count_map = count_map
@@ -212,7 +243,7 @@ def get_association_counts(bioentity_id, bioentity_type=None):
     return final_count_map
 
 
-def parse_facet_pivot(facet_pivot, bioentity_type, count_map, type_prefix = None):
+def parse_facet_pivot(facet_pivot, bioentity_type, count_map, type_prefix=None, distinct_counts=False):
 
     if count_map is None:
         count_map = {}
@@ -238,7 +269,11 @@ def parse_facet_pivot(facet_pivot, bioentity_type, count_map, type_prefix = None
             key = 'subject'
         elif 'object' in category_stats:
             key = 'object'
-        category_counts = category_stats[key]['countDistinct']
+        if distinct_counts:
+            category_counts = category_stats[key]['countDistinct']
+        else:
+            category_counts = category_pivot['count']
+
         if 'counts' in count_map[k]:
             count_map[k]['counts'] += category_counts
         else:
@@ -249,7 +284,7 @@ def parse_facet_pivot(facet_pivot, bioentity_type, count_map, type_prefix = None
         if 'pivot' in category_pivot:
             # taxon pivot
             taxon_pivot = category_pivot['pivot']
-            taxon_counts = parse_taxon_pivot(taxon_pivot, key)
+            taxon_counts = parse_taxon_pivot(taxon_pivot, key, distinct_counts)
             if 'counts_by_taxon' in count_map[k]:
                 taxon_counts = merge_counts(count_map[k]['counts_by_taxon'], taxon_counts)
             count_map[k]['counts_by_taxon'] = taxon_counts
@@ -257,11 +292,14 @@ def parse_facet_pivot(facet_pivot, bioentity_type, count_map, type_prefix = None
     return count_map
 
 
-def parse_taxon_pivot(taxon_pivot, key):
+def parse_taxon_pivot(taxon_pivot, key, distinct_counts=False):
     counts_map = {}
     for t in taxon_pivot:
         taxon = t['value']
-        counts = t['stats']['stats_fields'][key]['countDistinct']
+        if distinct_counts:
+            counts = t['stats']['stats_fields'][key]['countDistinct']
+        else:
+            counts = t['count']
         counts_map[taxon] = counts
     return counts_map
 
