@@ -287,11 +287,10 @@ class SciGraph:
     # TODO: consider using biomodels directly
     def map_tuple(self, id, lbl, meta):
         obj = {
-            'id':id,
-            'label':lbl,
-            'categories':meta.get('category'),
-            'xrefs':meta.get('http://www.geneontology.org/formats/oboInOwl#hasDbXref'),
-
+            'id': id,
+            'label': lbl,
+            'categories': meta.get('category'),
+            'xrefs': meta.get('http://www.geneontology.org/formats/oboInOwl#hasDbXref')
         }
         if 'synonym' in meta:
             obj['synonyms'] = [SynonymPropertyValue(pred='synonym', val=s) for s in meta['synonym']]

@@ -292,6 +292,9 @@ class NamedObject():
 
          list of synonyms or alternate labels
 
+     xrefs :
+         list of xrefs
+
     """
     def __init__(self,
                  id=None,
@@ -299,12 +302,14 @@ class NamedObject():
                  categories=None,
                  synonyms=None,
                  description=None,
+                 xrefs=None,
                  **kwargs):
         self.id=id
         self.label=label
         self.categories=categories
         self.synonyms=synonyms
         self.description=description
+        self.xrefs=xrefs
 
 
     """
