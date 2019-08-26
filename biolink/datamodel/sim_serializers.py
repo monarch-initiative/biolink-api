@@ -1,6 +1,12 @@
 from flask_restplus import fields
 from biolink.api.restplus import api
-from biolink.datamodel.serializers import named_object_core
+
+
+node = api.model('Node', {
+    'id': fields.String(readOnly=True, description='ID or CURIE e.g. MGI:1201606', required=True),
+    'label': fields.String(readOnly=True, description='RDFS Label'),
+})
+
 
 # Schema for posting to /sim/score
 features = api.model('Feature', {
@@ -39,13 +45,13 @@ compare_input = api.model('CompareInput', {
 
 # Schema for output document for sim search
 
-ic_node = api.inherit('IcNode', named_object_core, {
+ic_node = api.inherit('IcNode', node, {
     'IC': fields.Float(description='Information content'),
 })
 
-typed_node = api.inherit('TypedNode', named_object_core, {
+typed_node = api.inherit('TypedNode', node, {
     'type': fields.String(description='node type (eg phenotype, disease)'),
-    'taxon': fields.Nested(named_object_core, description='taxon')
+    'taxon': fields.Nested(node, description='taxon')
 })
 
 pairwise_match = api.model('PairwiseMatch', {
@@ -62,11 +68,11 @@ sim_match = api.inherit('SimMatch', typed_node, {
 })
 
 sim_query = api.model('SimQuery', {
-    'ids': fields.List(fields.Nested(named_object_core, description='list of ids')),
-    'negated_ids': fields.List(fields.Nested(named_object_core, description='list of ids')),
+    'ids': fields.List(fields.Nested(node, description='list of ids')),
+    'negated_ids': fields.List(fields.Nested(node, description='list of ids')),
     'unresolved_ids': fields.List(fields.String(description='curie formatted id'),
                                   description='list of unresolved ids'),
-    'target_ids': fields.List(fields.List(fields.Nested(named_object_core, description='query ids'))),
+    'target_ids': fields.List(fields.List(fields.Nested(node, description='query ids'))),
     'reference': fields.Nested(typed_node,
                                description="reference individual or class (eg gene, disease)")
 })
