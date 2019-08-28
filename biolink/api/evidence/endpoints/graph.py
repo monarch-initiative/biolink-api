@@ -54,12 +54,18 @@ class EvidenceGraphTable(Resource):
         results = search_associations(
             fq={'id': id},
             facet=False,
-            select_fields=['subject','object','evidence_graph'],
+            select_fields=['evidence_graph'],
             user_agent=USER_AGENT)
+        assoc_results = {}
         assoc = results['associations'][0] if len(results['associations']) > 0 else {}
-        eg = {'graphs': [assoc.get('evidence_graph')]}
-        digraph = convert_json_object(eg, reverse_edges=False)['graph']
-        return  obograph_to_assoc_results(digraph)
+        if assoc:
+            eg = {'graphs': [assoc.get('evidence_graph')]}
+            digraph = convert_json_object(eg, reverse_edges=False)['graph']
+            assoc_results = {
+                'associations': obograph_to_assoc_results(digraph),
+                'numFound': len(obograph_to_assoc_results(digraph))}
+
+        return assoc_results
 
 
 @api.doc(params={'id': 'association id, e.g. 68e686f6-d05b-46b8-ab1f-1da2fff97ada'})
