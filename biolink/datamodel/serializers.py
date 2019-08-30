@@ -146,17 +146,19 @@ association = api.model('Association', {
     'id': fields.String(readOnly=True, description='Association/annotation unique ID', required=True),
     'type': fields.String(readOnly=True, description='Type of association, e.g. gene-phenotype'),
     'subject': fields.Nested(bio_object_core, description='Subject of association (what it is about), e.g. ClinVar:nnn, MGI:1201606', required=True),
+    'subject_eq': fields.List(fields.String, description='Equivalent identifiers to subject node'),
     'subject_extensions': fields.List(fields.Nested(annotation_extension, description='Additional properties of the subject in the context of this association.')),
     'object': fields.Nested(bio_object_core, description='Object (sensu RDF), aka target, e.g. HP:0000448, MP:0002109, DOID:14330', required=True),
+    'object_eq': fields.List(fields.String, description='Equivalent identifiers to object node'),
     'object_extensions': fields.List(fields.Nested(annotation_extension, description='Additional properties of the object in the context of this association. See http://www.biomedcentral.com/1471-2105/15/155')),
     'relation': fields.Nested(relation_ref, description='Relationship type connecting subject and object', required=True),
     'slim': fields.List(fields.String, description='Objects mapped to a slim'),
     'negated': fields.Boolean(description='True if association is negated'),
     'qualifiers': fields.List(fields.String, description='Qualifier on the association'),
     'evidence_graph': fields.Nested(bbop_graph, description='An indirect association is a join between two or more direct assocations, e.g. gene to disease via ortholog. We record the full set of associations as a graph object'),
-    'evidence_types': fields.List(fields.Nested(named_object), description='Evidence types (ECO classes) extracted from evidence graph'),
+    'evidence_types': fields.List(fields.Nested(entity_reference), description='Evidence types (ECO classes)'),
     'provided_by': fields.List(fields.String, description='Provider of association, e.g. Orphanet, ClinVar'),
-    'publications': fields.List(fields.Nested(publication), description='Publications supporting association, extracted from evidence graph')
+    'publications': fields.List(fields.Nested(entity_reference), description='Publications supporting association, extracted from evidence graph')
 })
 
 # For example, via homology

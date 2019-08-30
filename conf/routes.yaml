@@ -237,8 +237,8 @@ route_mapping:
       routes:
         - route: /<id>
           resource: biolink.api.evidence.endpoints.graph.EvidenceGraphObject
-        - route: /<id>/image
-          resource: biolink.api.evidence.endpoints.graph.EvidenceGraphImage
+        - route: /<id>/table
+          resource: biolink.api.evidence.endpoints.graph.EvidenceGraphTable
     - name: genome/features
       description: Operations to retrieve sequence features
       routes:
@@ -391,7 +391,7 @@ route_mapping:
          - route: /analyze/<id>
            resource: biolink.api.variation.endpoints.variantset.VariantAnalyze
     - name: sim
-      description: Perform semantic similarity, ranking, and classification
+      description: Perform semantic similarity, ranking, and sufficiency scoring
       routes:
           - route: /score
             resource: biolink.api.sim.endpoints.annotation_score.AnnotationScore
