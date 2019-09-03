@@ -393,6 +393,32 @@ class OntologyRibbons(Resource):
                 fq += "&fq=!annotation_class:\"GO:0005515\""
             data = run_solr_text_on(ESOLR.GOLR, ESOLRDoc.ANNOTATION, q, qf, fields, fq)
 
+
+            # compute number of terms and annotations
+            for annot in data:
+                aspect = self.aspect_map[annot["aspect"]]
+                found = False
+
+                for cat in categories:
+
+                    for gp in cat['groups']:
+                        group = gp['id']
+
+                        if gp['type'] == "Other":
+                            continue
+
+                        # only allow annotated terms belonging to the same category if cross_aspect
+                        if cross_aspect or cat['id'] == aspect:
+
+                            # is this annotation part of the current group, based on the regulates_closure ?
+                            if group in annot['regulates_closure']:
+                                found = True
+                                break
+                if found:
+                    entity['terms'].add(annot['annotation_class'])
+                    entity['nb_annotations'] += 1
+
+
             for cat in categories:
 
                 for gp in cat['groups']:
@@ -425,8 +451,8 @@ class OntologyRibbons(Resource):
                                 entity['groups'][group]['ALL']['terms'].add(annot['annotation_class'])
                                 entity['groups'][group]['ALL']['nb_annotations'] += 1
 
-                                entity['terms'].add(annot['annotation_class'])
-                                entity['nb_annotations'] += 1
+                                # entity['terms'].add(annot['annotation_class'])
+                                # entity['nb_annotations'] += 1
 
 
                 other = { }
