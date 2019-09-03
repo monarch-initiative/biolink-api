@@ -467,8 +467,10 @@ class OntologyRibbons(Resource):
             for group in entity['groups']:
                 for subgroup in entity['groups'][group]:
                     entity['groups'][group][subgroup]['nb_classes'] = len(entity['groups'][group][subgroup]['terms'])
-                    del entity['groups'][group][subgroup]['terms']
-                    # entity['groups'][group][subgroup]['terms'] = list(entity['groups'][group][subgroup]['terms'])
+                    if "-other" not in group:
+                        del entity['groups'][group][subgroup]['terms']
+                    else:
+                        entity['groups'][group][subgroup]['terms'] = list(entity['groups'][group][subgroup]['terms'])
 
             entity['nb_classes'] = len(entity['terms'])
             del entity['terms']
