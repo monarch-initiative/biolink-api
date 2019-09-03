@@ -295,8 +295,16 @@ ribbon_parser = api.parser()
 ribbon_parser.add_argument('subset', help='Name of the subset to map GO terms (e.g. goslim_agr)')
 ribbon_parser.add_argument('subject', action='append', help='List of Gene ids (e.g. MGI:98214, RGD:620474)')
 ribbon_parser.add_argument('exclude_IBA', type=inputs.boolean, default=False, help='If true, excludes IBA annotations')
+ribbon_parser.add_argument('exclude_PB', type=inputs.boolean, default=False, help='If true, excludes direct annotations to protein binding')
+ribbon_parser.add_argument('cross_aspect', type=inputs.boolean, default=False, help='If true, can retrieve terms from other aspects if using a cross-aspect relationship such as regulates_closure')
 
 class OntologyRibbons(Resource):
+
+    aspect_map = {
+        "P": "GO:0008150",
+        "F": "GO:0003674",
+        "C": "GO:0005575"
+    }
 
     @api.expect(ribbon_parser)
     def get(self):
@@ -306,6 +314,8 @@ class OntologyRibbons(Resource):
         args = ribbon_parser.parse_args()
 
         exclude_IBA = args.exclude_IBA
+        exclude_PB = args.exclude_PB
+        cross_aspect = args.cross_aspect
 
         # Step 1: create the categories
         categories = OntologySubset.get(self, args.subset)
@@ -335,7 +345,7 @@ class OntologyRibbons(Resource):
         
         # Step 2: create the entities / subjects
         subject_ids = args.subject
-        print("SUBS : " , subject_ids)
+        # print("SUBS : " , subject_ids)
 
         # ID conversion
         subject_ids = [x.replace('WormBase:', 'WB:') if 'WormBase:' in x else x for x in subject_ids]
@@ -376,36 +386,82 @@ class OntologyRibbons(Resource):
             q = "*:*"
             qf = ""
             fq = "&fq=bioentity:\"" + subject_id + "\"&rows=100000"
-            fields = "annotation_class,evidence_type,regulates_closure"
+            fields = "annotation_class,evidence_type,regulates_closure,aspect"
             if exclude_IBA:
                 fq += "&fq=!evidence_type:IBA"
+            if exclude_PB:
+                fq += "&fq=!annotation_class:\"GO:0005515\""
             data = run_solr_text_on(ESOLR.GOLR, ESOLRDoc.ANNOTATION, q, qf, fields, fq)
 
-
             for cat in categories:
+
                 for gp in cat['groups']:
                     group = gp['id']
 
+                    if gp['type'] == "Other":
+                        continue
+
                     for annot in data:
-                        if group in annot['regulates_closure']:
+                        aspect = self.aspect_map[annot["aspect"]]
 
-                            # if the group has not been met yet, create it
-                            if group not in entity['groups']:
-                                entity['groups'][group] = { }
-                                entity['groups'][group]['ALL'] = { "terms" : set(), "nb_classes" : 0, "nb_annotations" : 0 }
+                        # only allow annotated terms belonging to the same category if cross_aspect
+                        if cross_aspect or cat['id'] == aspect:
 
-                            # if the subgroup has not been met yet, create it
-                            if annot['evidence_type'] not in entity['groups'][group]:
-                                entity['groups'][group][annot['evidence_type']] = { "terms" : set(), "nb_classes" : 0, "nb_annotations" : 0 }
+                            # is this annotation part of the current group, based on the regulates_closure ?
+                            if group in annot['regulates_closure']:
 
-                            # for each annotation, add the term and increment the nb of annotations
-                            entity['groups'][group][annot['evidence_type']]['terms'].add(annot['annotation_class'])
-                            entity['groups'][group][annot['evidence_type']]['nb_annotations'] += 1
-                            entity['groups'][group]['ALL']['terms'].add(annot['annotation_class'])
-                            entity['groups'][group]['ALL']['nb_annotations'] += 1
+                                # if the group has not been met yet, create it
+                                if group not in entity['groups']:
+                                    entity['groups'][group] = { }
+                                    entity['groups'][group]['ALL'] = { "terms" : set(), "nb_classes" : 0, "nb_annotations" : 0 }
 
-                            entity['terms'].add(annot['annotation_class'])
-                            entity['nb_annotations'] += 1
+                                # if the subgroup has not been met yet, create it
+                                if annot['evidence_type'] not in entity['groups'][group]:
+                                    entity['groups'][group][annot['evidence_type']] = { "terms" : set(), "nb_classes" : 0, "nb_annotations" : 0 }
+
+                                # for each annotation, add the term and increment the nb of annotations
+                                entity['groups'][group][annot['evidence_type']]['terms'].add(annot['annotation_class'])
+                                entity['groups'][group][annot['evidence_type']]['nb_annotations'] += 1
+                                entity['groups'][group]['ALL']['terms'].add(annot['annotation_class'])
+                                entity['groups'][group]['ALL']['nb_annotations'] += 1
+
+                                entity['terms'].add(annot['annotation_class'])
+                                entity['nb_annotations'] += 1
+
+
+                other = { }
+                other["ALL"] = { "terms" : set(), "nb_classes" : 0, "nb_annotations" : 0 }
+
+                # creating list of annotations not annotated to a specific term
+                not_found = set()
+                for annot in data:
+                    found = False
+                    for gp in cat['groups']:
+                        if annot['annotation_class'] == gp['id']:
+                            found = True
+                    if not found:    
+                        not_found.add(annot['annotation_class'])
+
+                for nf in not_found:
+                    for annot in data:
+                        if nf == annot['annotation_class']:
+                            # print(nf, annot['annotation_class'])
+                            aspect = self.aspect_map[annot["aspect"]]
+
+                            # only allow annotated terms belonging to the same category
+                            if cat['id'] == aspect:
+                        
+                                # if the subgroup has not been met yet, create it
+                                if annot['evidence_type'] not in other:
+                                    other[annot['evidence_type']] = { "terms" : set(), "nb_classes" : 0, "nb_annotations" : 0 }
+
+                                # for each annotation, add the term and increment the nb of annotations
+                                other[annot['evidence_type']]['terms'].add(annot['annotation_class'])
+                                other[annot['evidence_type']]['nb_annotations'] += 1
+                                other['ALL']['terms'].add(annot['annotation_class'])
+                                other['ALL']['nb_annotations'] += 1
+                    
+                entity['groups'][cat['id'] + "-other"] = other
 
             # compute the number of classes for each group that have subgroup (annotations)
             for group in entity['groups']:
@@ -425,7 +481,7 @@ class OntologyRibbons(Resource):
         fq = "&fq=bioentity:(\"" + "\" or \"".join(mod_ids) + "\")&rows=100000"
         fields = "bioentity,bioentity_label,taxon,taxon_label"
         data = run_solr_text_on(ESOLR.GOLR, ESOLRDoc.BIOENTITY, q, qf, fields, fq)
-        print("G DATA: " , data)
+        # print("G DATA: " , data)
 
 
         for entity in subjects:
