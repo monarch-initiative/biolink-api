@@ -62,7 +62,7 @@ Feature: Phenotype entity queries work as expected
     Scenario: Client requires pathways associated with a phenotype
         Given a path "/bioentity/phenotype/MP:0001569/pathways"
         then the JSON should have some JSONPath "associations[*].subject.label" with "string" "Neonatal hyperbilirubinemia"
-        then the JSON should have some JSONPath "associations[*].object.id" with "string" "KEGG-path:maphsa00040"
+        then the JSON should have some JSONPath "associations[*].object.id" with "string" "REACT:R-HSA-9613829"
         then the JSON should have some JSONPath "associations[*].object.category" containing "string" "pathway"
 
 ### Phenotype to Variant associations
@@ -70,8 +70,8 @@ Feature: Phenotype entity queries work as expected
     Scenario: Client requires variants associated with a phenotype
         Given a path "/bioentity/phenotype/HP:0011951/variants"
         then the JSON should have some JSONPath "associations[*].subject.label" with "string" "Recurrent aspiration pneumonia"
-        then the JSON should have some JSONPath "associations[*].object.id" with "string" "ClinVarVariant:158740"
-then the JSON should have some JSONPath "associations[*].object.category" containing "string" "variant"
+        then the JSON should have some JSONPath "associations[*].object.id" with "string" "ClinVarVariant:2587"
+        then the JSON should have some JSONPath "associations[*].object.category" containing "string" "variant"
 
 ### Phenotype to Publication associations
 
@@ -79,4 +79,4 @@ then the JSON should have some JSONPath "associations[*].object.category" contai
         Given a path "/bioentity/phenotype/MP:0001569/publications"
         then the JSON should have some JSONPath "associations[*].subject.label" with "string" "Hyperbilirubinemia"
         then the JSON should have some JSONPath "associations[*].object.id" with "string" "PMID:18059474"
-then the JSON should have some JSONPath "associations[*].object.category" containing "string" "publication"
+        then the JSON should have some JSONPath "associations[*].object.category" containing "string" "publication"

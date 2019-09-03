@@ -21,7 +21,6 @@ Note that inference is on by default. Queries for a general taxonomic class will
     then the JSON should have some JSONPath "associations[*].subject.id" with "string" "HGNC:18603"
     then the JSON should have some JSONPath "associations[*].subject.label" with "string" "COL25A1"
     then the JSON should have some JSONPath "associations[*].subject.category" containing "string" "gene"
-    then the JSON should have some JSONPath "associations[*].object.id" containing "string" "MONDO:0014538"
 
     Scenario: Client queries for all associations from a given subject, constrained by relation
     Given a path "/association/from/NCBIGene:84570?relation=RO:0002331"
