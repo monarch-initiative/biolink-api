@@ -737,10 +737,9 @@ class PhenotypeAnatomyAssociations(Resource):
         Example IDs:
 
          * MP:0008521 abnormal Bowman membrane
-
-        For example, *abnormal limb development* will map to *limb*
         """
-        objs = scigraph.phenotype_to_entity_list(id)
+        clique_leader = scigraph.get_clique_leader(id)
+        objs = scigraph.phenotype_to_entity_list(clique_leader.id)
         return objs
 
 @api.doc(params={'id': 'CURIE identifier of phenotype, e.g. HP:0007359. Equivalent IDs can be used with same results'})

@@ -26,6 +26,11 @@ Feature: Phenotype entity queries work as expected
         then the content should contain "nose"
         and the content should contain "UBERON:0000004"
 
+    Scenario: Client requires mapping between MP:0008521 (MP) and anatomy
+        Given a path "/bioentity/phenotype/MP:0008521/anatomy"
+        then the content should contain "anterior limiting lamina of cornea"
+        and the content should contain "UBERON:0004370"
+
 # TODO: This will always fail until bioentity/phenotype/<id>/anatomy route is fixed
 # Scenario: Client requires mapping between phenotype (ZP) and anatomy
 #    Given a path "/bioentity/phenotype/ZP:0004204/anatomy"
