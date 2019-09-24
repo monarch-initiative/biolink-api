@@ -8,7 +8,7 @@ from ontobio.config import Config, get_config
 from biolink.api.restplus import api
 from scigraph.scigraph_util import SciGraph
 from biolink import USER_AGENT
-from biolink.settings import get_biolink_config
+from biolink.settings import get_biolink_config, get_identifier_converter
 
 from biothings_client import get_client
 
@@ -27,6 +27,8 @@ parser.add_argument('slim', action='append', help='Map objects up (slim) to a hi
 parser.add_argument('exclude_automatic_assertions', type=inputs.boolean, default=False, help='If set, excludes associations that involve IEAs (ECO:0000501)')
 parser.add_argument('rows', type=int, required=False, default=100, help='number of rows')
 parser.add_argument('start', type=int, required=False, help='beginning row')
+
+identifier_converter = get_identifier_converter()
 
 @api.param('relationship_type', "relationship type ('{}' or '{}')".format(INVOLVED_IN, ACTS_UPSTREAM_OF_OR_WITHIN), enum=[INVOLVED_IN, ACTS_UPSTREAM_OF_OR_WITHIN], default=ACTS_UPSTREAM_OF_OR_WITHIN)
 class EntitySetFunctionSlimmer(Resource):
@@ -54,8 +56,7 @@ class EntitySetFunctionSlimmer(Resource):
         slimmer_subjects = []
         for s in subjects:
             if 'HGNC:' in s or 'NCBIGene:' in s or 'ENSEMBL:' in s:
-                #prots = sg_dev.gene_to_uniprot_proteins(s)
-                prots = gene_to_uniprot_from_mygene(s)
+                prots = identifier_converter.convert_gene_to_protein(s)
                 if len(prots) == 0:
                     prots = [s]
                 slimmer_subjects += prots
@@ -78,8 +79,7 @@ class EntitySetFunctionSlimmer(Resource):
                 proteinId = association['subject']['id']
                 if taxon == 'NCBITaxon:9606' and proteinId.startswith('UniProtKB:'):
                     if proteinId not in checked:
-                        #genes = sg_dev.uniprot_protein_to_genes(proteinId)
-                        genes = uniprot_to_gene_from_mygene(proteinId)
+                        genes = identifier_converter.convert_protein_to_gene(proteinId)
                         for gene in genes:
                             if gene.startswith('HGNC'):
                                 association['subject']['id'] = gene
@@ -134,53 +134,3 @@ class EntitySetPhenotypeSlimmer(Resource):
             **args
         )
         return results
-
-def gene_to_uniprot_from_mygene(id):
-    """
-    Query MyGeneInfo with a gene and get its corresponding UniProt ID
-    """
-    uniprot_ids = []
-    mg = get_client('gene')
-    if id.startswith('NCBIGene:'):
-        # MyGeneInfo uses 'entrezgene' prefix instead of 'NCBIGene'
-        id = id.replace('NCBIGene', 'entrezgene')
-    try:
-        results = mg.query(id, fields='uniprot')
-        if results['hits']:
-            for hit in results['hits']:
-                if 'Swiss-Prot' in hit['uniprot']:
-                    uniprot_id = hit['uniprot']['Swiss-Prot']
-                    if not uniprot_id.startswith('UniProtKB'):
-                        uniprot_id = "UniProtKB:{}".format(uniprot_id)
-                    uniprot_ids.append(uniprot_id)
-                else:
-                    trembl_ids = hit['uniprot']['TrEMBL']
-                    for x in trembl_ids:
-                        if not x.startswith('UniProtKB'):
-                            x = "UniProtKB:{}".format(x)
-                        uniprot_ids.append(x)
-    except ConnectionError:
-        logging.error("ConnectionError while querying MyGeneInfo with {}".format(id))
-
-    return uniprot_ids
-
-def uniprot_to_gene_from_mygene(id):
-    """
-    Query MyGeneInfo with a UniProtKB id and get its corresponding HGNC gene
-    """
-    gene_id = None
-    if id.startswith('UniProtKB'):
-        id = id.split(':', 1)[1]
-
-    mg = get_client('gene')
-    try:
-        results = mg.query(id, fields='HGNC')
-        if results['hits']:
-            hit = results['hits'][0]
-            gene_id = hit['HGNC']
-            if not gene_id.startswith('HGNC'):
-                gene_id = 'HGNC:{}'.format(gene_id)
-    except ConnectionError:
-        logging.error("ConnectionError while querying MyGeneInfo with {}".format(id))
-
-    return [gene_id]
