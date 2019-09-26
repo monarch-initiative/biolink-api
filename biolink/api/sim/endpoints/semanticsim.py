@@ -98,6 +98,12 @@ class SimCompare(Resource):
         Compare a reference profile vs one or more profiles
         """
         data = request.json
+        if 'metric' not in data:
+            data['metric'] = 'phenodigm'
+
+        if 'is_feature_set' not in data:
+            data['is_feature_set'] = True
+
         return sim_engine.compare(
             reference_ids=data['reference_ids'],
             query_profiles=data['query_ids'],
