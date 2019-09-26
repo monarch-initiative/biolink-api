@@ -47,14 +47,12 @@ Feature: Disease entity queries work as expected
     Scenario: User queries for non causal genes associated with Marfan Syndrome
         Given a path "/bioentity/disease/MONDO:0007947/genes?rows=10&association_type=non_causal"
         then the JSON should not have some JSONPath "associations[*].object.label" with "string" "FBN1"
-        then the JSON should have some JSONPath "associations[*].object.label" with "string" "TGFBR2"
 
 ## Disease to Gene all associations
 
     Scenario: User queries for all genes associated with Marfan Syndrome
         Given a path "/bioentity/disease/MONDO:0007947/genes?rows=10"
         then the JSON should have some JSONPath "associations[*].object.label" with "string" "FBN1"
-        then the JSON should have some JSONPath "associations[*].object.label" with "string" "TGFBR2"
 
 ## Disease to Phenotype associations
 

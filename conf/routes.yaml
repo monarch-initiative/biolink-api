@@ -286,8 +286,10 @@ route_mapping:
     - name: nlp/annotate
       description: annotate text using named entities
       routes:
-        - route: /<text>
+        - route: /
           resource: biolink.api.nlp.endpoints.annotate.Annotate
+        - route: /entities
+          resource: biolink.api.nlp.endpoints.annotate.AnnotateEntities
     - name: ontol
       description: extract a subgraph from an ontology
       routes:

@@ -56,7 +56,7 @@ between these entities
         Given a path "/bioentity/gene/MGI:1342287/phenotypes?rows=500"
         when the content is converted to JSON
         then the JSON should have some JSONPath "associations[*].object.id" with "string" "MP:0008521"
-        and the JSON should have some JSONPath "associations[*].object.label" with "string" "abnormal Bowman membrane"
+        and the JSON should have some JSONPath "associations[*].object.label" containing "string" "abnormal Bowman membrane"
 
 ## Gene to Function associations
 

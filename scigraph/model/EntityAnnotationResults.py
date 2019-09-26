@@ -1,14 +1,11 @@
 __author__ = 'cjm'
 
-import logging
-import requests
-
 # TODO: inherit a generic ResultSet model
 
 class EntityAnnotationResults:
 
     """
-    The results of a SciGraph EA call
+    The results of a SciGraph annotations/entities call
     """
 
     def __init__(self, results=[], content=None):
@@ -35,13 +32,10 @@ class Span:
 class Token:
 
     """
-    A marked-up span of text
+    A token or entity extracted from a marked-up span
     """
 
     def __init__(self, obj={}):
         self.id = obj['id']
-        self.categories = obj['categories']
+        self.category = obj['categories']
         self.terms = obj['terms']
-
-    
-    

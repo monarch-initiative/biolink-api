@@ -328,3 +328,22 @@ phylogenetic_tree = api.inherit('PhylogeneticTree', named_object, {
 # clinical
 clinical_individual = api.inherit('ClinicalIndividual', named_object, {
 })
+
+# text annotate
+token = api.model('Token', {
+    'id': fields.String(description='The CURIE for the entity or token'),
+    'category': fields.List(fields.String, description='entity categories'),
+    'terms': fields.List(fields.String, description='terms')
+})
+
+span = api.model('Span', {
+    'start': fields.Integer(description='start of span text relative to content'),
+    'end': fields.Integer(description='end of span text relative to content'),
+    'text': fields.String(description='span text'),
+    'token': fields.List(fields.Nested(token), description='A token or entity extracted from the span text')
+})
+
+entity_annotation_result = api.model('EntityAnnotationResult', {
+    'content': fields.String('The content from which the entities are extracted from'),
+    'spans': fields.List(fields.Nested(span), description='A marked-up span of text'),
+})

@@ -5,7 +5,7 @@ Feature: Publication association queries that return a list of associations
     Scenario: User queries for diseases associated with a publication
         Given a path "/bioentity/publication/PMID:19652879/diseases"
         then the JSON should have some JSONPath "associations[*].object.label" with "string" "congenital factor XI deficiency"
-        then the JSON should have some JSONPath "associations[*].provided_by" containing "string" "https://data.monarchinitiative.org/ttl/clinvar.ttl"
+        then the JSON should have some JSONPath "associations[*].object.category" containing "string" "disease"
 
 ## Publication to Gene associations
 
@@ -26,10 +26,10 @@ Feature: Publication association queries that return a list of associations
 ## Publication to Genotype associations
 
     Scenario: User queries for genes associated with a publication
-        Given a path "/bioentity/publication/PMID:20220848/genotypes"
-        then the JSON should have some JSONPath "associations[*].object.taxon.label" with "string" "Drosophila melanogaster"
-        then the JSON should have some JSONPath "associations[*].object.id" with "string" "MONARCH:FBgeno426941"
-        then the JSON should have some JSONPath "associations[*].provided_by" containing "string" "https://data.monarchinitiative.org/ttl/flybase.ttl"
+        Given a path "/bioentity/publication/PMID:10447258/genotypes"
+        then the JSON should have some JSONPath "associations[*].object.taxon.label" with "string" "Homo sapiens"
+        then the JSON should have some JSONPath "associations[*].object.id" with "string" "dbSNPIndividual:20474"
+        then the JSON should have some JSONPath "associations[*].provided_by" containing "string" "https://data.monarchinitiative.org/ttl/coriell.ttl"
 
 ## Publication to Model associations
 

@@ -6,7 +6,7 @@ Feature: Get associations for any given Bioentity
         Given a path "/bioentity/HGNC%3A1103/associations?rows=500"
         when the content is converted to JSON
         then the JSON should have some JSONPath "associations[*].subject.category" containing "string" "gene"
-        then the JSON should have some JSONPath "associations[*].object.id" with "string" "MONDO:0007959"
+        then the JSON should have some JSONPath "associations[*].object.id" with "string" "NCBIGene:6046"
 
 ## Get basic information about a Bioentity type
 

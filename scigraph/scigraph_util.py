@@ -1,3 +1,5 @@
+from requests import RequestException
+
 __author__ = 'cjm'
 
 """
@@ -259,22 +261,44 @@ class SciGraph:
             concepts.append(Concept(r))
         return concepts
 
-    def annotate(self, content=None):
+    def annotate_text(self, content, http_method='get', **args):
         """
-        Directly wraps SciGraph annotate
+        Directly wraps SciGraph annotations endpoint.
+        Returns the text with annotated entities tagged as HTML <span>
         """
-        ## TODO: post not get
-        response = self.get_response("annotations/entities", None, "json", {'content':content, 'longestOnly':True})
+
+        params = {
+            'content': content,
+            **args
+        }
+        response = self.get_response("annotations", None, None, http_method, **params)
+        return response.text
+
+    def annotate_entities(self, content, http_method='get', **args):
+        """
+        Directly wraps SciGraph annotations/entities endpoint.
+        """
+        params = {
+            'content': content,
+            **args
+        }
+        response = self.get_response("annotations/entities", None, None, http_method, **params)
         return EntityAnnotationResults(response.json(), content)
 
     # Internal wrapper onto requests API
-    def get_response(self, path="", q=None, format=None, **params):
+    def get_response(self, path="", q=None, format=None, http_method='get', **params):
         url = self.url_prefix + path
         if q is not None:
             url += "/" +q
         if format is not None:
             url = url  + "." + format
-        r = requests.get(url, params=params, headers={'User-Agent': get_user_agent(name=NAME, version=VERSION, modules=[requests], caller_name=__name__)})
+        if http_method == 'get':
+            r = requests.get(url, params=params, headers={'User-Agent': get_user_agent(name=NAME, version=VERSION, modules=[requests], caller_name=__name__)})
+        elif http_method == 'post':
+            r = requests.post(url, data=params, headers={'User-Agent': get_user_agent(name=NAME, version=VERSION, modules=[requests], caller_name=__name__)})
+        else:
+            raise RequestException
+
         return r
 
     # Simple mapping from bbop graphs to domain-specific objects

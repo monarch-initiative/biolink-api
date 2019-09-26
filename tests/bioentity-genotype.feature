@@ -68,8 +68,7 @@ Feature: Genotype association queries that return a list of associations
 ## Genotype to Variant associations
 
     Scenario: User fetches genotype to publication associations
-        Given a path "/bioentity/genotype/MONARCH:FBgeno422705/variants"
-        then the content should contain "GD11869"
+        Given a path "/bioentity/genotype/dbSNPIndividual:20985/variants"
         when the content is converted to JSON
-        then the JSON should have some JSONPath "associations[*].object.id" with "string" "FlyBase:FBal0052385"
-        then the JSON should have some JSONPath "associations[*].provided_by" containing "string" "https://data.monarchinitiative.org/ttl/flybase.ttl"
+        then the JSON should have some JSONPath "associations[*].object.id" with "string" "OMIM:608666.0003"
+        then the JSON should have some JSONPath "associations[*].provided_by" containing "string" "https://data.monarchinitiative.org/ttl/coriell.ttl"
