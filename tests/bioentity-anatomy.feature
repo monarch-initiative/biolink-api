@@ -7,7 +7,7 @@ Feature: Anatomy association queries that return a list of associations
         when the content is converted to JSON
         then the JSON should have some JSONPath "associations[*].subject.id" with "string" "UBERON:0001379"
         then the JSON should have some JSONPath "associations[*].subject.category" containing "string" "anatomical entity"
-        then the JSON should have some JSONPath "associations[*].object.id" with "string" "HGNC:13221"
+        then the JSON should have some JSONPath "associations[*].object.id" with "string" "HGNC:4454"
         then the JSON should have some JSONPath "associations[*].object.category" containing "string" "gene"
         then the JSON should have some JSONPath "associations[*].relation.label" with "string" "expressed in"
 

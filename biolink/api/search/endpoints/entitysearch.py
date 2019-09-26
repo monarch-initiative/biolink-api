@@ -19,10 +19,13 @@ def get_simple_parser():
         p.add_argument('boost_fx', action='append', help='boost function e.g. pow(edges,0.334)')
         p.add_argument('boost_q', action='append', help='boost query e.g. category:genotype^-10')
         p.add_argument('taxon', action='append', help='taxon filter, eg NCBITaxon:9606, includes inferred taxa')
-        #p.add_argument('engine', help='Name of engine to perform search')
         p.add_argument('rows', type=int, required=False, default=20, help='number of rows')
         p.add_argument('start', type=str, required=False, default='0', help='row number to start from')
         p.add_argument('highlight_class', type=str, required=False, help='highlight class')
+        p.add_argument('min_match', type=str, help='minimum should match parameter, see solr docs for details')
+        p.add_argument('minimal_tokenizer', type=inputs.boolean, default=False,
+                       help='set to true to use the minimal tokenizer, '
+                            'good for variants and genotypes')
         return p
 
 
