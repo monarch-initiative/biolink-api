@@ -20,6 +20,7 @@ from biolink.error_handlers import NoResultFoundException
 
 HAS_PART = 'http://purl.obolibrary.org/obo/BFO_0000051'
 INHERES_IN = 'http://purl.obolibrary.org/obo/RO_0000052'
+INHERES_IN_PART_OF = 'http://purl.obolibrary.org/obo/RO_0002314'
 HAS_ROLE = 'http://purl.obolibrary.org/obo/RO_0000087'
 IN_TAXON = 'RO:0002162'
 HAS_DISPOSITION = 'RO:0000091'
@@ -388,7 +389,13 @@ class SciGraph:
 
         Uses the Ontology Design Pattern has-part o inheres_in
         """
-        objs = self.traverse_chain(id, [HAS_PART, INHERES_IN], "anatomical entity")
+        inheres_in = self.traverse_chain(id,
+                                         [HAS_PART, INHERES_IN],
+                                         "anatomical entity")
+        inheres_in_part_of = self.traverse_chain(id,
+                                                 [HAS_PART, INHERES_IN_PART_OF],
+                                                 "anatomical entity")
+        objs = inheres_in + inheres_in_part_of
         return [self.make_NamedObject(id=x.id, lbl=x.lbl, meta={}, class_name='NamedObject') for x in objs]
 
     def substance_to_role_associations(self, id):
