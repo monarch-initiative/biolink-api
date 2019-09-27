@@ -41,12 +41,13 @@ Feature: Variant association queries that return a list of associations
         then the JSON should have some JSONPath "associations[*].object.category" containing "string" "model"
 
 ## Variant to Phenotype associations
-
-    Scenario: User queries for phenotypes associated with a variant
-        Given a path "/bioentity/variant/ClinVarVariant:39783/phenotypes"
-        then the JSON should have some JSONPath "associations[*].subject.label" containing "string" "p.Gly34Val"
-        then the JSON should have some JSONPath "associations[*].object.label" with "string" "Craniosynostosis"
-        then the JSON should have some JSONPath "associations[*].object.category" containing "string" "phenotype"
+    # https://github.com/monarch-initiative/monarch-ui/issues/189
+    # TODO replace with gwas catalog association
+    #Scenario: User queries for phenotypes associated with a variant
+    #    Given a path "/bioentity/variant/ClinVarVariant:39783/phenotypes"
+    #   then the JSON should have some JSONPath "associations[*].subject.label" containing "string" "p.Gly34Val"
+    #    then the JSON should have some JSONPath "associations[*].object.label" with "string" "Craniosynostosis"
+    #    then the JSON should have some JSONPath "associations[*].object.category" containing "string" "phenotype"
 
 ## Variant to Publication associations
 

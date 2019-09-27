@@ -120,7 +120,6 @@ between these entities
         then the JSON should have some JSONPath "associations[*].subject.id" with "string" "HGNC:7679"
         then the JSON should have some JSONPath "associations[*].subject.taxon.label" with "string" "Homo sapiens"
         then the JSON should have some JSONPath "associations[*].object.id" with "string" "MONDO:0011085"
-        then the JSON should have some JSONPath "associations[*].relation.label" with "string" "causes condition"
 
 ## Gene to Ortholog-Phenotype associations
 
@@ -161,5 +160,5 @@ between these entities
     Scenario: "User fetches variants associated with a gene"
         Given a path "/bioentity/gene/HGNC:10896/variants"
         when the content is converted to JSON
-        then the JSON should have some JSONPath "associations[*].object.id" with "string" "ClinVarVariant:532226"
+        then the JSON should have some JSONPath "associations[*].object.id" with "string" "ClinVarVariant:570752"
         then the JSON should have some JSONPath "associations[*].relation.label" with "string" "has_affected_feature"

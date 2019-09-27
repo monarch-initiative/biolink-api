@@ -71,12 +71,13 @@ Feature: Phenotype entity queries work as expected
         then the JSON should have some JSONPath "associations[*].object.category" containing "string" "pathway"
 
 ### Phenotype to Variant associations
-
-    Scenario: Client requires variants associated with a phenotype
-        Given a path "/bioentity/phenotype/HP:0011951/variants"
-        then the JSON should have some JSONPath "associations[*].subject.label" with "string" "Recurrent aspiration pneumonia"
-        then the JSON should have some JSONPath "associations[*].object.id" with "string" "ClinVarVariant:2587"
-        then the JSON should have some JSONPath "associations[*].object.category" containing "string" "variant"
+    # https://github.com/monarch-initiative/monarch-ui/issues/189
+    # TODO replace with gwas catalog association
+    #Scenario: Client requires variants associated with a phenotype
+    #    Given a path "/bioentity/phenotype/HP:0011951/variants"
+    #    then the JSON should have some JSONPath "associations[*].subject.label" with "string" "Recurrent aspiration pneumonia"
+    #   then the JSON should have some JSONPath "associations[*].object.id" with "string" "ClinVarVariant:2587"
+    #   then the JSON should have some JSONPath "associations[*].object.category" containing "string" "variant"
 
 ### Phenotype to Publication associations
 
