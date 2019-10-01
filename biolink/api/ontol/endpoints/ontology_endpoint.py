@@ -294,6 +294,7 @@ class OntologyTermsSharedAncestor(Resource):
 ribbon_parser = api.parser()
 ribbon_parser.add_argument('subset', help='Name of the subset to map GO terms (e.g. goslim_agr)')
 ribbon_parser.add_argument('subject', action='append', help='List of Gene ids (e.g. MGI:98214, RGD:620474)')
+ribbon_parser.add_argument('ecodes', action='append', help='List of Evidence Codes to include (e.g. EXP, IDA). Has priority over exclude_IBA')
 ribbon_parser.add_argument('exclude_IBA', type=inputs.boolean, default=False, help='If true, excludes IBA annotations')
 ribbon_parser.add_argument('exclude_PB', type=inputs.boolean, default=False, help='If true, excludes direct annotations to protein binding')
 ribbon_parser.add_argument('cross_aspect', type=inputs.boolean, default=False, help='If true, can retrieve terms from other aspects if using a cross-aspect relationship such as regulates_closure')
@@ -315,6 +316,7 @@ class OntologyRibbons(Resource):
 
         exclude_IBA = args.exclude_IBA
         exclude_PB = args.exclude_PB
+        ecodes = args.ecodes
         cross_aspect = args.cross_aspect
 
         # Step 1: create the categories
@@ -387,12 +389,13 @@ class OntologyRibbons(Resource):
             qf = ""
             fq = "&fq=bioentity:\"" + subject_id + "\"&rows=100000"
             fields = "annotation_class,evidence_type,regulates_closure,aspect"
-            if exclude_IBA:
+            if len(ecodes) > 0:
+                fq += "&fq=evidence_type:(\"" + '" "'.join(ecodes) + "\")"
+            elif exclude_IBA:
                 fq += "&fq=!evidence_type:IBA"
             if exclude_PB:
                 fq += "&fq=!annotation_class:\"GO:0005515\""
             data = run_solr_text_on(ESOLR.GOLR, ESOLRDoc.ANNOTATION, q, qf, fields, fq)
-
 
             # compute number of terms and annotations
             for annot in data:
