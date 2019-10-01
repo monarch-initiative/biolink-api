@@ -389,7 +389,7 @@ class OntologyRibbons(Resource):
             qf = ""
             fq = "&fq=bioentity:\"" + subject_id + "\"&rows=100000"
             fields = "annotation_class,evidence_type,regulates_closure,aspect"
-            if len(ecodes) > 0:
+            if ecodes:
                 fq += "&fq=evidence_type:(\"" + '" "'.join(ecodes) + "\")"
             elif exclude_IBA:
                 fq += "&fq=!evidence_type:IBA"
