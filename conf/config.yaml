@@ -21,6 +21,9 @@ scigraph_data:
   timeout: 15
 use_amigo_for:
   - function
+identifier_converter: biolink.identifier_converter.SciGraphIdentifierConverter
+#identifier_converter: biolink.identifier_converter.MyGeneInfoIdentifierConverter
+
 ontologies:
   - id: go
     handle: go

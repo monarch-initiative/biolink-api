@@ -12,8 +12,8 @@ from ontobio.vocabulary.relations import HomologyTypes
 from ..closure_bins import create_closure_bin
 from ..association_counts import get_association_counts
 from biolink import USER_AGENT
-from biolink.api.entityset.endpoints.slimmer import gene_to_uniprot_from_mygene, uniprot_to_gene_from_mygene
-from biolink.settings import get_biolink_config
+
+from biolink.settings import get_biolink_config, get_identifier_converter
 from biolink.error_handlers import NoResultFoundException, UnhandledException, UnrecognizedBioentityTypeException
 
 from ontobio.golr.golr_query import run_solr_text_on, ESOLR, ESOLRDoc, replace
@@ -85,6 +85,7 @@ scigraph = SciGraph(get_biolink_config()['scigraph_data']['url'])
 
 homol_rel = HomologyTypes.Homolog.value
 
+identifier_converter = get_identifier_converter()
 
 @api.doc(params={'id': 'id, e.g. NCBIGene:84570'})
 class GenericObject(Resource):
@@ -362,8 +363,7 @@ class GeneFunctionAssociations(Resource):
         if len(assocs['associations']) == 0:
             # Note that GO currently uses UniProt as primary ID for some sources: https://github.com/biolink/biolink-api/issues/66
             # https://github.com/monarch-initiative/dipper/issues/461
-            #prots = scigraph.gene_to_uniprot_proteins(id)
-            prots = gene_to_uniprot_from_mygene(id)
+            prots = identifier_converter.convert_gene_to_protein(id)
             for prot in prots:
                 pr_assocs = search_associations(
                     object_category='function',

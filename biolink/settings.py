@@ -1,4 +1,5 @@
 import yaml
+import importlib
 from os import path, environ
 
 # Flask settings
@@ -25,6 +26,7 @@ CONFIG = path.join(path.dirname(path.abspath(__file__)), '../conf/config.yaml')
 ROUTES = path.join(path.dirname(path.abspath(__file__)), '../conf/routes.yaml')
 biolink_config = None
 route_mapping = None
+identifier_converter = None
 
 def get_biolink_config():
     global biolink_config
@@ -39,3 +41,11 @@ def get_route_mapping():
         with open(ROUTES, 'r') as FH:
             route_mapping = yaml.load(FH, Loader=yaml.FullLoader)
     return route_mapping
+
+def get_identifier_converter():
+    global identifier_converter
+    if identifier_converter is None:
+        module_name, class_name = get_biolink_config()['identifier_converter'].rsplit(".", 1)
+        MyClass = getattr(importlib.import_module(module_name), class_name)
+        identifier_converter = MyClass()
+    return identifier_converter
