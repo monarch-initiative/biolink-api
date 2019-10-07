@@ -25,7 +25,7 @@ HAS_ROLE = 'http://purl.obolibrary.org/obo/RO_0000087'
 IN_TAXON = 'RO:0002162'
 HAS_DISPOSITION = 'RO:0000091'
 ENCODES = 'RO:0002205'
-HAS_DBXREF = 'OIO:hasDbXref'
+HAS_DBXREF = 'oboInOwl:hasDbXref'
 
 class SciGraph:
     """
