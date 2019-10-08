@@ -25,7 +25,7 @@ HAS_ROLE = 'http://purl.obolibrary.org/obo/RO_0000087'
 IN_TAXON = 'RO:0002162'
 HAS_DISPOSITION = 'RO:0000091'
 ENCODES = 'RO:0002205'
-HAS_DBXREF = 'OIO:hasDbXref'
+HAS_DBXREF = 'oboInOwl:hasDbXref'
 
 class SciGraph:
     """
@@ -334,17 +334,11 @@ class SciGraph:
         This method may be retired in future. See https://github.com/monarch-initiative/dipper/issues/461
         """
         uniprot_ids = []
-        objs = self.traverse_chain(id, [ENCODES, HAS_DBXREF], blank=False, reverse_direction=False)
+        clique_leader = self.get_clique_leader(id)
+        objs = self.traverse_chain(clique_leader.id, [ENCODES, HAS_DBXREF], blank=False, reverse_direction=False)
         for x in objs:
             if x.id.startswith('UniProtKB') and x.id not in uniprot_ids:
                 uniprot_ids.append(x.id)
-        # This second step is expensive and will no longer be required when https://github.com/SciGraph/SciGraph/issues/135
-        # is implemented
-        if len(uniprot_ids) == 0:
-            objs = self.traverse_chain(id, ['equivalentClass', ENCODES, HAS_DBXREF], blank=False, reverse_direction=False)
-            for x in objs:
-                if x.id.startswith('UniProtKB') and x.id not in uniprot_ids:
-                    uniprot_ids.append(x.id)
         return uniprot_ids
 
     def uniprot_protein_to_genes(self, id):
