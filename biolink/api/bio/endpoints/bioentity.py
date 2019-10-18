@@ -228,14 +228,13 @@ class GeneDiseaseAssociations(Resource):
         """
         args = gene_disease_parser.parse_args()
         if args['association_type'] == 'causal':
-            assoc_filter = {'association_type': 'gene_disease'}
+            args['association_type'] = 'gene_disease'
         elif args['association_type'] == 'non_causal':
-            assoc_filter = {'association_type': 'marker_disease'}
+            args['association_type'] = 'marker_disease'
         else:
-            assoc_filter = {'association_type': ['gene_disease', 'marker_disease']}
+            args['association_type'] = ['gene_disease', 'marker_disease']
 
         return search_associations(
-            fq=assoc_filter,
             subject=id,
             sort="source_count desc",
             user_agent=USER_AGENT,
@@ -531,15 +530,14 @@ class DiseaseGeneAssociations(Resource):
         """
         args = gene_disease_parser.parse_args()
         if args['association_type'] == 'causal':
-            assoc_filter = {'association_type': 'gene_disease'}
+            args['association_type'] = 'gene_disease'
         elif args['association_type'] == 'non_causal':
-            assoc_filter = {'association_type': 'marker_disease'}
+            args['association_type'] = 'marker_disease'
         else:
-            assoc_filter = {'association_type': ['gene_disease', 'marker_disease']}
+            args['association_type'] = ['gene_disease', 'marker_disease']
 
         return search_associations(
             subject=id,
-            fq=assoc_filter,
             object_taxon=args.taxon,
             invert_subject_object=True,
             sort="source_count desc",
