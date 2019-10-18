@@ -67,3 +67,23 @@ class AssociationsBetween(Resource):
         """
         args = core_parser.parse_args()
         return search_associations(subject=subject, object=object, user_agent=USER_AGENT, **args)
+
+@api.doc(params={'association_type': 'Association type, eg gene_phenotype'})
+class AssociationBySubjectAndAssocType(Resource):
+
+    parser = core_parser.copy()
+    parser.add_argument('subject', help='Subject CURIE')
+    parser.add_argument('object', help='Object CURIE')
+
+    @api.expect(parser)
+    @api.marshal_list_with(association_results)
+    def get(self, association_type):
+        """
+        Returns list of matching associations of a given type
+        """
+        args = self.parser.parse_args()
+        return search_associations(
+            association_type=association_type,
+            user_agent=USER_AGENT,
+            **args
+        )

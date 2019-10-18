@@ -184,6 +184,8 @@ route_mapping:
           resource: biolink.api.link.endpoints.associations_from.AssociationsTo
         - route: /between/<subject>/<object>
           resource: biolink.api.link.endpoints.associations_from.AssociationsBetween
+        - route: /type/<association_type>
+          resource: biolink.api.link.endpoints.associations_from.AssociationBySubjectAndAssocType
     - name: cam
       description: Operations on GO Causal Activity Models (GO-CAMs)
       routes:
