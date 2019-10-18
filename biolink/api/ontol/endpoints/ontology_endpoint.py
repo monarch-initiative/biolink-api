@@ -517,13 +517,7 @@ class OntologyRibbons(Resource):
         fields = "bioentity,bioentity_label,taxon,taxon_label"
         data = run_solr_text_on(ESOLR.GOLR, ESOLRDoc.BIOENTITY, q, qf, fields, fq)
 
-        # map the entity back to their original IDs
         for entity in subjects:
-            if entity['id'] in reverse_mapped_ids:
-                entity['id'] = reverse_mapped_ids[entity['id']]            
-
-        for entity in subjects:
-
             for entity_detail in data:
                 subject_id = entity_detail['bioentity'].replace("MGI:MGI:", "MGI:")
 
@@ -531,6 +525,11 @@ class OntologyRibbons(Resource):
                     entity['label'] = entity_detail['bioentity_label']
                     entity['taxon_id'] = entity_detail['taxon']
                     entity['taxon_label'] = entity_detail['taxon_label']
+
+        # map the entity back to their original IDs
+        for entity in subjects:
+            if entity['id'] in reverse_mapped_ids:
+                entity['id'] = reverse_mapped_ids[entity['id']]            
 
 
 
