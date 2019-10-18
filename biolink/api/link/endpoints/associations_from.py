@@ -84,6 +84,7 @@ class AssociationBySubjectAndAssocType(Resource):
         args = self.parser.parse_args()
         return search_associations(
             association_type=association_type,
+            sort="source_count desc",
             user_agent=USER_AGENT,
             **args
         )
