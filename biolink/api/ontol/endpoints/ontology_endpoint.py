@@ -352,9 +352,13 @@ class OntologyRibbons(Resource):
         # ID conversion
         subject_ids = [x.replace('WormBase:', 'WB:') if 'WormBase:' in x else x for x in subject_ids]
         slimmer_subjects = []
+        mapped_ids = { }
+        reverse_mapped_ids = { }
         for s in subject_ids:
             if 'HGNC:' in s or 'NCBIGene:' in s or 'ENSEMBL:' in s:
                 prots = gene_to_uniprot_from_mygene(s)
+                mapped_ids[s] = prots[0]
+                reverse_mapped_ids[prots[0]] = s
                 if len(prots) == 0:
                     prots = [s]
                 slimmer_subjects += prots
@@ -512,8 +516,11 @@ class OntologyRibbons(Resource):
         fq = "&fq=bioentity:(\"" + "\" or \"".join(mod_ids) + "\")&rows=100000"
         fields = "bioentity,bioentity_label,taxon,taxon_label"
         data = run_solr_text_on(ESOLR.GOLR, ESOLRDoc.BIOENTITY, q, qf, fields, fq)
-        # print("G DATA: " , data)
 
+        # map the entity back to their original IDs
+        for entity in subjects:
+            if entity['id'] in reverse_mapped_ids:
+                entity['id'] = reverse_mapped_ids[entity['id']]            
 
         for entity in subjects:
 
