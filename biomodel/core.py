@@ -303,6 +303,7 @@ class NamedObject():
                  synonyms=None,
                  description=None,
                  xrefs=None,
+                 iri=None,
                  **kwargs):
         self.id=id
         self.label=label
@@ -310,6 +311,7 @@ class NamedObject():
         self.synonyms=synonyms
         self.description=description
         self.xrefs=xrefs
+        self.iri=iri
 
 
     """
