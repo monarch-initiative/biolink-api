@@ -118,16 +118,16 @@ CATEGORY_NAME_MAP = {
         'model': 'publication'
     },
     "marker_disease": {
-        'gene': 'disease',
-        'disease': 'gene'
+        'gene': 'noncausal-disease',
+        'disease': 'noncausal-gene'
     },
     "case_disease": {
         'case': 'disease',
         'disease': 'case'
     },
     "gene_disease": {
-        'gene': 'disease',
-        'disease': 'gene'
+        'gene': 'causal-disease',
+        'disease': 'causal-gene'
     },
     "case_variant": {
         'case': 'variant',
