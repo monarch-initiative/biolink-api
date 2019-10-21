@@ -532,8 +532,14 @@ class OntologyRibbons(Resource):
                 entity['id'] = reverse_mapped_ids[entity['id']]            
 
 
+        # if any subject without annotation is retrieved, remove it
+        to_remove = []
+        for entity in subjects:
+            if entity['nb_annotations'] == 0:
+                to_remove.append(entity)
 
-
+        for entity in to_remove:
+            subjects.remove(entity)
             
             
         # http://golr-aux.geneontology.io/solr/select/?q=*:*&fq=document_category:%22bioentity%22&rows=10&wt=json&fl=bioentity,bioentity_label,taxon,taxon_label&fq=bioentity:(%22MGI:MGI:98214%22%20or%20%22RGD:620474%22)        
