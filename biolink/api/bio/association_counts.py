@@ -26,7 +26,8 @@ CATEGORY_NAME_MAP = {
         'gene': 'publication'
     },
     'gene_interaction': {
-        'gene': 'interaction'
+        'gene': 'interaction',
+        'ortholog': 'interaction'
     },
     'variant_phenotype':{
         'variant': 'phenotype',
@@ -38,7 +39,8 @@ CATEGORY_NAME_MAP = {
     },
     'gene_anatomy': {
         'gene': 'anatomy',
-        'anatomy': 'gene'
+        'anatomy': 'gene',
+        'ortholog': 'anatomy'
     },
     'variant_gene': {
         'variant': 'gene',
@@ -53,7 +55,8 @@ CATEGORY_NAME_MAP = {
     "gene_function": {
         'gene': 'function',
         'function': 'gene',
-        'goterm': 'gene'
+        'goterm': 'gene',
+        'ortholog': 'function'
     },
     "model_gene": {
         'model': 'gene',
@@ -70,7 +73,8 @@ CATEGORY_NAME_MAP = {
     },
     "gene_phenotype": {
         'gene': 'phenotype',
-        'phenotype': 'gene'
+        'phenotype': 'gene',
+        'ortholog': 'phenotype'
     },
     "publication_phenotype": {
         'publication': 'phenotype',
@@ -82,7 +86,8 @@ CATEGORY_NAME_MAP = {
     },
     "gene_pathway": {
         'gene': 'pathway',
-        'pathway': 'gene'
+        'pathway': 'gene',
+        'ortholog': 'pathway'
     },
     "publication_disease": {
         'publication': 'disease',
@@ -119,7 +124,8 @@ CATEGORY_NAME_MAP = {
     },
     "marker_disease": {
         'gene': 'noncausal-disease',
-        'disease': 'noncausal-gene'
+        'disease': 'noncausal-gene',
+        'ortholog': 'disease'
     },
     "case_disease": {
         'case': 'disease',
@@ -127,7 +133,8 @@ CATEGORY_NAME_MAP = {
     },
     "gene_disease": {
         'gene': 'causal-disease',
-        'disease': 'causal-gene'
+        'disease': 'causal-gene',
+        'ortholog': 'disease'
     },
     "case_variant": {
         'case': 'variant',
@@ -210,7 +217,7 @@ def get_association_counts(bioentity_id, bioentity_type=None, distinct_counts=Fa
 
     if bioentity_type == 'gene':
         # get counts for ortholog-x associations
-        type_prefix = 'ortholog'
+        bioentity_type = type_prefix = 'ortholog'
         ortholog_count_map = {}
         if distinct_counts:
             ortholog_associations = search_associations(
