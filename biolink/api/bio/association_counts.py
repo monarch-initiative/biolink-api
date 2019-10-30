@@ -170,6 +170,7 @@ def get_association_counts(bioentity_id, bioentity_type=None, distinct_counts=Fa
     For a given CURIE, get the number of associations by each category.
     """
     count_map = {}
+    source_count = {}
     # get counts where bioentity_id is the subject
 
     if distinct_counts:
@@ -178,7 +179,8 @@ def get_association_counts(bioentity_id, bioentity_type=None, distinct_counts=Fa
             facet_pivot_fields=['{!stats=piv1}association_type', 'object_taxon'],
             stats=True,
             rows=0,
-            facet_fields=[],
+            facet_fields=['is_defined_by'],
+            facet_limit='100',
             stats_field=['{!tag=piv1 calcdistinct=true distinctValues=false}object']
         )
     else:
@@ -187,9 +189,11 @@ def get_association_counts(bioentity_id, bioentity_type=None, distinct_counts=Fa
             facet_pivot_fields=['{!stats=piv1}association_type', 'object_taxon'],
             stats=True,
             rows=0,
-            facet_fields=[],
+            facet_fields=['is_defined_by'],
+            facet_limit='100',
             stats_field=['{!tag=piv1 countDistinct=false}object']
         )
+    source_count = subject_associations['facet_counts']['is_defined_by']
     subject_facet_pivot = subject_associations['facet_pivot']['association_type,object_taxon']
     parse_facet_pivot(subject_facet_pivot, bioentity_type, count_map, distinct_counts=distinct_counts)
 
@@ -200,7 +204,8 @@ def get_association_counts(bioentity_id, bioentity_type=None, distinct_counts=Fa
             facet_pivot_fields=['{!stats=piv1}association_type', 'subject_taxon'],
             stats=True,
             rows=0,
-            facet_fields=[],
+            facet_fields=['is_defined_by'],
+            facet_limit='100',
             stats_field=['{!tag=piv1 calcdistinct=true distinctValues=false}subject']
         )
     else:
@@ -209,9 +214,17 @@ def get_association_counts(bioentity_id, bioentity_type=None, distinct_counts=Fa
             facet_pivot_fields=['{!stats=piv1}association_type', 'subject_taxon'],
             stats=True,
             rows=0,
-            facet_fields=[],
+            facet_fields=['is_defined_by'],
+            facet_limit='100',
             stats_field=['{!tag=piv1 countDistinct=false}subject']
         )
+
+    for src, count in object_associations['facet_counts']['is_defined_by'].items():
+        if src in source_count:
+            source_count[src] += count
+        else:
+            source_count[src] = count
+
     object_facet_pivot = object_associations['facet_pivot']['association_type,subject_taxon']
     parse_facet_pivot(object_facet_pivot, bioentity_type, count_map, distinct_counts=distinct_counts)
 
@@ -242,6 +255,8 @@ def get_association_counts(bioentity_id, bioentity_type=None, distinct_counts=Fa
         final_count_map = {**count_map, **ortholog_count_map}
     else:
         final_count_map = count_map
+
+    final_count_map['sources'] = source_count
 
     for x in EXCLUDE_LIST:
         if x in final_count_map:
