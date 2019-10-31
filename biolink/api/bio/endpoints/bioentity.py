@@ -471,6 +471,7 @@ class GeneVariantAssociations(Resource):
             subject_category='gene',
             object_category='variant',
             invert_subject_object=True,
+            object_taxon=args.taxon,
             subject=id,
             user_agent=USER_AGENT,
             **args
