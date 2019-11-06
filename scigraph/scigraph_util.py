@@ -314,7 +314,7 @@ class SciGraph:
         obj = {
             'id': id,
             'label': lbl,
-            'categories': meta.get('category'),
+            'category': meta.get('category'),
             'xrefs': meta.get('http://www.geneontology.org/formats/oboInOwl#hasDbXref')
         }
         if 'synonym' in meta:

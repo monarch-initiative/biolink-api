@@ -16,7 +16,10 @@ class Concept:
         self.id = obj['curie']
         self.deprecated = obj['deprecated']
         self.labels = obj['labels']
-        self.categories = obj['categories']
+        if 'categories' in obj:
+            self.category = obj['categories']
+        if 'category' in obj:
+            self.category = obj['category']
         self.synonyms = obj['synonyms']
         self.acronyms = obj['acronyms']
         self.abbreviations = obj['abbreviations']
