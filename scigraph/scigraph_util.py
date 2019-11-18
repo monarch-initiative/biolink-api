@@ -7,12 +7,14 @@ Utility classes for wrapping a SciGraph service
 """
 
 import importlib
+from prefixcommons.curie_util import expand_uri
+from ontobio.util.user_agent import get_user_agent
+from ontobio.util.scigraph_util import get_curie_map
 
 from scigraph.model.BBOPGraph import *
 from scigraph.model.Concept import *
 from scigraph.model.EntityAnnotationResults import *
 from biomodel.core import BioObject, SynonymPropertyValue
-from ontobio.util.user_agent import get_user_agent
 from biolink import NAME, VERSION
 from biolink.error_handlers import NoResultFoundException
 
@@ -314,8 +316,9 @@ class SciGraph:
         obj = {
             'id': id,
             'label': lbl,
-            'categories': meta.get('category'),
-            'xrefs': meta.get('http://www.geneontology.org/formats/oboInOwl#hasDbXref')
+            'category': meta.get('category'),
+            'xrefs': meta.get('http://www.geneontology.org/formats/oboInOwl#hasDbXref'),
+            'iri': expand_uri(id, [get_curie_map()])
         }
         if 'synonym' in meta:
             obj['synonyms'] = [SynonymPropertyValue(pred='synonym', val=s) for s in meta['synonym']]

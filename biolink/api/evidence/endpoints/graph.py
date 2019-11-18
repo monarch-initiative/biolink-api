@@ -3,10 +3,10 @@ from biolink.datamodel.serializers import bbop_graph, association_results
 from biolink.api.restplus import api
 
 from ontobio.golr.golr_associations import get_association, search_associations
-from ontobio.obograph_util import convert_json_object, obograph_to_assoc_results
+from ontobio.obograph_util import get_evidence_tables
 
 from flask import request, send_file
-from flask_restplus import Resource
+from flask_restplus import Resource, inputs
 import networkx as nx
 import logging
 import tempfile
@@ -43,6 +43,9 @@ class EvidenceGraphObject(Resource):
 @api.doc(params={'id': 'association id, e.g. 68e686f6-d05b-46b8-ab1f-1da2fff97ada'})
 class EvidenceGraphTable(Resource):
 
+    parser.add_argument('is_publication', type=inputs.boolean, default=False,
+                        help='If true, considers dc:source as edge')
+
     @api.expect(parser)
     @api.marshal_list_with(association_results)
     def get(self, id):
@@ -51,21 +54,9 @@ class EvidenceGraphTable(Resource):
 
         Note that every association is assumed to have a unique ID
         """
-        results = search_associations(
-            fq={'id': id},
-            facet=False,
-            select_fields=['evidence_graph'],
-            user_agent=USER_AGENT)
-        assoc_results = {}
-        assoc = results['associations'][0] if len(results['associations']) > 0 else {}
-        if assoc:
-            eg = {'graphs': [assoc.get('evidence_graph')]}
-            digraph = convert_json_object(eg, reverse_edges=False)['graph']
-            assoc_results = {
-                'associations': obograph_to_assoc_results(digraph),
-                'numFound': len(obograph_to_assoc_results(digraph))}
+        args = parser.parse_args()
 
-        return assoc_results
+        return get_evidence_tables(id, args['is_publication'], USER_AGENT)
 
 
 @api.doc(params={'id': 'association id, e.g. 68e686f6-d05b-46b8-ab1f-1da2fff97ada'})

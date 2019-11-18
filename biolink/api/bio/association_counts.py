@@ -26,7 +26,8 @@ CATEGORY_NAME_MAP = {
         'gene': 'publication'
     },
     'gene_interaction': {
-        'gene': 'interaction'
+        'gene': 'interaction',
+        'ortholog': 'interaction'
     },
     'variant_phenotype':{
         'variant': 'phenotype',
@@ -38,7 +39,8 @@ CATEGORY_NAME_MAP = {
     },
     'gene_anatomy': {
         'gene': 'anatomy',
-        'anatomy': 'gene'
+        'anatomy': 'gene',
+        'ortholog': 'anatomy'
     },
     'variant_gene': {
         'variant': 'gene',
@@ -53,7 +55,8 @@ CATEGORY_NAME_MAP = {
     "gene_function": {
         'gene': 'function',
         'function': 'gene',
-        'goterm': 'gene'
+        'goterm': 'gene',
+        'ortholog': 'function'
     },
     "model_gene": {
         'model': 'gene',
@@ -70,7 +73,8 @@ CATEGORY_NAME_MAP = {
     },
     "gene_phenotype": {
         'gene': 'phenotype',
-        'phenotype': 'gene'
+        'phenotype': 'gene',
+        'ortholog': 'phenotype'
     },
     "publication_phenotype": {
         'publication': 'phenotype',
@@ -82,7 +86,8 @@ CATEGORY_NAME_MAP = {
     },
     "gene_pathway": {
         'gene': 'pathway',
-        'pathway': 'gene'
+        'pathway': 'gene',
+        'ortholog': 'pathway'
     },
     "publication_disease": {
         'publication': 'disease',
@@ -118,16 +123,18 @@ CATEGORY_NAME_MAP = {
         'model': 'publication'
     },
     "marker_disease": {
-        'gene': 'disease',
-        'disease': 'gene'
+        'gene': 'noncausal-disease',
+        'disease': 'noncausal-gene',
+        'ortholog': 'disease'
     },
     "case_disease": {
         'case': 'disease',
         'disease': 'case'
     },
     "gene_disease": {
-        'gene': 'disease',
-        'disease': 'gene'
+        'gene': 'causal-disease',
+        'disease': 'causal-gene',
+        'ortholog': 'disease'
     },
     "case_variant": {
         'case': 'variant',
@@ -163,6 +170,7 @@ def get_association_counts(bioentity_id, bioentity_type=None, distinct_counts=Fa
     For a given CURIE, get the number of associations by each category.
     """
     count_map = {}
+    source_count = {}
     # get counts where bioentity_id is the subject
 
     if distinct_counts:
@@ -171,7 +179,8 @@ def get_association_counts(bioentity_id, bioentity_type=None, distinct_counts=Fa
             facet_pivot_fields=['{!stats=piv1}association_type', 'object_taxon'],
             stats=True,
             rows=0,
-            facet_fields=[],
+            facet_fields=['is_defined_by'],
+            facet_limit='100',
             stats_field=['{!tag=piv1 calcdistinct=true distinctValues=false}object']
         )
     else:
@@ -180,9 +189,11 @@ def get_association_counts(bioentity_id, bioentity_type=None, distinct_counts=Fa
             facet_pivot_fields=['{!stats=piv1}association_type', 'object_taxon'],
             stats=True,
             rows=0,
-            facet_fields=[],
+            facet_fields=['is_defined_by'],
+            facet_limit='100',
             stats_field=['{!tag=piv1 countDistinct=false}object']
         )
+    source_count = subject_associations['facet_counts']['is_defined_by']
     subject_facet_pivot = subject_associations['facet_pivot']['association_type,object_taxon']
     parse_facet_pivot(subject_facet_pivot, bioentity_type, count_map, distinct_counts=distinct_counts)
 
@@ -193,7 +204,8 @@ def get_association_counts(bioentity_id, bioentity_type=None, distinct_counts=Fa
             facet_pivot_fields=['{!stats=piv1}association_type', 'subject_taxon'],
             stats=True,
             rows=0,
-            facet_fields=[],
+            facet_fields=['is_defined_by'],
+            facet_limit='100',
             stats_field=['{!tag=piv1 calcdistinct=true distinctValues=false}subject']
         )
     else:
@@ -202,15 +214,23 @@ def get_association_counts(bioentity_id, bioentity_type=None, distinct_counts=Fa
             facet_pivot_fields=['{!stats=piv1}association_type', 'subject_taxon'],
             stats=True,
             rows=0,
-            facet_fields=[],
+            facet_fields=['is_defined_by'],
+            facet_limit='100',
             stats_field=['{!tag=piv1 countDistinct=false}subject']
         )
+
+    for src, count in object_associations['facet_counts']['is_defined_by'].items():
+        if src in source_count:
+            source_count[src] += count
+        else:
+            source_count[src] = count
+
     object_facet_pivot = object_associations['facet_pivot']['association_type,subject_taxon']
     parse_facet_pivot(object_facet_pivot, bioentity_type, count_map, distinct_counts=distinct_counts)
 
     if bioentity_type == 'gene':
         # get counts for ortholog-x associations
-        type_prefix = 'ortholog'
+        bioentity_type = type_prefix = 'ortholog'
         ortholog_count_map = {}
         if distinct_counts:
             ortholog_associations = search_associations(
@@ -235,6 +255,8 @@ def get_association_counts(bioentity_id, bioentity_type=None, distinct_counts=Fa
         final_count_map = {**count_map, **ortholog_count_map}
     else:
         final_count_map = count_map
+
+    final_count_map['sources'] = source_count
 
     for x in EXCLUDE_LIST:
         if x in final_count_map:

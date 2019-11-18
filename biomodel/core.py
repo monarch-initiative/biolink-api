@@ -280,7 +280,7 @@ class NamedObject():
 
          RDFS Label
 
-     categories : 
+     category : 
 
          Type of object
 
@@ -299,17 +299,19 @@ class NamedObject():
     def __init__(self,
                  id=None,
                  label=None,
-                 categories=None,
+                 category=None,
                  synonyms=None,
                  description=None,
                  xrefs=None,
+                 iri=None,
                  **kwargs):
         self.id=id
         self.label=label
-        self.categories=categories
+        self.category=category
         self.synonyms=synonyms
         self.description=description
         self.xrefs=xrefs
+        self.iri=iri
 
 
     """
@@ -323,8 +325,8 @@ class NamedObject():
             obj.id = json_obj['id']
         if 'label' in json_obj:
             obj.label = json_obj['label']
-        if 'categories' in json_obj:
-            obj.categories = [x for x in json_obj['categories']]
+        if 'category' in json_obj:
+            obj.category = [x for x in json_obj['category']]
         return obj
 
 class Relation(NamedObject):
@@ -353,8 +355,8 @@ class Relation(NamedObject):
             obj.id = json_obj['id']
         if 'label' in json_obj:
             obj.label = json_obj['label']
-        if 'categories' in json_obj:
-            obj.categories = [x for x in json_obj['categories']]
+        if 'category' in json_obj:
+            obj.category = [x for x in json_obj['category']]
         return obj
 
 class Publication(NamedObject):
@@ -383,8 +385,8 @@ class Publication(NamedObject):
             obj.id = json_obj['id']
         if 'label' in json_obj:
             obj.label = json_obj['label']
-        if 'categories' in json_obj:
-            obj.categories = [x for x in json_obj['categories']]
+        if 'category' in json_obj:
+            obj.category = [x for x in json_obj['category']]
         return obj
 
 class Taxon():
@@ -459,8 +461,8 @@ class BioObject(NamedObject):
             obj.id = json_obj['id']
         if 'label' in json_obj:
             obj.label = json_obj['label']
-        if 'categories' in json_obj:
-            obj.categories = [x for x in json_obj['categories']]
+        if 'category' in json_obj:
+            obj.category = [x for x in json_obj['category']]
         if 'taxon' in json_obj:
             obj.taxon = Taxon.from_json(json_obj['taxon'])
         if 'description' in json_obj:
@@ -823,8 +825,8 @@ class SequenceLocation(BioObject):
             obj.id = json_obj['id']
         if 'label' in json_obj:
             obj.label = json_obj['label']
-        if 'categories' in json_obj:
-            obj.categories = [x for x in json_obj['categories']]
+        if 'category' in json_obj:
+            obj.category = [x for x in json_obj['category']]
         if 'taxon' in json_obj:
             obj.taxon = Taxon.from_json(json_obj['taxon'])
         if 'end' in json_obj:
@@ -883,8 +885,8 @@ class Seq(BioObject):
             obj.id = json_obj['id']
         if 'label' in json_obj:
             obj.label = json_obj['label']
-        if 'categories' in json_obj:
-            obj.categories = [x for x in json_obj['categories']]
+        if 'category' in json_obj:
+            obj.category = [x for x in json_obj['category']]
         if 'taxon' in json_obj:
             obj.taxon = Taxon.from_json(json_obj['taxon'])
         if 'residues' in json_obj:
@@ -935,8 +937,8 @@ class SequenceFeature(BioObject):
             obj.id = json_obj['id']
         if 'label' in json_obj:
             obj.label = json_obj['label']
-        if 'categories' in json_obj:
-            obj.categories = [x for x in json_obj['categories']]
+        if 'category' in json_obj:
+            obj.category = [x for x in json_obj['category']]
         if 'taxon' in json_obj:
             obj.taxon = Taxon.from_json(json_obj['taxon'])
         if 'homology_associations' in json_obj:
@@ -1003,8 +1005,8 @@ class Gene(BioObject):
             obj.id = json_obj['id']
         if 'label' in json_obj:
             obj.label = json_obj['label']
-        if 'categories' in json_obj:
-            obj.categories = [x for x in json_obj['categories']]
+        if 'category' in json_obj:
+            obj.category = [x for x in json_obj['category']]
         if 'taxon' in json_obj:
             obj.taxon = Taxon.from_json(json_obj['taxon'])
         if 'homology_associations' in json_obj:
@@ -1049,8 +1051,8 @@ class GeneProduct(BioObject):
             obj.id = json_obj['id']
         if 'label' in json_obj:
             obj.label = json_obj['label']
-        if 'categories' in json_obj:
-            obj.categories = [x for x in json_obj['categories']]
+        if 'category' in json_obj:
+            obj.category = [x for x in json_obj['category']]
         if 'taxon' in json_obj:
             obj.taxon = Taxon.from_json(json_obj['taxon'])
         if 'genes' in json_obj:
@@ -1087,8 +1089,8 @@ class Transcript(BioObject):
             obj.id = json_obj['id']
         if 'label' in json_obj:
             obj.label = json_obj['label']
-        if 'categories' in json_obj:
-            obj.categories = [x for x in json_obj['categories']]
+        if 'category' in json_obj:
+            obj.category = [x for x in json_obj['category']]
         if 'taxon' in json_obj:
             obj.taxon = Taxon.from_json(json_obj['taxon'])
         if 'genes' in json_obj:
@@ -1137,8 +1139,8 @@ class Genotype(BioObject):
             obj.id = json_obj['id']
         if 'label' in json_obj:
             obj.label = json_obj['label']
-        if 'categories' in json_obj:
-            obj.categories = [x for x in json_obj['categories']]
+        if 'category' in json_obj:
+            obj.category = [x for x in json_obj['category']]
         if 'taxon' in json_obj:
             obj.taxon = Taxon.from_json(json_obj['taxon'])
         if 'disease_associations' in json_obj:
@@ -1177,8 +1179,8 @@ class Allele(Genotype):
             obj.id = json_obj['id']
         if 'label' in json_obj:
             obj.label = json_obj['label']
-        if 'categories' in json_obj:
-            obj.categories = [x for x in json_obj['categories']]
+        if 'category' in json_obj:
+            obj.category = [x for x in json_obj['category']]
         if 'taxon' in json_obj:
             obj.taxon = Taxon.from_json(json_obj['taxon'])
         if 'disease_associations' in json_obj:
@@ -1221,8 +1223,8 @@ class MolecularComplex(BioObject):
             obj.id = json_obj['id']
         if 'label' in json_obj:
             obj.label = json_obj['label']
-        if 'categories' in json_obj:
-            obj.categories = [x for x in json_obj['categories']]
+        if 'category' in json_obj:
+            obj.category = [x for x in json_obj['category']]
         if 'taxon' in json_obj:
             obj.taxon = Taxon.from_json(json_obj['taxon'])
         if 'genes' in json_obj:
@@ -1271,8 +1273,8 @@ class Substance(BioObject):
             obj.id = json_obj['id']
         if 'label' in json_obj:
             obj.label = json_obj['label']
-        if 'categories' in json_obj:
-            obj.categories = [x for x in json_obj['categories']]
+        if 'category' in json_obj:
+            obj.category = [x for x in json_obj['category']]
         if 'taxon' in json_obj:
             obj.taxon = Taxon.from_json(json_obj['taxon'])
         if 'inchi' in json_obj:
@@ -1327,8 +1329,8 @@ class PhylogeneticNode(NamedObject):
             obj.id = json_obj['id']
         if 'label' in json_obj:
             obj.label = json_obj['label']
-        if 'categories' in json_obj:
-            obj.categories = [x for x in json_obj['categories']]
+        if 'category' in json_obj:
+            obj.category = [x for x in json_obj['category']]
         if 'event' in json_obj:
             obj.event = json_obj['event']
         if 'feature' in json_obj:
@@ -1365,8 +1367,8 @@ class PhylogeneticTree(NamedObject):
             obj.id = json_obj['id']
         if 'label' in json_obj:
             obj.label = json_obj['label']
-        if 'categories' in json_obj:
-            obj.categories = [x for x in json_obj['categories']]
+        if 'category' in json_obj:
+            obj.category = [x for x in json_obj['category']]
         return obj
 
 class ClinicalIndividual(NamedObject):
@@ -1395,7 +1397,7 @@ class ClinicalIndividual(NamedObject):
             obj.id = json_obj['id']
         if 'label' in json_obj:
             obj.label = json_obj['label']
-        if 'categories' in json_obj:
-            obj.categories = [x for x in json_obj['categories']]
+        if 'category' in json_obj:
+            obj.category = [x for x in json_obj['category']]
         return obj
 
