@@ -1,5 +1,5 @@
 prefixcommons>=0.0
-ontobio>=1.12.1
+ontobio>=1.13.2
 pip>=9.0.1
 wheel>0.25.0
 flask-restplus>=0.10.1
@@ -8,7 +8,7 @@ flask-cors>=0.0
 pysolr>=3.6.0
 matplotlib>=0.0
 sparqlwrapper>0.0
-gunicorn>=19.0.0
+gunicorn==19.9.0
 scipy>=0.0
 jsonpickle>=0.0
 behave>=0.0
