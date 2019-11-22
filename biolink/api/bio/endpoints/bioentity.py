@@ -39,6 +39,10 @@ core_parser.add_argument('fetch_objects', type=inputs.boolean, default=False, he
 core_parser.add_argument('use_compact_associations', type=inputs.boolean, default=False, help='If true, returns results in compact associations format')
 core_parser.add_argument('slim', action='append', help='Map objects up (slim) to a higher level category. Value can be ontology class ID or subset ID')
 core_parser.add_argument('evidence', help='Object id, e.g. ECO:0000501 (for IEA; Includes inferred by default) or a specific publication or other supporting object, e.g. ZFIN:ZDB-PUB-060503-2')
+core_parser.add_argument('direct', type=inputs.boolean, default=False,
+                         help='Set true to only include direct associations, and '
+                              'false to include inferred (via subclass or '
+                              'subclass|part of), default=False')
 
 INVOLVED_IN = 'involved_in'
 INVOLVED_IN_REGULATION_OF = 'involved_in_regulation_of'
@@ -64,12 +68,22 @@ categories = [TYPE_GENE, TYPE_VARIANT, TYPE_GENOTYPE,
               TYPE_CASE]
 
 homolog_parser = core_parser.copy()
-homolog_parser.add_argument('taxon', action='append', help='Taxon CURIE of homolog, e.g. NCBITaxon:9606 (Can be an ancestral node in the ontology; includes inferred associations, by default)')
-homolog_parser.add_argument('homology_type', choices=['P', 'O', 'LDO'], help='P (paralog), O (Ortholog) or LDO (least-diverged ortholog)')
+homolog_parser.add_argument('taxon', action='append',
+                            help='Taxon CURIE of homolog, e.g. NCBITaxon:9606 (Can be an ancestral '
+                                 'node in the ontology; includes inferred associations by default)')
+homolog_parser.add_argument('homology_type', choices=['P', 'O', 'LDO'],
+                            help='P (paralog), O (Ortholog) or LDO (least-diverged ortholog)')
+homolog_parser.add_argument('direct_taxon', type=inputs.boolean, default=False,
+                                      help='Set true to exclude inferred taxa')
 
 core_parser_with_filters = core_parser.copy()
-core_parser_with_filters.add_argument('taxon', action='append', help='One or more taxon CURIE to filter associations by subject taxon')
+core_parser_with_filters.add_argument('taxon', action='append',
+                                      help='One or more taxon CURIE to filter associations by subject '
+                                           'taxon; includes inferred associations by default')
+core_parser_with_filters.add_argument('direct_taxon', type=inputs.boolean, default=False,
+                                      help='Set true to exclude inferred taxa')
 core_parser_with_filters.add_argument('relation', help='A relation CURIE to filter associations', default=None)
+
 
 gene_disease_parser = core_parser_with_filters.copy()
 gene_disease_parser.add_argument(
@@ -140,6 +154,7 @@ class GenericAssociations(Resource):
             subject=id,
             user_agent=USER_AGENT,
             object_taxon=args.taxon,
+            object_taxon_direct=args.direct_taxon,
             **args
         )
 
@@ -158,6 +173,7 @@ class GeneInteractions(Resource):
             association_type='gene_interaction',
             subject=id,
             object_taxon=args.taxon,
+            object_taxon_direct=args.direct_taxon,
             sort="source_count desc",
             user_agent=USER_AGENT,
             **args
@@ -185,6 +201,7 @@ class GeneHomologAssociations(Resource):
             association_type='gene_homology',
             subject=id,
             object_taxon=homolog_args.taxon,
+            object_taxon_direct=homolog_args.direct_taxon,
             user_agent=USER_AGENT,
             **homolog_args
         )
@@ -236,6 +253,7 @@ class GeneDiseaseAssociations(Resource):
 
         return search_associations(
             subject=id,
+            object_direct=args.direct,
             sort="source_count desc",
             user_agent=USER_AGENT,
             **args
@@ -398,6 +416,7 @@ class GeneModelAssociations(Resource):
             invert_subject_object=True,
             subject=id,
             object_taxon=args.taxon,
+            object_taxon_direct=args.direct_taxon,
             user_agent=USER_AGENT,
             **args
         )
@@ -425,6 +444,7 @@ class GeneOrthologPhenotypeAssociations(Resource):
         return search_associations(
             fq=filters,
             object_category='phenotype',
+            object_direct=args.direct,
             user_agent=USER_AGENT,
             **args
         )
@@ -453,6 +473,7 @@ class GeneOrthologDiseaseAssociations(Resource):
         return search_associations(
             fq=filters,
             object_category='disease',
+            object_direct=args.direct,
             user_agent=USER_AGENT,
             **args
         )
@@ -472,6 +493,7 @@ class GeneVariantAssociations(Resource):
             object_category='variant',
             invert_subject_object=True,
             object_taxon=args.taxon,
+            object_taxon_direct=args.direct_taxon,
             subject=id,
             user_agent=USER_AGENT,
             **args
@@ -509,6 +531,8 @@ class DiseasePhenotypeAssociations(Resource):
             subject_category='disease',
             object_category='phenotype',
             subject=id,
+            subject_direct=args.direct,
+            object_direct=args.direct,
             facet_limit=100000,
             user_agent=USER_AGENT,
             **args
@@ -539,7 +563,9 @@ class DiseaseGeneAssociations(Resource):
 
         return search_associations(
             subject=id,
+            subject_direct=args.direct,
             object_taxon=args.taxon,
+            object_taxon_direct=args.direct_taxon,
             invert_subject_object=True,
             sort="source_count desc",
             user_agent=USER_AGENT,
@@ -588,7 +614,9 @@ class DiseaseModelAssociations(Resource):
             subject_category='disease',
             object_category='model',
             subject=id,
+            subject_direct=args.direct,
             object_taxon=args.taxon,
+            object_taxon_direct=args.direct_taxon,
             invert_subject_object=True,
             user_agent=USER_AGENT,
             **args
@@ -608,11 +636,12 @@ class DiseaseModelTaxonAssociations(Resource):
         See /disease/<id>/models route for full details
 
         """
-
+        args = core_parser.parse_args()
         return search_associations(
             subject_category='disease',
             object_category='model',
             subject=id,
+            subject_direct=args.direct,
             invert_subject_object=True,
             object_taxon=taxon,
             user_agent=USER_AGENT,
@@ -634,7 +663,9 @@ class DiseaseGenotypeAssociations(Resource):
             object_category='genotype',
             invert_subject_object=True,
             subject=id,
+            subject_direct=args.direct,
             object_taxon=args.taxon,
+            object_taxon_direct=args.direct_taxon,
             user_agent=USER_AGENT,
             **args
         )
@@ -654,6 +685,7 @@ class DiseasePublicationAssociations(Resource):
             object_category='publication',
             invert_subject_object=True,
             subject=id,
+            subject_direct=args.direct,
             user_agent=USER_AGENT,
             **args
         )
@@ -672,6 +704,7 @@ class DiseasePathwayAssociations(Resource):
             subject_category='disease',
             object_category='pathway',
             subject=id,
+            subject_direct=args.direct,
             user_agent=USER_AGENT,
             **args
         )
@@ -691,7 +724,9 @@ class DiseaseVariantAssociations(Resource):
             object_category='variant',
             invert_subject_object=True,
             subject=id,
+            subject_direct=args.direct,
             object_taxon=args.taxon,
+            object_taxon_direct=args.direct_taxon,
             user_agent=USER_AGENT,
             **args
         )
@@ -705,12 +740,13 @@ class DiseaseCaseAssociations(Resource):
         """
         Returns cases associated with a disease
         """
-
+        args = core_parser.parse_args()
         return search_associations(
             subject_category='disease',
             object_category='case',
             invert_subject_object=True,
             subject=id,
+            subject_direct=args.direct,
             user_agent=USER_AGENT,
             **core_parser.parse_args()
         )
@@ -747,6 +783,9 @@ class PhenotypeDiseaseAssociations(Resource):
             object_category='disease',
             invert_subject_object=True,
             subject=id,
+            subject_direct=args.direct,
+            object_direct=args.direct,
+            object_taxon_direct=args.direct_taxon,
             user_agent=USER_AGENT,
             **args
         )
@@ -772,7 +811,9 @@ class PhenotypeGeneAssociations(Resource):
             object_category='gene',
             invert_subject_object=True,
             subject=id,
+            subject_direct=args.direct,
             object_taxon=args.taxon,
+            object_taxon_direct=args.direct_taxon,
             sort="source_count desc",
             user_agent=USER_AGENT,
             **args
@@ -793,10 +834,12 @@ class PhenotypeGeneByTaxonAssociations(Resource):
         For example, MP:0001569 + NCBITaxon:10090 (mouse)
 
         """
+        args = core_parser.parse_args()
         return select_distinct_subjects(
             subject_category='gene',
             object_category='phenotype',
             object=id,
+            object_direct=args.direct,
             subject_taxon=taxid,
             user_agent=USER_AGENT
         )
@@ -816,7 +859,9 @@ class PhenotypeGenotypeAssociations(Resource):
             object_category='genotype',
             invert_subject_object=True,
             subject=id,
+            subject_direct=args.direct,
             object_taxon=args.taxon,
+            object_taxon_direct=args.direct_taxon,
             user_agent=USER_AGENT,
             **args
         )
@@ -836,6 +881,7 @@ class PhenotypePublicationAssociations(Resource):
             object_category='publication',
             invert_subject_object=True,
             subject=id,
+            subject_direct=args.direct,
             user_agent=USER_AGENT,
             **args
         )
@@ -855,6 +901,7 @@ class PhenotypePathwayAssociations(Resource):
             object_category='pathway',
             invert_subject_object=True,
             subject=id,
+            subject_direct=args.direct,
             user_agent=USER_AGENT,
             **args
         )
@@ -874,7 +921,9 @@ class PhenotypeVariantAssociations(Resource):
             object_category='variant',
             invert_subject_object=True,
             subject=id,
+            subject_direct=args.direct,
             object_taxon=args.taxon,
+            object_taxon_direct=args.direct_taxon,
             user_agent=USER_AGENT,
             **args
         )
@@ -888,12 +937,13 @@ class PhenotypeCaseAssociations(Resource):
         """
         Returns cases associated with a phenotype
         """
-
+        args = core_parser.parse_args()
         return search_associations(
             subject_category='phenotype',
             object_category='case',
             invert_subject_object=True,
             subject=id,
+            subject_direct=args.direct,
             user_agent=USER_AGENT,
             **core_parser.parse_args()
         )
@@ -1138,6 +1188,7 @@ class PathwayGeneAssociations(Resource):
             object_category='gene',
             subject=id,
             object_taxon=args.taxon,
+            object_taxon_direct=args.direct_taxon,
             invert_subject_object=True,
             user_agent=USER_AGENT,
             **args
@@ -1157,6 +1208,8 @@ class PathwayDiseaseAssociations(Resource):
             subject_category='pathway',
             object_category='disease',
             subject=id,
+            subject_direct=args.direct,
+            object_direct=args.direct,
             invert_subject_object=True,
             user_agent=USER_AGENT,
             **args
@@ -1176,6 +1229,8 @@ class PathwayPhenotypeAssociations(Resource):
             subject_category='pathway',
             object_category='phenotype',
             subject=id,
+            subject_direct=args.direct,
+            object_direct=args.direct,
             user_agent=USER_AGENT,
             **args
         )
@@ -1195,6 +1250,7 @@ class AnatomyGeneAssociations(Resource):
             object_category='gene',
             subject=id,
             object_taxon=args.taxon,
+            object_taxon_direct=args.direct_taxon,
             invert_subject_object=True,
             user_agent=USER_AGENT,
             **args
@@ -1220,6 +1276,7 @@ class AnatomyGeneByTaxonAssociations(Resource):
             object_category='gene',
             subject=id,
             object_taxon=taxid,
+            object_taxon_direct=args.direct_taxon,
             invert_subject_object=True,
             user_agent=USER_AGENT,
             **args
@@ -1328,6 +1385,7 @@ class GenotypePhenotypeAssociations(Resource):
             subject_category='genotype',
             object_category='phenotype',
             subject=id,
+            object_direct=args.direct,
             facet_limit=100000,
             user_agent=USER_AGENT,
             **args
@@ -1355,6 +1413,7 @@ class GenotypeDiseaseAssociations(Resource):
             subject_category='genotype',
             object_category='disease',
             subject=id,
+            object_direct=args.direct,
             user_agent=USER_AGENT,
             **args
         )
@@ -1392,6 +1451,7 @@ class GenotypeModelAssociations(Resource):
             object_category='model',
             subject=id,
             object_taxon=args.taxon,
+            object_taxon_direct=args.direct_taxon,
             invert_subject_object=True,
             user_agent=USER_AGENT,
             **args
@@ -1467,6 +1527,7 @@ class VariantDiseaseAssociations(Resource):
             subject_category='variant',
             object_category='disease',
             subject=id,
+            object_direct=args.direct,
             user_agent=USER_AGENT,
             **args
         )
@@ -1485,6 +1546,7 @@ class VariantPhenotypeAssociations(Resource):
             subject_category='variant',
             object_category='phenotype',
             subject=id,
+            object_direct=args.direct,
             facet_limit=100000,
             user_agent=USER_AGENT,
             **args
@@ -1587,6 +1649,7 @@ class ModelDiseaseAssociations(Resource):
             subject_category='model',
             object_category='disease',
             subject=id,
+            object_direct=args.direct,
             user_agent=USER_AGENT,
             **args
         )
@@ -1606,6 +1669,7 @@ class ModelGeneAssociations(Resource):
             object_category='gene',
             subject=id,
             object_taxon=args.taxon,
+            object_taxon_direct=args.direct_taxon,
             user_agent=USER_AGENT,
             **args
         )
@@ -1625,6 +1689,7 @@ class ModelGenotypeAssociations(Resource):
             object_category='genotype',
             subject=id,
             object_taxon=args.taxon,
+            object_taxon_direct=args.direct_taxon,
             user_agent=USER_AGENT,
             **args
         )
@@ -1662,6 +1727,7 @@ class ModelPhenotypeAssociations(Resource):
             subject_category='model',
             object_category='phenotype',
             subject=id,
+            object_direct=args.direct,
             facet_limit=100000,
             user_agent=USER_AGENT,
             **args
@@ -1690,6 +1756,7 @@ class ModelVariantAssociations(Resource):
             object_category='variant',
             subject=id,
             object_taxon=args.taxon,
+            object_taxon_direct=args.direct_taxon,
             user_agent=USER_AGENT,
             **args
         )
@@ -1727,6 +1794,7 @@ class PublicationVariantAssociations(Resource):
             object_category='variant',
             subject=id,
             object_taxon=args.taxon,
+            object_taxon_direct=args.direct_taxon,
             user_agent=USER_AGENT,
             **args
         )
@@ -1745,6 +1813,7 @@ class PublicationPhenotypeAssociations(Resource):
             subject_category='publication',
             object_category='phenotype',
             subject=id,
+            object_direct=args.direct,
             user_agent=USER_AGENT,
             **args
         )
@@ -1764,6 +1833,7 @@ class PublicationModelAssociations(Resource):
             object_category='model',
             subject=id,
             object_taxon=args.taxon,
+            object_taxon_direct=args.direct_taxon,
             user_agent=USER_AGENT,
             **args
         )
@@ -1783,6 +1853,7 @@ class PublicationGenotypeAssociations(Resource):
             object_category='genotype',
             subject=id,
             object_taxon=args.taxon,
+            object_taxon_direct=args.direct_taxon,
             user_agent=USER_AGENT,
             **args
         )
@@ -1802,6 +1873,7 @@ class PublicationGeneAssociations(Resource):
             object_category='gene',
             subject=id,
             object_taxon=args.taxon,
+            object_taxon_direct=args.direct_taxon,
             user_agent=USER_AGENT,
             **args
         )
@@ -1820,6 +1892,7 @@ class PublicationDiseaseAssociations(Resource):
             subject_category='publication',
             object_category='disease',
             subject=id,
+            object_direct=args.direct,
             user_agent=USER_AGENT,
             **args
         )
@@ -1852,11 +1925,12 @@ class CaseDiseaseAssociations(Resource):
         """
         Returns diseases associated with a case
         """
-
+        args = core_parser.parse_args()
         return search_associations(
             subject_category='case',
             object_category='disease',
             subject=id,
+            object_direct=args.direct,
             user_agent=USER_AGENT,
             **core_parser.parse_args()
         )
@@ -1906,11 +1980,12 @@ class CasePhenotypeAssociations(Resource):
         """
         Returns phenotypes associated with a case
         """
-
+        args = core_parser.parse_args()
         return search_associations(
             subject_category='case',
             object_category='phenotype',
             subject=id,
+            object_direct=args.direct,
             user_agent=USER_AGENT,
             **core_parser.parse_args()
         )
