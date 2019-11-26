@@ -41,6 +41,19 @@ class TestSimApi():
         assert response.status_code == 200
         assert len(response.json['matches']) > 0
 
+    def test_compare_post_genes(self):
+        data = {
+            'is_feature_set': False,
+            'reference_ids': ['HP:0000739', 'HP:0001831'],
+            'query_ids': [
+                ['HGNC:6407'],
+                ['HGNC:12373']
+            ]
+        }
+        response = self.test_client.post('/api/sim/compare', json=data)
+        assert response.status_code == 200
+        assert len(response.json['matches']) > 0
+
     def test_score_post(self):
         data = {
             'id': 'testID',
