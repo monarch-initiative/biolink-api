@@ -421,10 +421,7 @@ class SciGraph:
         """
         response = self.get_response("dynamic/ontologies", None, "json")
         response_json = response.json()
-        datasets = []
-        for n in response_json['nodes']:
-            if 'MonarchData' in n['id']:
-                datasets.append(n)
+        datasets = response_json['nodes']
         return datasets
 
 def bbg_to_assocs(g):
