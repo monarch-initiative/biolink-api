@@ -419,10 +419,9 @@ class SciGraph:
         """
         Get metadata about all the datasets in SciGraph
         """
-        response = self.get_response("dynamic/ontologies", None, "json")
+        response = self.get_response("dynamic/datasets", None, "json")
         response_json = response.json()
-        datasets = response_json['nodes']
-        return datasets
+        return response_json
 
 def bbg_to_assocs(g):
     return [bbedge_to_assoc(e,g) for e in g.edges]
