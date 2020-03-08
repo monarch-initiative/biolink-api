@@ -1,4 +1,5 @@
 import logging
+import copy
 
 from flask_restplus import Resource, inputs
 from biolink.api.restplus import api
@@ -14,7 +15,7 @@ def get_simple_parser():
         A simple flaskrest parser object that includes basic http params
         """
         p = api.parser()
-        p.add_argument('fq_string', action='append', required=False,
+        p.add_argument('fq', action='append', required=False,
                        help='fq string passed directly to solr, note that multiple filters '
                             'will be combined with an AND operator. Combining fq_string with '
                             'other parameters may result in unexpected behavior.')
@@ -125,6 +126,8 @@ class Autocomplete(Resource):
         Returns list of matching concepts or entities using lexical search
         """
         args = simple_parser.parse_args()
+        args['fq_string'] = copy.copy(args['fq'])
+        args['fq'] = {}
         q = GolrSearchQuery(term, user_agent=USER_AGENT, **args)
         results = q.autocomplete()
         return results
