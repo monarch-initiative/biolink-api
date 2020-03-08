@@ -14,6 +14,10 @@ def get_simple_parser():
         A simple flaskrest parser object that includes basic http params
         """
         p = api.parser()
+        p.add_argument('fq_string', action='append', required=False,
+                       help='fq string passed directly to solr, note that multiple filters '
+                            'will be combined with an AND operator. Combining fq_string with '
+                            'other parameters may result in unexpected behavior.')
         p.add_argument('category', action='append', help='e.g. gene, disease')
         p.add_argument('prefix', action='append', help='ontology prefix: HP, -MONDO')
         p.add_argument('boost_fx', action='append', help='boost function e.g. pow(edges,0.334)')
