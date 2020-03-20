@@ -7,7 +7,7 @@ from biolink.api.restplus import api
 from biolink.datamodel.sim_serializers import sim_result, compare_input
 
 sim_engine = PhenoSimEngine(OwlSim2Api())
-metrics = [matcher.value for matcher in sim_engine.sim_api.matchers()]
+metrics = [matcher.value for matcher in OwlSim2Api.matchers()]
 
 # Common args
 sim_parser = api.parser()
