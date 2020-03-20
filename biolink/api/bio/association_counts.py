@@ -123,8 +123,8 @@ CATEGORY_NAME_MAP = {
         'model': 'publication'
     },
     "marker_disease": {
-        'gene': 'noncausal-disease',
-        'disease': 'noncausal-gene',
+        'gene': 'correlated-disease',
+        'disease': 'correlated-gene',
         'ortholog': 'disease'
     },
     "case_disease": {
