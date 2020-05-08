@@ -61,6 +61,13 @@ export PYTHONPATH=.:$PYTHONPATH
 python biolink/app.py
 ```
 
+## Running with Docker
+
+```
+docker build -t biolink-api .
+docker run -p 5000:5000 biolink-api gunicorn -k gevent --worker-connections 5 --bind 0.0.0.0:5000 wsgi:app
+```
+
 ## Datamodel
 
 See the swagger UI for more details. Click on 'model' under any of the routes.

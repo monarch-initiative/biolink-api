@@ -4,9 +4,9 @@ from ontobio.sim.api.owlsim2 import OwlSim2Api
 from ontobio.sim.phenosim_engine import PhenoSimEngine
 from ontobio.vocabulary.similarity import SimAlgorithm
 from biolink.api.restplus import api
+from biolink.api.sim.endpoints.owlsim import get_owlsim_api
 from biolink.datamodel.sim_serializers import sim_result, compare_input
 
-sim_engine = PhenoSimEngine(OwlSim2Api())
 metrics = [matcher.value for matcher in OwlSim2Api.matchers()]
 
 # Common args
@@ -21,6 +21,7 @@ sim_parser.add_argument(
 sim_parser.add_argument(
     'metric', type=str, choices=metrics,
     default='phenodigm', help='Metric for computing similarity')
+
 
 def get_compare_parser():
 
@@ -72,6 +73,8 @@ sim_search_parser = get_search_parser()
 
 class SimSearch(Resource):
 
+    sim_engine = PhenoSimEngine(get_owlsim_api())
+
     @api.expect(sim_search_parser)
     @api.marshal_with(sim_result)
     def get(self):
@@ -80,7 +83,7 @@ class SimSearch(Resource):
         """
         input_args = sim_search_parser.parse_args()
 
-        return sim_engine.search(
+        return SimCompare.sim_engine.search(
             id_list=input_args['id'],
             limit=input_args['limit'],
             taxon_filter=input_args['taxon'],
@@ -90,6 +93,8 @@ class SimSearch(Resource):
 
 
 class SimCompare(Resource):
+
+    sim_engine = PhenoSimEngine(get_owlsim_api())
 
     @api.expect(compare_input)
     @api.marshal_with(sim_result)
@@ -104,7 +109,7 @@ class SimCompare(Resource):
         if 'is_feature_set' not in data:
             data['is_feature_set'] = True
 
-        return sim_engine.compare(
+        return SimCompare.sim_engine.compare(
             reference_ids=data['reference_ids'],
             query_profiles=data['query_ids'],
             method=SimAlgorithm(data['metric']),
@@ -119,7 +124,7 @@ class SimCompare(Resource):
         """
         input_args = sim_compare_parser.parse_args()
 
-        return sim_engine.compare(
+        return SimCompare.sim_engine.compare(
             reference_ids=input_args['ref_id'],
             query_profiles=[input_args['query_id']],
             method=SimAlgorithm(input_args['metric']),
