@@ -192,6 +192,25 @@ def step_impl(context, jsonpath, thing, value):
                 ## Not a thing we know how to deal with yet.
                 assert True is False
 
+@then('the JSON should have JSONPath "{jsonpath}" greater than "{thing}" "{value}"')
+def step_impl(context, jsonpath, thing, value):
+    if not context.content_json :
+        ## Apparently no JSON at all...
+        assert True is False
+    else:
+        jsonpath_expr = jsonpath_rw.parse(jsonpath)
+        res = jsonpath_expr.find(context.content_json)
+        if not res[0] :
+            assert True is False
+        else:
+            if thing == "integer":
+                assert res[0].value > int(value)
+            elif thing == "float":
+                assert res[0].value > float(value)
+            else:
+                ## Not a thing we know how to deal with yet.
+                assert True is False
+
 @then('the JSON should have some JSONPath "{jsonpath}" with "{thing}" "{value}"')
 def step_impl(context, jsonpath, thing, value):
     if not context.content_json :

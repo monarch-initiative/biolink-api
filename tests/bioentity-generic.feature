@@ -25,4 +25,4 @@ Feature: Get associations for any given Bioentity
         then the JSON should have some JSONPath "taxon.label" with "string" "Homo sapiens"
         then the JSON should have some JSONPath "id" with "string" "HGNC:18603"
         then the JSON should have some JSONPath "label" with "string" "COL25A1"
-        then the JSON should have JSONPath "association_counts.interaction.counts" equal to "integer" "124"
+        then the JSON should have JSONPath "association_counts.interaction.counts" greater than "integer" "10"

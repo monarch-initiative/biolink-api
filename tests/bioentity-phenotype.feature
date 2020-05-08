@@ -53,21 +53,12 @@ Feature: Phenotype entity queries work as expected
         then the JSON should have some JSONPath "associations[*].object.label" with "string" "orofaciodigital syndrome IX"
 
 
-### Phenotype to Genotype associations
-
-    Scenario: Client requires genotypes associated with a phenotype
-        Given a path "/bioentity/phenotype/HP:0011951/genotypes"
-        then the JSON should have some JSONPath "associations[*].subject.label" with "string" "Recurrent aspiration pneumonia"
-        then the JSON should have some JSONPath "associations[*].object.taxon.label" with "string" "Homo sapiens"
-        then the JSON should have some JSONPath "associations[*].object.id" with "string" "dbSNPIndividual:15811"
-        then the JSON should have some JSONPath "associations[*].object.category" containing "string" "genotype"
-
 ### Phenotype to Pathway associations
 
     Scenario: Client requires pathways associated with a phenotype
-        Given a path "/bioentity/phenotype/MP:0001569/pathways"
-        then the JSON should have some JSONPath "associations[*].subject.label" with "string" "Neonatal hyperbilirubinemia"
-        then the JSON should have some JSONPath "associations[*].object.id" with "string" "REACT:R-HSA-9613829"
+        Given a path "/bioentity/phenotype/MP:0001569/pathways?rows=50"
+        then the JSON should have some JSONPath "associations[*].subject.label" with "string" "decreased circulating bilirubin level"
+        then the JSON should have some JSONPath "associations[*].object.id" with "string" "REACT:R-MMU-114608"
         then the JSON should have some JSONPath "associations[*].object.category" containing "string" "pathway"
 
 ### Phenotype to Variant associations

@@ -34,7 +34,7 @@ Feature: Genotype association queries that return a list of associations
         when the content is converted to JSON
         then the JSON should have some JSONPath "associations[*].object.label" with "string" "shha"
         then the JSON should have some JSONPath "associations[*].object.label" with "string" "shha"
-        then the JSON should have some JSONPath "associations[*].provided_by" containing "string" "https://data.monarchinitiative.org/ttl/zfin.ttl"
+        then the JSON should have some JSONPath "associations[*].provided_by" containing "string" "https://archive.monarchinitiative.org/#zfin"
 
 ## Genotype to Model associations
 
@@ -44,17 +44,15 @@ Feature: Genotype association queries that return a list of associations
         when the content is converted to JSON
         then the JSON should have some JSONPath "associations[*].object.id" with "string" "Coriell:GM25367"
         then the JSON should have some JSONPath "associations[*].relation.label" with "string" "has_genotype"
-        then the JSON should have some JSONPath "associations[*].provided_by" containing "string" "https://data.monarchinitiative.org/ttl/coriell.ttl"
+        then the JSON should have some JSONPath "associations[*].provided_by" containing "string" "https://archive.monarchinitiative.org/#coriell"
 
 ## Genotype to Phenotype associations
 
     Scenario: User fetches genotype to gene associations
-        Given a path "/bioentity/genotype/BNODE:genoGM25367/phenotypes"
-        then the content should contain "GM25367"
+        Given a path "/bioentity/genotype/MGI:6116483/phenotypes?rows=20"
         when the content is converted to JSON
-        then the JSON should have some JSONPath "associations[*].object.id" with "string" "HP:0000680"
-        then the JSON should have some JSONPath "associations[*].provided_by" containing "string" "https://data.monarchinitiative.org/ttl/coriell.ttl"
-        then the JSON should have some JSONPath "associations[*].provided_by" containing "string" "https://data.monarchinitiative.org/ttl/hpoa.ttl"
+        then the JSON should have some JSONPath "associations[*].object.id" with "string" "MP:0005290"
+        then the JSON should have some JSONPath "associations[*].provided_by" containing "string" "https://archive.monarchinitiative.org/#mgi"
 
 ## Genotype to Publication associations
 
@@ -63,7 +61,7 @@ Feature: Genotype association queries that return a list of associations
         then the content should contain "shha<tbx392>"
         when the content is converted to JSON
         then the JSON should have some JSONPath "associations[*].object.id" with "string" "PMID:9007258"
-        then the JSON should have some JSONPath "associations[*].provided_by" containing "string" "https://data.monarchinitiative.org/ttl/zfin.ttl"
+        then the JSON should have some JSONPath "associations[*].provided_by" containing "string" "https://archive.monarchinitiative.org/#zfin"
 
 ## Genotype to Variant associations
 
@@ -71,4 +69,4 @@ Feature: Genotype association queries that return a list of associations
         Given a path "/bioentity/genotype/dbSNPIndividual:20985/variants"
         when the content is converted to JSON
         then the JSON should have some JSONPath "associations[*].object.id" with "string" "OMIM:608666.0003"
-        then the JSON should have some JSONPath "associations[*].provided_by" containing "string" "https://data.monarchinitiative.org/ttl/coriell.ttl"
+        then the JSON should have some JSONPath "associations[*].provided_by" containing "string" "https://archive.monarchinitiative.org/#coriell"
