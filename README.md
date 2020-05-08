@@ -63,9 +63,21 @@ python biolink/app.py
 
 ## Running with Docker
 
+Docker requires a config directory with an
+ontobio config file named ontobio-config.yaml
+and a biolink config file named biolink-config.yaml
+
+For testing purposes these can be copied from the defaults, eg
+
+```
+mkdir config
+cp conf/config.yaml config/biolink-config.yaml
+cp venv/lib/python3.7/site-packages/ontobio/config.yaml config/ontobio-config.yaml
+```
+
 ```
 docker build -t biolink-api .
-docker run -p 5000:5000 biolink-api gunicorn -k gevent --worker-connections 5 --bind 0.0.0.0:5000 wsgi:app
+docker run -p 5000:5000 -v `pwd`/config:/config biolink-api start-server -k gevent --worker-connections 5 --bind 0.0.0.0:5000 wsgi:app
 ```
 
 ## Datamodel

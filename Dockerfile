@@ -1,6 +1,8 @@
 FROM python:3.7-slim
 
-WORKDIR biolink-api
+WORKDIR /biolink-api
+
+VOLUME /config
 
 RUN apt-get -y update && apt-get install -y git
 
@@ -17,7 +19,12 @@ COPY scigraph ./scigraph
 COPY tests ./tests
 COPY .git ./.git
 
+RUN mkdir /biolink-api/scripts
+COPY docker ./scripts
+
 ENV PYTHONPATH "${PYTHONPATH}:/biolink-api"
+
+ENV PATH="/biolink-api/scripts/:$PATH"
 
 RUN pip install -r requirements.txt
 
