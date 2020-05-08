@@ -1,4 +1,5 @@
 from biolink.app import app
+from biolink.api.sim.endpoints.owlsim import get_owlsim_api
 
 
 class TestSimApi():
@@ -71,3 +72,12 @@ class TestSimApi():
         response = self.test_client.post('/api/sim/score', json=data)
         assert response.status_code == 200
         assert response.json['simple_score'] > 0
+
+    def test_owlsim_singleton(self):
+        """
+        test that two calls to get_owlsim_api()
+        get the same object
+        """
+        foo = get_owlsim_api()
+        bar = get_owlsim_api()
+        assert foo is bar

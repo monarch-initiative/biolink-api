@@ -64,17 +64,6 @@ Feature: Disease entity queries work as expected
         then the JSON should have some JSONPath "associations[*].object.category" containing "string" "phenotype"
         then the JSON should have some JSONPath "associations[*].relation.label" with "string" "has phenotype"
 
-## Disease to Case associations
-
-    Scenario: User queries for cases associated with a disease
-        Given a path "/bioentity/disease/MONDO:0007739/cases"
-        then the JSON should have some JSONPath "associations[*].subject.id" with "string" "MONDO:0007739"
-        then the JSON should have some JSONPath "associations[*].subject.label" with "string" "Huntington disease"
-        then the JSON should have some JSONPath "associations[*].subject.category" containing "string" "disease"
-        then the JSON should have some JSONPath "associations[*].object.id" with "string" "BNODE:person-690-65"
-        then the JSON should have some JSONPath "associations[*].object.category" containing "string" "case"
-        then the JSON should have some JSONPath "associations[*].relation.label" with "string" "is model of"
-
 ## Disease to Genotype associations
 
     Scenario: User queries for genotypes associated with a disease

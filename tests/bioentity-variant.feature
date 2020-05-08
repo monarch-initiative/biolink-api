@@ -3,9 +3,8 @@ Feature: Variant association queries that return a list of associations
 ## Variant to Case associations
 
     Scenario: User queries for cases associated with a variant
-        Given a path "/bioentity/variant/dbSNP:rs5030868/cases"
-        then the JSON should have some JSONPath "associations[*].subject.label" with "string" "rs5030868-A"
-        then the JSON should have some JSONPath "associations[*].object.id" with "string" "BNODE:person-GM00325"
+        Given a path "/bioentity/variant/dbSNP:rs766529116/cases"
+        then the JSON should have some JSONPath "associations[*].object.id" with "string" ":MONARCH:c000017"
         then the JSON should have some JSONPath "associations[*].object.category" containing "string" "case"
 
 ## Variant to Disease associations

@@ -23,22 +23,6 @@ between these entities
 
 ## Gene to Homolog associations
 
-    Scenario: User fetches paralogs of SHH
-        Given a path "/bioentity/gene/NCBIGene:6469/homologs/?homology_type=P"
-        then the content should contain "DHH"
-        when the content is converted to JSON
-        then the JSON should have the top-level property "associations"
-        and the JSON should have some JSONPath "associations[*].object.id" with "string" "HGNC:2865"
-        and the JSON should have some JSONPath "associations[*].object.taxon.label" with "string" "Homo sapiens"
-
-    Scenario: User fetches homologs of SHH with taxon Homo sapiens
-        Given a path "/bioentity/gene/NCBIGene:6469/homologs/?homolog_taxon=NCBITaxon:9606"
-        then the content should contain "DHH"
-        when the content is converted to JSON
-        then the JSON should have the top-level property "associations"
-        and the JSON should have some JSONPath "associations[*].object.id" with "string" "HGNC:2865"
-        and the JSON should have some JSONPath "associations[*].object.taxon.label" with "string" "Homo sapiens"
-
     Scenario: User fetches all homologs of SHH
         Given a path "/bioentity/gene/NCBIGene:6469/homologs?rows=500"
         then the content should contain "Shh"
@@ -75,7 +59,7 @@ between these entities
 
     Scenario: User fetches all interactions for a mouse gene
         Given a path "/bioentity/gene/MGI:1342287/interactions?rows=500"
-        then the content should contain "https://data.monarchinitiative.org/ttl/biogrid.ttl"
+        then the content should contain "https://archive.monarchinitiative.org/#biogrid"
         when the content is converted to JSON
         then the JSON should have some JSONPath "associations[*].object.id" with "string" "MGI:88039"
         and the JSON should have some JSONPath "associations[*].object.label" with "string" "Apc"
@@ -96,12 +80,6 @@ between these entities
         when the content is converted to JSON
         then the JSON should have some JSONPath "associations[*].object.id" with "string" "dbSNPIndividual:19935"
 
-## Gene to Case associations
-
-    Scenario: "User fetches cases associated with a gene"
-        Given a path "/bioentity/gene/HGNC:11025/cases"
-        when the content is converted to JSON
-        then the JSON should have some JSONPath "associations[*].object.id" with "string" "BNODE:person-1879-4"
 
 ## Gene to Model associations
 
