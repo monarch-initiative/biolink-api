@@ -4,7 +4,7 @@ WORKDIR /biolink-api
 
 VOLUME /config
 
-RUN apt-get -y update && apt-get install -y git
+RUN apt-get -y update && apt-get install -y git curl
 
 COPY requirements.txt ./
 COPY wsgi.py ./
