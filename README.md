@@ -128,7 +128,7 @@ A service implementing the Biolink API can be accessed through
 standard http libraries. We also provide client language bindings,
 generated through swagger-codegen. For more information, see:
 
-[ClientAPIs](/biolink/biolink-api/wiki/ClientAPIs)
+[ClientAPIs](https://github.com/biolink/biolink-api/wiki/ClientAPIs)
 
 ## Implementation and Project Organization
 
