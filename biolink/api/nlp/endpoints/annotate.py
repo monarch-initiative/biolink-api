@@ -20,7 +20,7 @@ parser.add_argument('include_abbreviation', type=inputs.boolean, default=False, 
 parser.add_argument('include_acronym', type=inputs.boolean, default=False, help='Should acronyms be included')
 parser.add_argument('include_numbers', type=inputs.boolean, default=False, help='Should numbers be included')
 
-scigraph = SciGraph(get_biolink_config()['scigraph_data']['url'])
+scigraph = SciGraph(get_biolink_config()['scigraph_ontology']['url'])
 
 def parse_args_for_annotator(parser):
     """
