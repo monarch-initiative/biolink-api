@@ -159,6 +159,10 @@ CATEGORY_NAME_MAP = {
     "case_phenotype": {
         'case': 'phenotype',
         'phenotype': 'case'
+    },
+    "chemical_disease": {
+        'chemical': 'disease',
+        'disease': 'chemical'
     }
 }
 
