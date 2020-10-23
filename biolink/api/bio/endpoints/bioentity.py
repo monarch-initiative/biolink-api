@@ -43,6 +43,7 @@ core_parser.add_argument('direct', type=inputs.boolean, default=False,
                          help='Set true to only include direct associations, and '
                               'false to include inferred (via subclass or '
                               'subclass|part of), default=False')
+core_parser.add_argument('sort', type=str, required=False, default="source_count desc", help="Sorting responses <field> <desc,asc>")
 
 INVOLVED_IN = 'involved_in'
 INVOLVED_IN_REGULATION_OF = 'involved_in_regulation_of'
@@ -174,7 +175,6 @@ class GeneInteractions(Resource):
             subject=id,
             object_taxon=args.taxon,
             object_taxon_direct=args.direct_taxon,
-            sort="source_count desc",
             user_agent=USER_AGENT,
             **args
         )
@@ -221,7 +221,6 @@ class GenePhenotypeAssociations(Resource):
             object_category='phenotype',
             subject=id,
             facet_limit=100000,
-            sort="source_count desc",
             user_agent=USER_AGENT,
             **args
         )
@@ -254,7 +253,6 @@ class GeneDiseaseAssociations(Resource):
         return search_associations(
             subject=id,
             object_direct=args.direct,
-            sort="source_count desc",
             user_agent=USER_AGENT,
             **args
         )
@@ -567,7 +565,6 @@ class DiseaseGeneAssociations(Resource):
             object_taxon=args.taxon,
             object_taxon_direct=args.direct_taxon,
             invert_subject_object=True,
-            sort="source_count desc",
             user_agent=USER_AGENT,
             **args
         )
@@ -814,7 +811,6 @@ class PhenotypeGeneAssociations(Resource):
             subject_direct=args.direct,
             object_taxon=args.taxon,
             object_taxon_direct=args.direct_taxon,
-            sort="source_count desc",
             user_agent=USER_AGENT,
             **args
         )
