@@ -43,7 +43,7 @@ core_parser.add_argument('direct', type=inputs.boolean, default=False,
                          help='Set true to only include direct associations, and '
                               'false to include inferred (via subclass or '
                               'subclass|part of), default=False')
-core_parser.add_argument('sort', type=str, required=False, default="source_count desc", help="Sorting responses <field> <desc,asc>")
+
 
 INVOLVED_IN = 'involved_in'
 INVOLVED_IN_REGULATION_OF = 'involved_in_regulation_of'
@@ -84,6 +84,8 @@ core_parser_with_filters.add_argument('taxon', action='append',
 core_parser_with_filters.add_argument('direct_taxon', type=inputs.boolean, default=False,
                                       help='Set true to exclude inferred taxa')
 core_parser_with_filters.add_argument('relation', help='A relation CURIE to filter associations', default=None)
+core_parser_with_filters.add_argument('sort', type=str, required=False, default=None, help="Sorting responses <field> <desc,asc>")
+core_parser_with_filters.add_argument('q', type=str, required=False, default=None, help="Query string to filter documents")
 
 
 gene_disease_parser = core_parser_with_filters.copy()
