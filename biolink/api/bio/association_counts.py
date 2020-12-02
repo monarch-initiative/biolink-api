@@ -230,7 +230,11 @@ def get_association_counts(bioentity_id, bioentity_type=None, distinct_counts=Fa
             source_count[src] = count
 
     object_facet_pivot = object_associations['facet_pivot']['association_type,subject_taxon']
-    parse_facet_pivot(object_facet_pivot, bioentity_type, count_map, distinct_counts=distinct_counts)
+    parse_facet_pivot(
+        object_facet_pivot, bioentity_type, count_map,
+        distinct_counts=distinct_counts,
+        exclude_cats=('gene_interaction',)
+    )
 
     if bioentity_type == 'gene':
         # get counts for ortholog-x associations
@@ -269,13 +273,24 @@ def get_association_counts(bioentity_id, bioentity_type=None, distinct_counts=Fa
     return final_count_map
 
 
-def parse_facet_pivot(facet_pivot, bioentity_type, count_map, type_prefix=None, distinct_counts=False):
+def parse_facet_pivot(
+        facet_pivot,
+        bioentity_type,
+        count_map,
+        type_prefix=None,
+        distinct_counts=False,
+        exclude_cats=tuple()
+):
 
     if count_map is None:
         count_map = {}
 
     for category_pivot in facet_pivot:
+
         type = category_pivot['value']
+        if type in exclude_cats:
+            continue
+
         if bioentity_type not in CATEGORY_NAME_MAP[type]:
             # ignore this count type
             continue
@@ -328,6 +343,7 @@ def parse_taxon_pivot(taxon_pivot, key, distinct_counts=False):
             counts = t['count']
         counts_map[taxon] = counts
     return counts_map
+
 
 def merge_counts(d1, d2):
     d = {}
