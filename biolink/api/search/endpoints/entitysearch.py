@@ -14,24 +14,43 @@ def get_simple_parser():
         """
         A simple flaskrest parser object that includes basic http params
         """
-        p = api.parser()
-        p.add_argument('fq', action='append', required=False,
-                       help='fq string passed directly to solr, note that multiple filters '
-                            'will be combined with an AND operator. Combining fq_string with '
-                            'other parameters may result in unexpected behavior.')
-        p.add_argument('category', action='append', help='e.g. gene, disease')
-        p.add_argument('prefix', action='append', help='ontology prefix: HP, -MONDO')
-        p.add_argument('boost_fx', action='append', help='boost function e.g. pow(edges,0.334)')
-        p.add_argument('boost_q', action='append', help='boost query e.g. category:genotype^-10')
-        p.add_argument('taxon', action='append', help='taxon filter, eg NCBITaxon:9606, includes inferred taxa')
-        p.add_argument('rows', type=int, required=False, default=20, help='number of rows')
-        p.add_argument('start', type=str, required=False, default='0', help='row number to start from')
-        p.add_argument('highlight_class', type=str, required=False, help='highlight class')
-        p.add_argument('min_match', type=str, help='minimum should match parameter, see solr docs for details')
-        p.add_argument('minimal_tokenizer', type=inputs.boolean, default=False,
-                       help='set to true to use the minimal tokenizer, '
-                            'good for variants and genotypes')
-        return p
+        parser = api.parser()
+        parser.add_argument(
+            'fq',
+            action='append',
+            required=False,
+            help='fq string passed directly to solr, note that multiple filters '
+                 'will be combined with an AND operator. Combining fq_string with '
+                 'other parameters may result in unexpected behavior.',
+        )
+        parser.add_argument('category', action='append', help='e.g. gene, disease')
+        parser.add_argument('prefix', action='append', help='ontology prefix: HP, -MONDO')
+        parser.add_argument(
+            'include_eqs',
+            type=inputs.boolean,
+            help='Include equivalent ids in prefix filter',
+            default=False,
+        )
+        parser.add_argument('boost_fx', action='append', help='boost function e.g. pow(edges,0.334)')
+        parser.add_argument('boost_q', action='append', help='boost query e.g. category:genotype^-10')
+        parser.add_argument('taxon', action='append', help='taxon filter, eg NCBITaxon:9606, includes inferred taxa')
+        parser.add_argument('rows', type=int, required=False, default=20, help='number of rows')
+        parser.add_argument('start', type=str, required=False, default='0', help='row number to start from')
+        parser.add_argument('highlight_class', type=str, required=False, help='highlight class')
+        parser.add_argument('min_match', type=str, help='minimum should match parameter, see solr docs for details')
+        parser.add_argument(
+            'exclude_groups',
+            type=inputs.boolean,
+            help='Exclude grouping classes (classes with subclasses)',
+            default=False,
+        )
+        parser.add_argument(
+            'minimal_tokenizer',
+            type=inputs.boolean,
+            default=False,
+            help='set to true to use the minimal tokenizer, good for variants and genotypes'
+        )
+        return parser
 
 
 def get_advanced_parser():

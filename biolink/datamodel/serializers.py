@@ -22,7 +22,8 @@ autocomplete_result = api.model('AutocompleteResult', {
     'taxon': fields.String(description='taxon as NCBITaxon curie'),
     'taxon_label': fields.String(description='taxon label'),
     'highlight': fields.String(description='solr highlight'),
-    'has_highlight': fields.Boolean(description='True if highlight can be interpreted as html, else False')
+    'has_highlight': fields.Boolean(description='True if highlight can be interpreted as html, else False'),
+    'equivalent_ids': fields.List(fields.String, description='Equivalent IDs'),
 })
 
 autocomplete_results = api.model('AutocompleteResults', {
