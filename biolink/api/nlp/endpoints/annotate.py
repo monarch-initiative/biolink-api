@@ -1,12 +1,10 @@
 import logging
 
 from flask_restplus import Resource, inputs
-from biolink.datamodel.serializers import association, entity_annotation_result
+from biolink.datamodel.serializers import entity_annotation_result
 from biolink.api.restplus import api
-from biolink.error_handlers import RouteNotImplementedException
 from biolink.settings import get_biolink_config
-from scigraph.scigraph_util import SciGraph
-import pysolr
+from ontobio.util.scigraph_util import SciGraph
 
 log = logging.getLogger(__name__)
 

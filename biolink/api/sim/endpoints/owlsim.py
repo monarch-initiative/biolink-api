@@ -4,6 +4,9 @@ object in biolink
 
 This module allows us to have a singleton object by using the global
 scope. Another option is to implement a singleton metaclass in ontobio.
+
+TODO revisit this design decision as it feels wrong
+possibly use https://flask.palletsprojects.com/en/2.0.x/appcontext/
 """
 from ontobio.sim.api.owlsim2 import OwlSim2Api
 

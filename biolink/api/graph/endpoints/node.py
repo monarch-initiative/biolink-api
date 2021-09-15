@@ -1,13 +1,14 @@
 import logging
 
-from flask import request
 from flask_restplus import Resource, inputs
 from biolink.datamodel.serializers import bbop_graph, bio_object
 from biolink.error_handlers import NoResultFoundException, UnhandledException
-from scigraph.scigraph_util import SciGraph
+from ontobio.util.scigraph_util import SciGraph
 from scigraph.model.BBOPGraph import BBOPGraph
 from biolink.api.restplus import api
 from biolink.settings import get_biolink_config
+
+from requests import HTTPError
 
 log = logging.getLogger(__name__)
 
@@ -54,8 +55,11 @@ class EdgeResource(Resource):
         else:
             raise UnhandledException('{} not supported graph'.format(args['graph']))
 
+        try:
+            node = scigraph.get_clique_leader(id)
+        except HTTPError:
+            raise NoResultFoundException('SciGraph yields no result for {}'.format(id))
 
-        node = scigraph.get_clique_leader(id)
         if not node:
             raise NoResultFoundException('SciGraph dynamic/cliqueLeader yields no result for {}'.format(id))
 

@@ -1,6 +1,6 @@
 import logging
 from biolink.settings import get_biolink_config
-from scigraph.scigraph_util import SciGraph
+from ontobio.util.scigraph_util import SciGraph
 from biothings_client import get_client
 
 

@@ -1,12 +1,11 @@
 import logging
 
-from flask import request
 from flask_restplus import Resource, inputs, marshal
-from biolink.datamodel.serializers import node, named_object, bio_object,\
+from biolink.datamodel.serializers import named_object, bio_object,\
     association_results, association, disease_object, d2p_association_results
 from biolink.api.restplus import api
 from ontobio.golr.golr_associations import search_associations, select_distinct_subjects
-from scigraph.scigraph_util import SciGraph
+from ontobio.util.scigraph_util import SciGraph
 from biowikidata.wd_sparql import condition_to_drug
 from ontobio.vocabulary.relations import HomologyTypes
 from ..closure_bins import create_closure_bin
@@ -14,10 +13,12 @@ from ..association_counts import get_association_counts
 from biolink import USER_AGENT
 
 from biolink.settings import get_biolink_config, get_identifier_converter
-from biolink.error_handlers import NoResultFoundException, UnhandledException, UnrecognizedBioentityTypeException
+from biolink.error_handlers import UnrecognizedBioentityTypeException, NoResultFoundException
 
-from ontobio.golr.golr_query import run_solr_text_on, ESOLR, ESOLRDoc, replace
+from ontobio.golr.golr_query import run_solr_text_on, ESOLR, ESOLRDoc
 from ontobio.config import get_config
+
+from requests import HTTPError
 
 
 log = logging.getLogger(__name__)
@@ -433,7 +434,10 @@ class GeneOrthologPhenotypeAssociations(Resource):
         """
         args = core_parser_with_filters.parse_args()
         # Get the clique leader
-        gene = scigraph.get_clique_leader(id)
+        try:
+            gene = scigraph.get_clique_leader(id)
+        except HTTPError:
+            raise NoResultFoundException('SciGraph yields no result for {}'.format(id))
 
         filters = {
             'subject_ortholog_closure': gene.id,
@@ -462,7 +466,10 @@ class GeneOrthologDiseaseAssociations(Resource):
         args = core_parser_with_filters.parse_args()
 
         # Get the clique leader
-        gene = scigraph.get_clique_leader(id)
+        try:
+            gene = scigraph.get_clique_leader(id)
+        except HTTPError:
+            raise NoResultFoundException('SciGraph yields no result for {}'.format(id))
 
         filters = {
             'subject_ortholog_closure': gene.id,
@@ -763,7 +770,11 @@ class PhenotypeAnatomyAssociations(Resource):
 
          * MP:0008521 abnormal Bowman membrane
         """
-        clique_leader = scigraph.get_clique_leader(id)
+        try:
+            clique_leader = scigraph.get_clique_leader(id)
+        except HTTPError:
+            raise NoResultFoundException('SciGraph yields no result for {}'.format(id))
+
         objs = scigraph.phenotype_to_entity_list(clique_leader.id)
         return objs
 
