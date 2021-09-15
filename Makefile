@@ -22,17 +22,8 @@ deploy-%-client: biolink-%-client
 
 deploy-clients: $(patsubst %, deploy-%-client, $(CLIENT_LANGS))
 
-datamodel: biomodel/core.py
-
 swagger.json:
 	wget --no-check-certificate $(SWAGGER) -O $@
 
-biomodel/core.py: ./biolink/datamodel/serializers.py
-	./util/gen-class-model.pl $< > $@.tmp && mv $@.tmp $@
-
-biomodel/obograph.py: ./biolink/datamodel/obograph_serializers.py
-	./util/gen-class-model.pl $< > $@.tmp && mv $@.tmp $@
-
 EXAMPLE-QUERIES.md:
 	./util/behave-to-markdown.pl tests/*.feature > $@
-
