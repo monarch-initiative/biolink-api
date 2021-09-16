@@ -4,7 +4,7 @@ from flask_restplus import Resource, inputs
 from biolink.datamodel.serializers import bbop_graph, bio_object
 from biolink.error_handlers import NoResultFoundException, UnhandledException
 from ontobio.util.scigraph_util import SciGraph
-from scigraph.model.BBOPGraph import BBOPGraph
+from ontobio.model.bbop_graph import BBOPGraph
 from biolink.api.restplus import api
 from biolink.settings import get_biolink_config
 

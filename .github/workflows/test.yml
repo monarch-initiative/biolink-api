@@ -1,0 +1,48 @@
+# Builds and runs pytest on ubuntu-latest
+# Tests python versions >=3.6
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+  workflow_dispatch:
+
+jobs:
+  # https://github.com/actions/setup-python
+  test-python3-ubuntu-latest:
+    name: test py${{ matrix.python-version }} on linux
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.7', '3.8', '3.9']
+    env:
+      PYTHON: ${{ matrix.python-version }}
+      OS: ubuntu
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: set up python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: run behave tests
+        run: |
+          export PYTHONPATH=.:$PYTHONPATH
+          export FLASK_USE_RELOADER=False
+          python biolink/app.py >> log.txt 2>&1 &
+          sleep 30
+          behave -f progress3 tests/
+
+      - name: run pytests
+        run: |
+          pytest tests/unit/
