@@ -8,13 +8,14 @@ Feature: Genotype association queries that return a list of associations
         when the content is converted to JSON
 
 ## Genotype to Case associations
-
-    Scenario: User fetches genotype to case associations
-        Given a path "/bioentity/genotype/dbSNPIndividual%3A10440/cases"
-        then the content should contain "GM01793"
-        when the content is converted to JSON
-        then the JSON should have some JSONPath "associations[*].object.id" with "string" "BNODE:person-119-2"
-        then the JSON should have some JSONPath "associations[*].object.taxon.label" with "string" "Homo sapiens"
+# These associations were removed in solr
+#
+#    Scenario: User fetches genotype to case associations
+#        Given a path "/bioentity/genotype/dbSNPIndividual%3A10440/cases"
+#        then the content should contain "GM01793"
+#        when the content is converted to JSON
+#        then the JSON should have some JSONPath "associations[*].object.id" with "string" "BNODE:person-119-2"
+#       then the JSON should have some JSONPath "associations[*].object.taxon.label" with "string" "Homo sapiens"
 
 
 ## Genotype to Disease associations
@@ -37,14 +38,14 @@ Feature: Genotype association queries that return a list of associations
         then the JSON should have some JSONPath "associations[*].provided_by" containing "string" "https://archive.monarchinitiative.org/#zfin"
 
 ## Genotype to Model associations
-
-    Scenario: User fetches genotype to gene associations
-        Given a path "/bioentity/genotype/BNODE:genoGM25367/models"
-        then the content should contain "GM25367"
-        when the content is converted to JSON
-        then the JSON should have some JSONPath "associations[*].object.id" with "string" "Coriell:GM25367"
-        then the JSON should have some JSONPath "associations[*].relation.label" with "string" "has_genotype"
-        then the JSON should have some JSONPath "associations[*].provided_by" containing "string" "https://archive.monarchinitiative.org/#coriell"
+# This was removed (in general we should not write tests on bnodes)
+#    Scenario: User fetches genotype to gene associations
+#        Given a path "/bioentity/genotype/BNODE:genoGM25367/models"
+#        then the content should contain "GM25367"
+#        when the content is converted to JSON
+#        then the JSON should have some JSONPath "associations[*].object.id" with "string" "Coriell:GM25367"
+#        then the JSON should have some JSONPath "associations[*].relation.label" with "string" "has_genotype"
+#        then the JSON should have some JSONPath "associations[*].provided_by" containing "string" "https://archive.monarchinitiative.org/#coriell"
 
 ## Genotype to Phenotype associations
 
