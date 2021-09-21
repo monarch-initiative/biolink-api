@@ -56,8 +56,8 @@ def get_search_parser():
         'limit',
         type=int,
         required=False,
-        default=100,
-        help='number of rows'
+        default=20,
+        help='number of rows, max 500'
     )
     sim_search_parser.add_argument(
         'taxon',
@@ -82,6 +82,9 @@ class SimSearch(Resource):
         Search for phenotypically similar diseases or model genes
         """
         input_args = sim_search_parser.parse_args()
+
+        if input_args['limit'] > 500:
+            input_args['limit'] = 500
 
         return SimCompare.sim_engine.search(
             id_list=input_args['id'],
