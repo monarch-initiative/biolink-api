@@ -1,12 +1,12 @@
 # Builds and runs pytest on ubuntu-latest
 # Tests python versions >=3.6
-name: CI
+name: Run Tests
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
   pull_request:
-    branches: [ main ]
+    branches: [ master ]
 
   workflow_dispatch:
 
