@@ -40,7 +40,7 @@ jobs:
           export PYTHONPATH=.:$PYTHONPATH
           export FLASK_USE_RELOADER=False
           python biolink/app.py &
-          sleep 30
+          sleep 90
           behave -f progress3 tests/
 
       - name: run pytests
