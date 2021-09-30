@@ -45,4 +45,5 @@ jobs:
 
       - name: run pytests
         run: |
+          export PYTHONPATH=.:$PYTHONPATH
           pytest tests/unit/
