@@ -15,7 +15,6 @@ COPY biomodel ./biomodel
 COPY biowikidata ./biowikidata
 COPY causalmodels ./causalmodels
 COPY conf ./conf
-COPY scigraph ./scigraph
 COPY tests ./tests
 COPY .git ./.git
 
