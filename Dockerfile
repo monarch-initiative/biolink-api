@@ -11,7 +11,6 @@ COPY wsgi.py ./
 COPY logging.conf ./
 
 COPY biolink ./biolink
-COPY biomodel ./biomodel
 COPY biowikidata ./biowikidata
 COPY causalmodels ./causalmodels
 COPY conf ./conf
