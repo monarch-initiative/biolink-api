@@ -403,6 +403,19 @@ route_mapping:
             resource: biolink.api.sim.endpoints.semanticsim.SimSearch
           - route: /compare
             resource: biolink.api.sim.endpoints.semanticsim.SimCompare
+    - name: mme
+      description: Match patients with similar diseases and non-human genes based on their phenotypes
+      routes:
+          - route: /disease
+            resource: biolink.api.mme.endpoints.match_maker.DiseaseMme
+          - route: /mouse
+            resource: biolink.api.mme.endpoints.match_maker.MouseMme
+          - route: /zebrafish
+            resource: biolink.api.mme.endpoints.match_maker.ZebrafishMme
+          - route: /fly
+            resource: biolink.api.mme.endpoints.match_maker.FlyMme
+          - route: /nematode
+            resource: biolink.api.mme.endpoints.match_maker.NematodeMme
     - name: metadata
       description: Get metadata
       routes:

@@ -348,3 +348,6 @@ entity_annotation_result = api.model('EntityAnnotationResult', {
     'content': fields.String('The content from which the entities are extracted from'),
     'spans': fields.List(fields.Nested(span), description='A marked-up span of text'),
 })
+
+# TODO
+mme = api.model('mme', {})

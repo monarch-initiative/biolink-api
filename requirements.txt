@@ -23,3 +23,5 @@ flask-limiter>=0.0
 gevent>=0.0
 gitpython>=2.1.11
 mygene==3.1.0
+marshmallow-dataclass>=8.5.3
+marshmallow-enum>=1.5.1
