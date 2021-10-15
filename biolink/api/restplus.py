@@ -7,7 +7,7 @@ from sqlalchemy.orm.exc import NoResultFound
 
 log = logging.getLogger(__name__)
 
-api = Api(version='1.1.11', title='BioLink API',
+api = Api(version='1.1.13', title='BioLink API',
           license='BSD3',
           contact='info@monarchinitiative.org',
           description='API integration layer for linked biological objects.\n\n __Source:__ https://github.com/biolink/biolink-api/')
