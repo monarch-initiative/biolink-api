@@ -1,5 +1,5 @@
 # Builds and runs pytest on ubuntu-latest
-# Tests python versions >=3.6
+# Tests python versions >=3.8
 name: Run Tests
 
 on:
@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.7', '3.8', '3.9']
+        python-version: ['3.8', '3.9']
     env:
       PYTHON: ${{ matrix.python-version }}
       OS: ubuntu
