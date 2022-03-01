@@ -333,7 +333,7 @@ clinical_individual = api.inherit('ClinicalIndividual', named_object, {
 # text annotate
 token = api.model('Token', {
     'id': fields.String(description='The CURIE for the entity or token'),
-    'category': fields.List(fields.String, description='entity categories'),
+    'categories': fields.List(fields.String, description='entity categories'),
     'terms': fields.List(fields.String, description='terms')
 })
 
