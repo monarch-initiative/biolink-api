@@ -1,0 +1,36 @@
+solr_assocs:
+  url: "http://solr.monarchinitiative.org/solr/golr"
+  timeout: 60
+amigo_solr_assocs:
+  url: "http://golr-aux.geneontology.io/solr"
+  timeout: 4
+solr_search:
+  url: "http://solr.monarchinitiative.org/solr/search"
+  timeout: 60
+lay_person_search:
+  url: "http://solr.monarchinitiative.org/solr/hpo-pl"
+  timeout: 60
+amigo_solr_search:
+  url: "http://golr-aux.geneontology.io/solr"
+  timeout: 2
+sparql:
+  url: "http://sparql.hegroup.org/sparql"
+  timeout: 2
+scigraph_ontology:
+  url: "http://scigraph-ontology.monarchinitiative.org/scigraph"
+  timeout: 60
+scigraph_data:
+  url: "http://scigraph-data.monarchinitiative.org/scigraph"
+  timeout: 60
+owlsim2:
+  url: "http://owlsim.monarchinitiative.org/"
+  timeout: 60
+owlsim3:
+  url: "http://owlsim3.monarchinitiative.org/api/"
+  timeout: 5
+use_amigo_for:
+  - function
+ontologies:
+  - id: magic1234
+    handle: pato
+    pre_load: true
