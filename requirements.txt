@@ -1,10 +1,10 @@
 prefixcommons>=0.0
 # ontobio>=2.7.14
-git+https://github.com/falquaddoomi/ontobio.git@7894361056bf87a69cacb8cefcf10ac4f51f2924#egg=ontobio
+git+https://github.com/monarch-initiative/ontobio.git@baf3b5a7344fe6dda9c3980c8d472655431cb5df#egg=ontobio
 pip>=9.0.1
 wheel>0.25.0
-itsdangerous==2.0.1
-Flask==1.1.2
+markupsafe==2.0.1
+Flask==1.1.4
 flask-restplus>=0.10.1
 Flask-SQLAlchemy>=2.1
 flask-cors>=0.0

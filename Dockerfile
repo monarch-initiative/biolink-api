@@ -26,4 +26,7 @@ ENV PATH="/biolink-api/scripts/:$PATH"
 
 RUN pip install -r requirements.txt
 
+COPY ./resources/biolink-config.yaml /biolink-api/conf/config.yaml
+COPY ./resources/ontobio-config.yaml /usr/local/lib/python3.8/site-packages/ontobio/config.yaml
+
 EXPOSE 5000

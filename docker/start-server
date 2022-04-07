@@ -1,6 +1,6 @@
 #!/bin/sh
 
 cp /config/biolink-config.yaml /biolink-api/conf/config.yaml
-cp /config/ontobio-config.yaml /usr/local/lib/python3.7/site-packages/ontobio/config.yaml
+cp /config/ontobio-config.yaml /usr/local/lib/python3.8/site-packages/ontobio/config.yaml
 
 gunicorn "$@"

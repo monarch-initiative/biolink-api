@@ -33,7 +33,10 @@ jobs:
 
       - name: install dependencies
         run: |
-          pip install -r requirements.txt
+          pip install -r requirements.txt > /dev/null
+          SITE_PACKAGES=$( python -c 'import site; print(site.getsitepackages()[0])' )
+          cp ./resources/biolink-config.yaml ./conf/config.yaml
+          cp ./resources/ontobio-config.yaml ${SITE_PACKAGES}/ontobio/config.yaml
 
       - name: run behave tests
         run: |

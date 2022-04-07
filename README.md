@@ -72,7 +72,7 @@ For testing purposes these can be copied from the defaults, eg
 ```
 mkdir config
 cp conf/config.yaml config/biolink-config.yaml
-cp venv/lib/python3.7/site-packages/ontobio/config.yaml config/ontobio-config.yaml
+cp venv/lib/python3.8/site-packages/ontobio/config.yaml config/ontobio-config.yaml
 ```
 
 ```
