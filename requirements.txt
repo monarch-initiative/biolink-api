@@ -1,5 +1,6 @@
 prefixcommons>=0.0
-ontobio>=2.7.14
+# ontobio>=2.7.14
+git+https://github.com/monarch-initiative/ontobio.git@baf3b5a7344fe6dda9c3980c8d472655431cb5df#egg=ontobio
 pip>=9.0.1
 wheel>0.25.0
 markupsafe==2.0.1
