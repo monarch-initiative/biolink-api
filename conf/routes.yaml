@@ -309,6 +309,11 @@ route_mapping:
       routes:
         - route: /
           resource: biolink.api.ontol.endpoints.labeler.OntolLabelerResource
+    - name: ontol/identifier
+      description: Retrieve IDs for labels
+      routes:
+        - route: /
+          resource: biolink.api.ontol.endpoints.identifier.OntolIdentifierResource
 #    - name: ontol/enrichment
 #      description: To be implemented
 #      routes:
