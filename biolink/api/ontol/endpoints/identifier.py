@@ -10,7 +10,7 @@ import pysolr
 log = logging.getLogger(__name__)
 
 parser = api.parser()
-parser.add_argument('label', action='append', help='List of labels')
+parser.add_argument('label', action='append', help='List of labels', required=True)
 
 class OntolIdentifierResource(Resource):
 
