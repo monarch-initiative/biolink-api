@@ -43,9 +43,6 @@ def parse_args_for_annotator(parser):
     if 'include_acronym' in args:
         val = args.pop('include_acronym')
         args['includeAcronym'] = val
-    if 'include_acronym' in args:
-        val = args.pop('include_acronym')
-        args['includeAcronym'] = val
     if 'include_numbers' in args:
         val = args.pop('include_numbers')
         args['includeNumbers'] = val
