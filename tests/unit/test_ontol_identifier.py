@@ -1,6 +1,6 @@
 from pprint import pprint
 
-from pytest import xfail
+import pytest
 from biolink.app import app
 from biolink.api.sim.endpoints.owlsim import get_owlsim_api
 
@@ -39,7 +39,7 @@ class TestOntolIdentifier():
             }
         )
 
-    @xfail(reason="/ontol/labeler returns just one result, so it can't be onto with /ontol/identifier")
+    @pytest.mark.xfail(reason="/ontol/labeler returns just one result, so it can't be onto with /ontol/identifier")
     def test_label_id_nonlossy(self):
         labels = [
             "Sus scrofa",
