@@ -39,10 +39,7 @@ def parse_args_for_annotator(parser):
         args['longestOnly'] = val
     if 'include_abbreviation' in args:
         val = args.pop('include_abbreviation')
-        args['include_abbrev'] = val
-    if 'include_acronym' in args:
-        val = args.pop('include_acronym')
-        args['includeAcronym'] = val
+        args['includeAbbrev'] = val
     if 'include_acronym' in args:
         val = args.pop('include_acronym')
         args['includeAcronym'] = val
