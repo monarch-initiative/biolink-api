@@ -10,10 +10,9 @@ import pysolr
 log = logging.getLogger(__name__)
 
 parser = api.parser()
-parser.add_argument('id', action='append', help='List of ids')
+parser.add_argument('id', action='append', help='List of ids', required=True)
 
 class OntolLabelerResource(Resource):
-
     @api.expect(parser)
     def get(self):
         """
@@ -22,8 +21,3 @@ class OntolLabelerResource(Resource):
         args = parser.parse_args()
 
         return batch_fetch_labels(args.id)
-
-
-    
-    
-
